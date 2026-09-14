@@ -161,7 +161,7 @@ hr{
 
 .portal-grid{
   display:grid;
-  grid-template-columns:repeat(2,208px);
+  grid-template-columns:repeat(3,208px);
   justify-content:center;
   gap:14px;
   max-width:720px;
@@ -426,6 +426,38 @@ a.portal-card:hover,
 
     <a
       class="portal-card"
+      id="formCard"
+      href="form.html">
+
+      <div class="card-head">
+
+        <div class="card-text">
+
+          <p
+            class="card-title"
+            id="formTitle">
+            تسجيل تاريخ الانتهاء
+          </p>
+
+          <p
+            class="card-desc"
+            id="formDesc">
+            إدخال بيانات دواء جديد، مع تنبيه تلقائي عند وجود تاريخ أقدم مسجل مسبقا.
+          </p>
+
+        </div>
+
+        <div class="card-icon">
+          💊
+        </div>
+
+      </div>
+
+    </a>
+
+
+    <a
+      class="portal-card"
       id="dashboardCard"
       href="dashboard.html">
 
@@ -458,8 +490,8 @@ a.portal-card:hover,
 
     <a
       class="portal-card"
-      id="formCard"
-      href="form.html">
+      id="orderCard"
+      href="kidneyorder.html">
 
       <div class="card-head">
 
@@ -467,20 +499,20 @@ a.portal-card:hover,
 
           <p
             class="card-title"
-            id="formTitle">
-            تسجيل تاريخ الانتهاء
+            id="orderTitle">
+            Kidney Order / الطلبية
           </p>
 
           <p
             class="card-desc"
-            id="formDesc">
-            إدخال بيانات دواء جديد، مع تنبيه تلقائي عند وجود تاريخ أقدم مسجل مسبقا.
+            id="orderDesc">
+            إنشاء طلبية أدوية لصيدلية مركز الكلى.
           </p>
 
         </div>
 
         <div class="card-icon">
-          💊
+          📦
         </div>
 
       </div>
@@ -510,6 +542,8 @@ const text = {
     dashboardDesc:"عرض فوري لكل الأدوية المسجلة، مرتبة حسب الأقرب لتاريخ الانتهاء.",
     formTitle:"تسجيل تاريخ الانتهاء",
     formDesc:"إدخال بيانات دواء جديد، مع تنبيه تلقائي عند وجود تاريخ أقدم مسجل مسبقا.",
+    orderTitle:"Kidney Order / الطلبية",
+    orderDesc:"إنشاء طلبية أدوية لصيدلية مركز الكلى.",
     back:"العودة إلى اختيار الصيدلية"
   },
 
@@ -523,6 +557,8 @@ const text = {
     dashboardDesc:"Instant view of registered medications, sorted by nearest expiry date.",
     formTitle:"Register Expiry Date",
     formDesc:"Enter a new medication record with an automatic alert when an older expiry date already exists.",
+    orderTitle:"Kidney Order",
+    orderDesc:"Create a medication order for the Kidney Center Pharmacy.",
     back:"Back to pharmacy selection"
   }
 
@@ -555,7 +591,9 @@ function setLanguage(lang){
     "dashboardTitle",
     "dashboardDesc",
     "formTitle",
-    "formDesc"
+    "formDesc",
+    "orderTitle",
+    "orderDesc"
   ].forEach(function(id){
 
     document.getElementById(id).innerText =
