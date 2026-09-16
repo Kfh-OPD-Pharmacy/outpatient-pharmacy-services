@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shelf Labels</title>
+<title>Labels Generator</title>
 
 <style>
 *{box-sizing:border-box}
@@ -924,6 +924,69 @@ input[type="number"]{
   }
 }
 
+/* Labels page visual-only refinements */
+@media screen{
+  .size-row{
+    align-items:end;
+  }
+
+  .size-row > div:first-child select{
+    margin-bottom:0;
+  }
+
+  .size-row .actions{
+    align-self:end;
+    align-items:center;
+    height:34px;
+  }
+
+  #printAllBtn.icon-btn,
+  #clearAllBtn.icon-btn{
+    width:34px;
+    height:34px;
+    min-width:34px;
+    min-height:34px;
+    padding:0;
+    border:0;
+    background:transparent;
+    box-shadow:none;
+    color:var(--main);
+  }
+
+  #printAllBtn.icon-btn:hover,
+  #clearAllBtn.icon-btn:hover{
+    background:transparent;
+    box-shadow:none;
+    color:var(--main-dark);
+    filter:none;
+  }
+
+  .container:has(#appView[style*="display: block"]) .title-row .back-button,
+  .container:has(#appView[style*="display:block"]) .title-row .back-button{
+    display:none;
+  }
+
+  .page-title{
+    font-size:0;
+  }
+
+  .page-title::before{
+    content:"Labels Generator";
+    font-size:23px;
+    font-weight:bold;
+    line-height:1.25;
+  }
+}
+
+@media screen and (max-width:700px){
+  .size-row .actions{
+    justify-content:center;
+  }
+
+  .page-title::before{
+    font-size:20px;
+  }
+}
 </style>
 </head>
 
@@ -947,7 +1010,7 @@ input[type="number"]{
 
   <div class="title-row">
     <a class="back-button" href="index.html" title="Back" aria-label="Back">↩</a>
-    <h1 class="page-title" id="pageTitle">Shelf Labels</h1>
+    <h1 class="page-title" id="pageTitle">Labels Generator</h1>
   </div>
 
   <div id="loginView" class="login-card">
@@ -2166,3 +2229,5 @@ restoreSession();
 </script>
 </body>
 </html>
+
+
