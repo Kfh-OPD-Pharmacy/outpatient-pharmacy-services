@@ -3609,3 +3609,78 @@ button:disabled {
     min-height:42px!important
   }
 }
+
+/* PHASE B-FIX: exact unified visual tokens only */
+.employee-shell{
+  width:min(100%, 980px);
+  max-width:980px;
+  background:#fff;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1)
+}
+.employee-page-title{
+  font-size:23px;
+  font-weight:bold;
+  margin:18px 0 12px
+}
+.employee-login-card,
+.panel.employee-login-card{
+  width:100%;
+  max-width:420px;
+  padding:22px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08)
+}
+.employee-login-card input,
+.panel.employee-login-card input{
+  width:100%;
+  height:44px;
+  min-height:44px;
+  padding:8px 12px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  font-size:14px;
+  font-family:inherit;
+  outline:none;
+  box-sizing:border-box
+}
+.employee-login-card input:focus,
+.panel.employee-login-card input:focus{
+  border-color:#168fb3;
+  box-shadow:0 0 0 2px rgba(22,143,179,.12);
+  outline:none
+}
+.employee-login-card .login-actions .primary-btn,
+.employee-login-card .login-actions .ghost-btn,
+.employee-login-card .login-actions .icon-action,
+.panel.employee-login-card .login-actions .primary-btn,
+.panel.employee-login-card .login-actions .ghost-btn,
+.panel.employee-login-card .login-actions .icon-action{
+  height:44px!important;
+  min-height:44px!important;
+  border-radius:8px;
+  font-size:14px;
+  font-weight:bold
+}
+.panel,
+.result-card,
+.upload-box{
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,.04)
+}
+@media (max-width:700px){
+  .employee-shell{
+    padding:14px;
+    border-radius:0;
+    box-shadow:none
+  }
+  .employee-login-card,
+  .panel.employee-login-card{
+    max-width:420px;
+    padding:22px
+  }
+}
