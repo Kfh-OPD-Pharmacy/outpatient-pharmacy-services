@@ -743,7 +743,6 @@ select{
   .upload-box,
   .users-form,
   .upload-standalone,
-  .employee-toolbar,
   .upload-toolbar,
   .supervisor-panel,
   .user-summary-panel,
@@ -864,6 +863,25 @@ select{
       width:100%;
       font-size:13px;
     }
+  }
+}
+
+/* Medication combo visibility fix: keep central database results above Phase C cards. */
+@media screen{
+  .form-panel,
+  .combo-wrap{
+    overflow:visible;
+  }
+
+  .combo-wrap{
+    position:relative;
+    z-index:50;
+  }
+
+  #medNameOptions.combo-options{
+    z-index:9999;
+    opacity:1;
+    visibility:visible;
   }
 }
 
