@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shelf Labels</title>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --main:#168fb3;
+  --main-dark:#0f7592;
+  --border:#cbd5e1;
+  --soft:#f8fafc;
+  --text:#111827;
+  --muted:#64748b;
+  --label-width:125mm;
+  --label-height:55mm;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f3f4f6;
+  margin:0;
+  padding:16px;
+  color:var(--main)
+}
+
+.container{
+  max-width:980px;
+  margin:auto;
+  background:#fff;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+  min-height:calc(100vh - 32px)
+}
+
+.top-bar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+  direction:ltr
+}
+
+.logo{
+  width:120px;
+  height:120px;
+  object-fit:contain
+}
+
+.official-header{
+  width:fit-content;
+  max-width:100%;
+  transform:translateY(14px);
+  border-left:4px solid var(--main)
+}
+
+html[dir="rtl"] .official-header{
+  text-align:right;
+  direction:rtl;
+  padding-left:8px;
+  padding-right:0
+}
+
+html[dir="ltr"] .official-header{
+  text-align:left;
+  direction:ltr;
+  padding-left:6px;
+  padding-right:0
+}
+
+.official-header h2,
+.official-header h3{
+  margin:2px 0;
+  font-size:13px;
+  line-height:1.4;
+  color:var(--main)
+}
+
+hr{
+  border:none;
+  border-top:1px solid #e5e7eb;
+  margin:14px 0
+}
+
+.meta-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+  direction:ltr
+}
+
+.date-box{
+  color:var(--main);
+  padding:4px 0;
+  font-size:13px;
+  font-weight:bold;
+  text-align:center
+}
+
+.language-chip{
+  color:var(--main);
+  font-size:13px;
+  font-weight:bold;
+  padding:4px 0;
+  white-space:nowrap;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  font-family:inherit
+}
+
+.title-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:18px auto 22px;
+  direction:rtl
+}
+
+.page-title{
+  text-align:center;
+  font-size:23px;
+  font-weight:bold;
+  margin:0;
+  color:var(--main)
+}
+
+.back-button{
+  width:34px;
+  height:34px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--main);
+  font-size:28px;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-family:Arial,sans-serif;
+  flex:0 0 auto;
+  text-decoration:none
+}
+
+.back-button:hover{
+  color:var(--main-dark);
+  transform:translateX(-1px)
+}
+
+.login-card,
+.panel{
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:16px
+}
+
+.login-card{
+  max-width:300px;
+  margin:16px auto 0
+}
+
+.app-layout{
+  display:none
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:minmax(260px, .9fr) minmax(320px, 1.1fr);
+  gap:14px;
+  align-items:start
+}
+
+label{
+  font-weight:bold;
+  display:block;
+  margin-bottom:4px;
+  color:var(--text);
+  font-size:12px
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  min-height:34px;
+  padding:7px 9px;
+  margin-bottom:10px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:13px;
+  background:#fff;
+  color:var(--text);
+  font-family:inherit
+}
+
+input[type="number"]{
+  text-align:center
+}
+
+.search-wrap{
+  position:relative
+}
+
+.search-results{
+  display:none;
+  position:absolute;
+  z-index:20;
+  left:0;
+  right:0;
+  top:calc(100% - 8px);
+  max-height:260px;
+  overflow:auto;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:8px;
+  box-shadow:0 10px 22px rgba(15,23,42,.14)
+}
+
+.search-option{
+  width:100%;
+  border:0;
+  background:#fff;
+  color:var(--text);
+  padding:9px 10px;
+  text-align:left;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  font-family:inherit;
+  font-size:13px
+}
+
+.search-option:hover{
+  background:#eef8fb
+}
+
+.search-option small{
+  color:var(--muted);
+  white-space:nowrap
+}
+
+.primary-btn,
+.secondary-btn,
+.danger-btn{
+  min-height:36px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:bold;
+  cursor:pointer;
+  font-family:inherit;
+  padding:8px 13px
+}
+
+.primary-btn{
+  border:1px solid var(--main);
+  background:var(--main);
+  color:#fff
+}
+
+.secondary-btn{
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--main)
+}
+
+.danger-btn{
+  border:1px solid #fecaca;
+  background:#fff5f5;
+  color:#b91c1c
+}
+
+.primary-btn:hover,
+.secondary-btn:hover,
+.danger-btn:hover{
+  filter:brightness(.98)
+}
+
+.primary-btn:disabled,
+.secondary-btn:disabled{
+  background:#e2e8f0;
+  color:#64748b;
+  border-color:#cbd5e1;
+  cursor:not-allowed
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center
+}
+
+.status{
+  min-height:22px;
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted)
+}
+
+.status.error{
+  color:#b91c1c
+}
+
+.status.success{
+  color:#15803d
+}
+
+.selection-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px
+}
+
+.selection-count{
+  color:var(--main);
+  font-weight:bold;
+  font-size:13px
+}
+
+.empty-note{
+  color:var(--muted);
+  font-size:13px;
+  text-align:center;
+  padding:18px 10px
+}
+
+.batch-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px
+}
+
+.batch-item{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:11px
+}
+
+.batch-row{
+  display:grid;
+  grid-template-columns:minmax(180px, 1fr) minmax(150px, .7fr) 82px auto;
+  gap:8px;
+  align-items:end
+}
+
+.batch-item-title{
+  font-size:12px;
+  color:var(--muted);
+  margin:0 0 8px;
+  direction:ltr;
+  text-align:left
+}
+
+.size-row{
+  display:grid;
+  grid-template-columns:minmax(190px, 240px) 1fr;
+  gap:10px;
+  align-items:end;
+  margin-bottom:12px
+}
+
+.preview-panel{
+  margin-top:14px
+}
+
+.preview-title{
+  color:var(--main);
+  margin:0 0 10px;
+  font-size:16px;
+  text-align:center
+}
+
+.print-area{
+  --label-width:125mm;
+  --label-height:55mm;
+  display:block;
+  overflow:auto;
+  padding:10px;
+  background:#fff;
+  border:1px dashed #dbe4ea;
+  border-radius:8px
+}
+
+.labels-sheet{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, var(--label-width));
+  align-items:start;
+  justify-content:center;
+  gap:4mm;
+  width:100%
+}
+
+.shelf-label{
+  width:var(--label-width);
+  height:var(--label-height);
+  background:#fff;
+  border:1px solid #8fb8c6;
+  border-radius:2.5mm;
+  padding:4mm;
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) 20%;
+  grid-template-rows:1fr auto;
+  gap:2mm 3mm;
+  direction:ltr;
+  break-inside:avoid;
+  page-break-inside:avoid;
+  overflow:hidden;
+  color:#111827
+}
+
+.label-main{
+  grid-column:1;
+  grid-row:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  min-height:0;
+  text-align:center
+}
+
+.label-name{
+  font-size:18pt;
+  line-height:1.12;
+  font-weight:700;
+  max-width:100%;
+  max-height:100%;
+  overflow:hidden;
+  overflow-wrap:normal;
+  word-break:normal
+}
+
+.label-exp{
+  grid-column:1;
+  grid-row:2;
+  align-self:end;
+  justify-self:start;
+  font-size:8.5pt;
+  line-height:1.2;
+  color:#334155;
+  font-weight:700;
+  white-space:nowrap
+}
+
+.label-logo-wrap{
+  grid-column:2;
+  grid-row:1 / span 2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0
+}
+
+.label-logo{
+  max-width:100%;
+  max-height:70%;
+  object-fit:contain
+}
+
+.login-result{
+  min-height:22px;
+  font-size:12px;
+  margin-top:6px
+}
+
+.employee-strip{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  margin:0 auto 14px;
+  color:var(--main);
+  font-size:18px;
+  font-weight:bold
+}
+
+.power-btn{
+  border:0;
+  background:transparent;
+  color:var(--main);
+  font-size:28px;
+  line-height:1;
+  padding:0;
+  cursor:pointer
+}
+
+.power-btn:hover{
+  color:var(--main-dark)
+}
+
+@media (max-width:820px){
+  body{padding:10px;background:#fff}
+  .container{padding:14px;border-radius:0;box-shadow:none;min-height:100vh}
+  .logo{width:84px;height:84px}
+  .official-header{transform:translateY(10px)}
+  .official-header h2,
+  .official-header h3{font-size:12px}
+  .page-title{font-size:20px}
+  .grid{grid-template-columns:1fr}
+  .batch-row{grid-template-columns:1fr}
+  .size-row{grid-template-columns:1fr}
+}
+
+@page{
+  size:A4 portrait;
+  margin:8mm
+}
+
+@media print{
+  *{
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  html,
+  body{
+    width:210mm;
+    min-height:297mm;
+    background:#fff;
+    margin:0;
+    padding:0
+  }
+
+  body *{
+    visibility:hidden
+  }
+
+  .print-area,
+  .print-area *{
+    visibility:visible
+  }
+
+  .print-area{
+    position:absolute;
+    inset:0 auto auto 0;
+    width:194mm;
+    min-height:auto;
+    padding:0;
+    margin:0;
+    border:0;
+    border-radius:0;
+    overflow:visible
+  }
+
+  .labels-sheet{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, var(--label-width));
+    justify-content:start;
+    align-items:start;
+    gap:4mm;
+    width:194mm
+  }
+
+  .shelf-label{
+    width:var(--label-width);
+    height:var(--label-height);
+    break-inside:avoid;
+    page-break-inside:avoid
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="top-bar">
+    <img class="logo" src="../../logo.png" alt="Logo">
+    <div class="official-header">
+      <h2 id="officialLine1">Madinah Health Cluster</h2>
+      <h3 id="officialLine2">King Fahad Hospital - Madinah</h3>
+      <h3 id="officialLine3">Pharmaceutical Care Administration</h3>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="meta-row">
+    <div class="date-box" id="dateBox"></div>
+    <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
+  </div>
+
+  <div class="title-row">
+    <a class="back-button" href="index.html" title="Back" aria-label="Back">↩</a>
+    <h1 class="page-title" id="pageTitle">Shelf Labels</h1>
+  </div>
+
+  <div id="loginView" class="login-card">
+    <label id="usernameLabel" for="username">Username</label>
+    <input id="username" type="text" autocomplete="username">
+
+    <label id="passwordLabel" for="password">PIN</label>
+    <input id="password" type="password" autocomplete="current-password">
+
+    <button class="primary-btn" type="button" id="loginBtn" onclick="loginEmployee()">Login</button>
+    <div id="loginResult" class="login-result"></div>
+  </div>
+
+  <div id="appView" class="app-layout">
+    <div class="employee-strip">
+      <button class="power-btn" type="button" onclick="logoutEmployee()" title="Logout" aria-label="Logout">⏻</button>
+      <span id="employeeName"></span>
+    </div>
+
+    <div class="size-row panel">
+      <div>
+        <label id="labelSizeLabel" for="labelSize">Label Size</label>
+        <select id="labelSize" onchange="handleSizeChange()"></select>
+      </div>
+      <div class="actions">
+        <button class="primary-btn" type="button" id="printAllBtn" onclick="printAll()">Print All</button>
+        <button class="secondary-btn" type="button" id="clearAllBtn" onclick="clearAll()">Clear All</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <label id="searchLabel" for="medSearch">Search Medication</label>
+        <div class="search-wrap">
+          <input id="medSearch" type="text" autocomplete="off" placeholder="Search Medication" oninput="renderSearchResults()" onfocus="renderSearchResults()">
+          <div id="searchResults" class="search-results"></div>
+        </div>
+        <div id="searchStatus" class="status"></div>
+      </section>
+
+      <section class="panel">
+        <div class="selection-head">
+          <div class="selection-count" id="selectedCount">Selected Labels: 0</div>
+        </div>
+        <div id="batchList" class="batch-list">
+          <div class="empty-note" id="emptyNote">No labels selected.</div>
+        </div>
+      </section>
+    </div>
+
+    <section class="preview-panel">
+      <h2 class="preview-title" id="previewTitle">Preview</h2>
+      <div id="printArea" class="print-area">
+        <div id="labelsSheet" class="labels-sheet"></div>
+      </div>
+      <div id="pageStatus" class="status"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const KIDNEY_API_URL =
+  "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
+
+const CENTRAL_MEDICATIONS_API_URL =
+  "https://script.google.com/macros/s/AKfycbxtK-J87-gmKVXExW_kbVXBuYTxArtP5pnvnp3HJh2s_BL2nPQn8vPrwMX_bDUkp4uq/exec";
+
+const KIDNEY_SESSION_NAME_KEY =
+  "kidneyEmployeeName";
+
+const KIDNEY_SESSION_USERNAME_KEY =
+  "kidneyEmployeeUsername";
+
+const KIDNEY_SESSION_TOKEN_KEY =
+  "kidneySessionToken";
+
+const LABEL_SIZES = {
+  small:{
+    label:"Small",
+    widthMm:85,
+    heightMm:45
+  },
+  medium:{
+    label:"Medium",
+    widthMm:125,
+    heightMm:55
+  },
+  large:{
+    label:"Large",
+    widthMm:155,
+    heightMm:60
+  }
+};
+
+const DOSAGE_FORM_ABBREVIATIONS = [
+  ["Suppository", "Supp"],
+  ["Suspension", "Susp"],
+  ["Injection", "Inj"],
+  ["Solution", "Sol"],
+  ["Capsule", "Cap"],
+  ["Ampoule", "Amp"],
+  ["Tablet", "Tab"],
+  ["Inhaler", "Inh"],
+  ["Syrup", "Syp"],
+  ["Cream", "Cr"],
+  ["Ointment", "Oint"],
+  ["Drops", "Drops"],
+  ["Vial", "Vial"],
+  ["Powder", "Pwd"],
+  ["Spray", "Spr"],
+  ["Gel", "Gel"]
+];
+
+let currentLang =
+  "en";
+
+let currentEmployeeName =
+  "";
+
+let currentEmployeeUsername =
+  "";
+
+let currentSessionToken =
+  "";
+
+let centralMedicationList =
+  [];
+
+let expiryRecords =
+  [];
+
+let selectedLabels =
+  [];
+
+let inactivityTimer =
+  null;
+
+let inactivityWatcherStarted =
+  false;
+
+const INACTIVITY_LIMIT_MS =
+  30 * 60 * 1000;
+
+const text = {
+  en:{
+    title:"Shelf Labels",
+    officialLine1:"Madinah Health Cluster",
+    officialLine2:"King Fahad Hospital - Madinah",
+    officialLine3:"Pharmaceutical Care Administration",
+    username:"Username",
+    password:"PIN",
+    login:"Login",
+    invalidLogin:"Username or PIN is incorrect.",
+    sessionExpired:"Session expired. Please sign in again.",
+    logout:"Logout",
+    labelSize:"Label Size",
+    search:"Search Medication",
+    searchPlaceholder:"Search Medication",
+    selected:"Selected Labels",
+    noLabels:"No labels selected.",
+    preview:"Preview",
+    printAll:"Print All",
+    clearAll:"Clear All",
+    printName:"Medication Print Name",
+    expiry:"Expiry Date",
+    copies:"Copies",
+    remove:"Remove",
+    add:"Add",
+    alreadyAdded:"Already selected",
+    noMatches:"No matching medication.",
+    noExpiry:"No expiry dates found",
+    loading:"Loading data...",
+    loaded:"Ready.",
+    loadFailed:"Could not load medication data.",
+    needSelection:"Select at least one label before printing.",
+    needExpiry:"Choose an expiry date for every selected label before printing.",
+    expPrefix:"EXP:"
+  },
+  ar:{
+    title:"Shelf Labels",
+    officialLine1:"تجمع المدينة المنورة الصحي",
+    officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
+    officialLine3:"إدارة الرعاية الصيدلانية",
+    username:"اسم المستخدم",
+    password:"PIN",
+    login:"تسجيل الدخول",
+    invalidLogin:"اسم المستخدم أو PIN غير صحيح.",
+    sessionExpired:"انتهت الجلسة. سجّل الدخول مرة أخرى.",
+    logout:"تسجيل الخروج",
+    labelSize:"مقاس الليبل",
+    search:"بحث الدواء",
+    searchPlaceholder:"Search Medication",
+    selected:"الليبلات المحددة",
+    noLabels:"لا توجد ليبلات محددة.",
+    preview:"المعاينة",
+    printAll:"طباعة الكل",
+    clearAll:"مسح الكل",
+    printName:"اسم الدواء في الطباعة",
+    expiry:"تاريخ الانتهاء",
+    copies:"عدد النسخ",
+    remove:"حذف",
+    add:"إضافة",
+    alreadyAdded:"تم اختياره",
+    noMatches:"لا يوجد دواء مطابق.",
+    noExpiry:"No expiry dates found",
+    loading:"جاري تحميل البيانات...",
+    loaded:"جاهز.",
+    loadFailed:"تعذر تحميل بيانات الأدوية.",
+    needSelection:"اختر ليبل واحد على الأقل قبل الطباعة.",
+    needExpiry:"اختر تاريخ انتهاء لكل ليبل قبل الطباعة.",
+    expPrefix:"EXP:"
+  }
+};
+
+function migrateOldSession(){
+  const oldToken =
+    sessionStorage.getItem(KIDNEY_SESSION_TOKEN_KEY);
+  const oldName =
+    sessionStorage.getItem(KIDNEY_SESSION_NAME_KEY);
+  const oldUsername =
+    sessionStorage.getItem(KIDNEY_SESSION_USERNAME_KEY);
+
+  if (oldToken && !localStorage.getItem(KIDNEY_SESSION_TOKEN_KEY)){
+    localStorage.setItem(KIDNEY_SESSION_TOKEN_KEY, oldToken);
+  }
+
+  if (oldName && !localStorage.getItem(KIDNEY_SESSION_NAME_KEY)){
+    localStorage.setItem(KIDNEY_SESSION_NAME_KEY, oldName);
+  }
+
+  if (oldUsername && !localStorage.getItem(KIDNEY_SESSION_USERNAME_KEY)){
+    localStorage.setItem(KIDNEY_SESSION_USERNAME_KEY, oldUsername);
+  }
+}
+
+function saveStoredSession(){
+  localStorage.setItem(KIDNEY_SESSION_TOKEN_KEY, currentSessionToken);
+  localStorage.setItem(KIDNEY_SESSION_NAME_KEY, currentEmployeeName);
+  localStorage.setItem(KIDNEY_SESSION_USERNAME_KEY, currentEmployeeUsername);
+  sessionStorage.setItem(KIDNEY_SESSION_TOKEN_KEY, currentSessionToken);
+  sessionStorage.setItem(KIDNEY_SESSION_NAME_KEY, currentEmployeeName);
+  sessionStorage.setItem(KIDNEY_SESSION_USERNAME_KEY, currentEmployeeUsername);
+}
+
+function clearStoredSession(){
+  localStorage.removeItem(KIDNEY_SESSION_TOKEN_KEY);
+  localStorage.removeItem(KIDNEY_SESSION_NAME_KEY);
+  localStorage.removeItem(KIDNEY_SESSION_USERNAME_KEY);
+  sessionStorage.removeItem(KIDNEY_SESSION_TOKEN_KEY);
+  sessionStorage.removeItem(KIDNEY_SESSION_NAME_KEY);
+  sessionStorage.removeItem(KIDNEY_SESSION_USERNAME_KEY);
+  currentEmployeeName = "";
+  currentEmployeeUsername = "";
+  currentSessionToken = "";
+}
+
+async function postApi(action, payload = {}, includeSession = true){
+  const requestData = {
+    action:action,
+    ...payload
+  };
+
+  if (includeSession){
+    currentSessionToken =
+      localStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) ||
+      currentSessionToken;
+
+    if (currentSessionToken){
+      requestData.sessionToken = currentSessionToken;
+      requestData.token = currentSessionToken;
+    }
+  }
+
+  const response =
+    await fetch(
+      KIDNEY_API_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"text/plain;charset=utf-8"
+        },
+        body:JSON.stringify(requestData)
+      }
+    );
+
+  if (!response.ok){
+    throw new Error("HTTP_" + response.status);
+  }
+
+  return await response.json();
+}
+
+async function loginEmployee(){
+  const username =
+    document.getElementById("username").value.trim();
+  const password =
+    document.getElementById("password").value.trim();
+
+  if (!username || !password){
+    showLoginResult(text[currentLang].invalidLogin, "error");
+    return;
+  }
+
+  try{
+    const result =
+      await postApi(
+        "employeeLogin",
+        {
+          username:username,
+          password:password,
+          pin:password
+        },
+        false
+      );
+
+    if (!result.success || !result.employee || !result.sessionToken){
+      showLoginResult(text[currentLang].invalidLogin, "error");
+      return;
+    }
+
+    currentEmployeeName =
+      result.employee.name ||
+      result.employee.username ||
+      username;
+    currentEmployeeUsername =
+      result.employee.username ||
+      username;
+    currentSessionToken =
+      result.sessionToken;
+
+    saveStoredSession();
+    document.getElementById("password").value = "";
+    clearLoginResult();
+    showEmployeeView();
+    await loadPageData();
+  }catch(error){
+    showLoginResult(text[currentLang].invalidLogin, "error");
+  }
+}
+
+async function restoreSession(){
+  currentSessionToken =
+    localStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) || "";
+  currentEmployeeName =
+    localStorage.getItem(KIDNEY_SESSION_NAME_KEY) || "";
+  currentEmployeeUsername =
+    localStorage.getItem(KIDNEY_SESSION_USERNAME_KEY) || "";
+
+  if (!currentSessionToken){
+    clearStoredSession();
+    showLoginView();
+    return;
+  }
+
+  try{
+    const result =
+      await postApi(
+        "validateSession",
+        {
+          service:"kidney"
+        },
+        true
+      );
+
+    if (!result.success || !result.user){
+      clearStoredSession();
+      showLoginView();
+      return;
+    }
+
+    currentEmployeeUsername =
+      result.user.username ||
+      currentEmployeeUsername;
+    currentEmployeeName =
+      result.user.name ||
+      result.user.username ||
+      currentEmployeeName;
+
+    saveStoredSession();
+    showEmployeeView();
+    await loadPageData();
+  }catch(error){
+    clearStoredSession();
+    showLoginView();
+  }
+}
+
+function showLoginView(){
+  document.getElementById("loginView").style.display = "block";
+  document.getElementById("appView").style.display = "none";
+}
+
+function showEmployeeView(){
+  document.getElementById("loginView").style.display = "none";
+  document.getElementById("appView").style.display = "block";
+  document.getElementById("employeeName").innerText =
+    currentEmployeeName ||
+    currentEmployeeUsername ||
+    "";
+  startInactivityWatcher();
+}
+
+function logoutEmployee(){
+  clearStoredSession();
+  selectedLabels = [];
+  centralMedicationList = [];
+  expiryRecords = [];
+  renderBatchList();
+  renderPreview();
+  showLoginView();
+}
+
+function showLoginResult(message, type){
+  const box =
+    document.getElementById("loginResult");
+  box.className =
+    "login-result " + (type || "");
+  box.innerText =
+    message || "";
+}
+
+function clearLoginResult(){
+  showLoginResult("", "");
+}
+
+function startInactivityWatcher(){
+  resetInactivityTimer();
+
+  if (inactivityWatcherStarted){
+    return;
+  }
+
+  inactivityWatcherStarted =
+    true;
+
+  ["click", "keydown", "input", "mousemove", "touchstart"].forEach(
+    function(eventName){
+      document.addEventListener(
+        eventName,
+        resetInactivityTimer,
+        {
+          passive:true
+        }
+      );
+    }
+  );
+}
+
+function resetInactivityTimer(){
+  if (inactivityTimer){
+    clearTimeout(inactivityTimer);
+  }
+
+  inactivityTimer =
+    setTimeout(
+      function(){
+        clearStoredSession();
+        showLoginView();
+        showLoginResult(text[currentLang].sessionExpired, "error");
+      },
+      INACTIVITY_LIMIT_MS
+    );
+}
+
+async function loadPageData(){
+  setStatus(text[currentLang].loading, "");
+
+  try{
+    await Promise.all([
+      loadCentralMedicationList(),
+      loadExpiryRecords()
+    ]);
+
+    setStatus(text[currentLang].loaded, "success");
+    renderSearchResults();
+    renderBatchList();
+    renderPreview();
+  }catch(error){
+    setStatus(text[currentLang].loadFailed, "error");
+  }
+}
+
+async function loadCentralMedicationList(){
+  const response =
+    await fetch(
+      CENTRAL_MEDICATIONS_API_URL +
+      "?action=listMedications&service=kidney"
+    );
+  const data =
+    await response.json();
+
+  if (data && data.success && Array.isArray(data.medications)){
+    centralMedicationList =
+      data.medications
+        .map(function(item){
+          return item && item.name
+            ? String(item.name).trim()
+            : "";
+        })
+        .filter(Boolean)
+        .filter(function(name, index, list){
+          return list.indexOf(name) === index;
+        });
+  }else{
+    centralMedicationList = [];
+  }
+}
+
+async function loadExpiryRecords(){
+  const response =
+    await fetch(
+      KIDNEY_API_URL +
+      "?action=dashboard"
+    );
+  const data =
+    await response.json();
+
+  expiryRecords =
+    (
+      data.items ||
+      data.medications ||
+      []
+    ).map(function(item){
+      return {
+        name:String(
+          item.medicationName ||
+          item.name ||
+          item.medication ||
+          ""
+        ).trim(),
+        expiry:String(
+          item.expiry ||
+          item.expiryDate ||
+          ""
+        ).trim()
+      };
+    }).filter(function(item){
+      return item.name && item.expiry;
+    });
+}
+
+function getExpiryDatesForMedication(name){
+  const dates =
+    expiryRecords
+      .filter(function(item){
+        return item.name === name;
+      })
+      .map(function(item){
+        return normalizeDate(item.expiry);
+      })
+      .filter(Boolean)
+      .filter(function(date, index, list){
+        return list.indexOf(date) === index;
+      })
+      .sort();
+
+  return dates;
+}
+
+function normalizeDate(value){
+  if (!value){
+    return "";
+  }
+
+  const textValue =
+    String(value).trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(textValue)){
+    return textValue;
+  }
+
+  const date =
+    new Date(textValue);
+
+  if (Number.isNaN(date.getTime())){
+    return "";
+  }
+
+  const year =
+    date.getFullYear();
+  const month =
+    String(date.getMonth() + 1).padStart(2, "0");
+  const day =
+    String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function renderSearchResults(){
+  const box =
+    document.getElementById("searchResults");
+  const input =
+    document.getElementById("medSearch");
+  const query =
+    input.value.trim().toLowerCase();
+
+  box.innerHTML = "";
+
+  const source =
+    centralMedicationList.filter(
+      function(name){
+        return !query ||
+          name.toLowerCase().includes(query);
+      }
+    ).slice(0, 60);
+
+  if (!document.activeElement || document.activeElement !== input){
+    box.style.display = "none";
+    return;
+  }
+
+  if (!source.length){
+    const empty =
+      document.createElement("div");
+    empty.className =
+      "empty-note";
+    empty.innerText =
+      text[currentLang].noMatches;
+    box.appendChild(empty);
+    box.style.display =
+      "block";
+    return;
+  }
+
+  source.forEach(
+    function(name){
+      const option =
+        document.createElement("button");
+      option.type =
+        "button";
+      option.className =
+        "search-option";
+
+      const alreadySelected =
+        selectedLabels.some(
+          function(item){
+            return item.sourceName === name;
+          }
+        );
+
+      const count =
+        getExpiryDatesForMedication(name).length;
+
+      option.innerHTML =
+        "<span>" + escapeHtml(name) + "</span><small>" +
+        (alreadySelected ? text[currentLang].alreadyAdded : (count ? count + " EXP" : text[currentLang].noExpiry)) +
+        "</small>";
+
+      option.onclick =
+        function(){
+          addMedicationToBatch(name);
+        };
+
+      box.appendChild(option);
+    }
+  );
+
+  box.style.display =
+    "block";
+}
+
+function addMedicationToBatch(name){
+  const exists =
+    selectedLabels.some(
+      function(item){
+        return item.sourceName === name;
+      }
+    );
+
+  if (exists){
+    setStatus(text[currentLang].alreadyAdded, "");
+    return;
+  }
+
+  const dates =
+    getExpiryDatesForMedication(name);
+
+  selectedLabels.push({
+    id:"label_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+    sourceName:name,
+    printName:formatMedicationPrintName(name),
+    expiryDates:dates,
+    selectedExpiry:dates[0] || "",
+    copies:1
+  });
+
+  document.getElementById("medSearch").value = "";
+  document.getElementById("searchResults").style.display = "none";
+  renderBatchList();
+  renderPreview();
+}
+
+function formatMedicationPrintName(name){
+  let value =
+    String(name || "").trim().replace(/\s+/g, " ");
+
+  DOSAGE_FORM_ABBREVIATIONS.forEach(
+    function(pair){
+      const full =
+        pair[0];
+      const abbr =
+        pair[1];
+      const fullPattern =
+        new RegExp("\\b" + escapeRegExp(full) + "\\b", "gi");
+      const abbrPattern =
+        new RegExp("\\b" + escapeRegExp(abbr) + "\\b", "gi");
+
+      value =
+        value.replace(fullPattern, abbr);
+      value =
+        value.replace(abbrPattern, abbr);
+    }
+  );
+
+  return value;
+}
+
+function renderBatchList(){
+  const list =
+    document.getElementById("batchList");
+  const count =
+    selectedLabels.reduce(
+      function(total, item){
+        return total + Math.max(1, Number(item.copies) || 1);
+      },
+      0
+    );
+
+  document.getElementById("selectedCount").innerText =
+    text[currentLang].selected + ": " + count;
+
+  list.innerHTML =
+    "";
+
+  if (!selectedLabels.length){
+    const empty =
+      document.createElement("div");
+    empty.className =
+      "empty-note";
+    empty.id =
+      "emptyNote";
+    empty.innerText =
+      text[currentLang].noLabels;
+    list.appendChild(empty);
+    return;
+  }
+
+  selectedLabels.forEach(
+    function(item, index){
+      const card =
+        document.createElement("div");
+      card.className =
+        "batch-item";
+
+      const expiryOptions =
+        item.expiryDates.length
+          ? item.expiryDates.map(
+            function(date){
+              return "<option value=\"" + escapeHtml(date) + "\"" +
+                (date === item.selectedExpiry ? " selected" : "") +
+                ">" + escapeHtml(date) + "</option>";
+            }
+          ).join("")
+          : "<option value=\"\">" + text[currentLang].noExpiry + "</option>";
+
+      card.innerHTML =
+        "<p class=\"batch-item-title\">" + (index + 1) + ". " + escapeHtml(item.sourceName) + "</p>" +
+        "<div class=\"batch-row\">" +
+          "<div>" +
+            "<label>" + text[currentLang].printName + "</label>" +
+            "<input type=\"text\" value=\"" + escapeHtml(item.printName) + "\" data-action=\"name\" data-id=\"" + item.id + "\">" +
+          "</div>" +
+          "<div>" +
+            "<label>" + text[currentLang].expiry + "</label>" +
+            "<select data-action=\"expiry\" data-id=\"" + item.id + "\"" + (item.expiryDates.length ? "" : " disabled") + ">" +
+              expiryOptions +
+            "</select>" +
+          "</div>" +
+          "<div>" +
+            "<label>" + text[currentLang].copies + "</label>" +
+            "<input type=\"number\" min=\"1\" step=\"1\" value=\"" + escapeHtml(String(item.copies)) + "\" data-action=\"copies\" data-id=\"" + item.id + "\">" +
+          "</div>" +
+          "<button class=\"danger-btn\" type=\"button\" data-action=\"remove\" data-id=\"" + item.id + "\">" + text[currentLang].remove + "</button>" +
+        "</div>";
+
+      list.appendChild(card);
+    }
+  );
+}
+
+function updateItem(id, key, value){
+  const item =
+    selectedLabels.find(
+      function(entry){
+        return entry.id === id;
+      }
+    );
+
+  if (!item){
+    return;
+  }
+
+  if (key === "copies"){
+    item.copies =
+      Math.max(1, parseInt(value, 10) || 1);
+  }else{
+    item[key] =
+      value;
+  }
+
+  renderPreview();
+  document.getElementById("selectedCount").innerText =
+    text[currentLang].selected + ": " +
+    selectedLabels.reduce(
+      function(total, entry){
+        return total + Math.max(1, Number(entry.copies) || 1);
+      },
+      0
+    );
+}
+
+function removeItem(id){
+  selectedLabels =
+    selectedLabels.filter(
+      function(item){
+        return item.id !== id;
+      }
+    );
+  renderBatchList();
+  renderPreview();
+}
+
+function clearAll(){
+  selectedLabels = [];
+  renderBatchList();
+  renderPreview();
+  setStatus("", "");
+}
+
+function renderPreview(){
+  const sheet =
+    document.getElementById("labelsSheet");
+  sheet.innerHTML =
+    "";
+
+  selectedLabels.forEach(
+    function(item){
+      const copies =
+        Math.max(1, Number(item.copies) || 1);
+
+      for (let i = 0; i < copies; i++){
+        sheet.appendChild(
+          createLabelElement(item)
+        );
+      }
+    }
+  );
+
+  requestAnimationFrame(fitAllLabelNames);
+}
+
+function createLabelElement(item){
+  const label =
+    document.createElement("div");
+  label.className =
+    "shelf-label";
+
+  const name =
+    String(item.printName || "").trim() ||
+    item.sourceName;
+
+  const expiry =
+    item.selectedExpiry ||
+    text[currentLang].noExpiry;
+
+  label.innerHTML =
+    "<div class=\"label-main\">" +
+      "<div class=\"label-name\">" + escapeHtml(name) + "</div>" +
+    "</div>" +
+    "<div class=\"label-exp\">" + text[currentLang].expPrefix + " " + escapeHtml(expiry) + "</div>" +
+    "<div class=\"label-logo-wrap\">" +
+      "<img class=\"label-logo\" src=\"../../logo.png\" alt=\"Logo\">" +
+    "</div>";
+
+  return label;
+}
+
+function fitAllLabelNames(){
+  document.querySelectorAll(".label-name").forEach(
+    function(element){
+      fitLabelName(element);
+    }
+  );
+}
+
+function fitLabelName(element){
+  let size =
+    18;
+  element.style.fontSize =
+    size + "pt";
+  element.style.whiteSpace =
+    "nowrap";
+
+  const parent =
+    element.parentElement;
+
+  while (
+    size > 9 &&
+    (
+      element.scrollWidth > parent.clientWidth ||
+      element.scrollHeight > parent.clientHeight
+    )
+  ){
+    size -= 0.5;
+    element.style.fontSize =
+      size + "pt";
+  }
+
+  if (
+    size <= 9 &&
+    element.scrollWidth > parent.clientWidth
+  ){
+    element.style.whiteSpace =
+      "normal";
+    element.style.overflowWrap =
+      "break-word";
+  }
+}
+
+function buildLabelSizeOptions(){
+  const select =
+    document.getElementById("labelSize");
+  select.innerHTML =
+    "";
+
+  Object.keys(LABEL_SIZES).forEach(
+    function(key){
+      const item =
+        LABEL_SIZES[key];
+      const option =
+        document.createElement("option");
+      option.value =
+        key;
+      option.innerText =
+        item.label + " - " + item.widthMm + " × " + item.heightMm + " mm";
+      select.appendChild(option);
+    }
+  );
+
+  select.value =
+    "medium";
+  handleSizeChange();
+}
+
+function handleSizeChange(){
+  const selected =
+    LABEL_SIZES[
+      document.getElementById("labelSize").value
+    ] || LABEL_SIZES.medium;
+
+  document.documentElement.style.setProperty(
+    "--label-width",
+    selected.widthMm + "mm"
+  );
+  document.documentElement.style.setProperty(
+    "--label-height",
+    selected.heightMm + "mm"
+  );
+
+  document.getElementById("printArea").style.setProperty(
+    "--label-width",
+    selected.widthMm + "mm"
+  );
+  document.getElementById("printArea").style.setProperty(
+    "--label-height",
+    selected.heightMm + "mm"
+  );
+
+  renderPreview();
+}
+
+function printAll(){
+  if (!selectedLabels.length){
+    setStatus(text[currentLang].needSelection, "error");
+    return;
+  }
+
+  const missingExpiry =
+    selectedLabels.some(
+      function(item){
+        return !item.selectedExpiry;
+      }
+    );
+
+  if (missingExpiry){
+    setStatus(text[currentLang].needExpiry, "error");
+    return;
+  }
+
+  setStatus("", "");
+  fitAllLabelNames();
+  window.print();
+}
+
+function setStatus(message, type){
+  const box =
+    document.getElementById("searchStatus");
+  box.className =
+    "status " + (type || "");
+  box.innerText =
+    message || "";
+}
+
+function setLanguage(lang){
+  currentLang =
+    lang;
+  document.documentElement.lang =
+    lang;
+  document.documentElement.dir =
+    lang === "ar" ? "rtl" : "ltr";
+  document.title =
+    text[lang].title;
+
+  document.getElementById("officialLine1").innerText =
+    text[lang].officialLine1;
+  document.getElementById("officialLine2").innerText =
+    text[lang].officialLine2;
+  document.getElementById("officialLine3").innerText =
+    text[lang].officialLine3;
+  document.getElementById("pageTitle").innerText =
+    text[lang].title;
+  document.getElementById("usernameLabel").innerText =
+    text[lang].username;
+  document.getElementById("passwordLabel").innerText =
+    text[lang].password;
+  document.getElementById("loginBtn").innerText =
+    text[lang].login;
+  document.getElementById("labelSizeLabel").innerText =
+    text[lang].labelSize;
+  document.getElementById("searchLabel").innerText =
+    text[lang].search;
+  document.getElementById("medSearch").placeholder =
+    text[lang].searchPlaceholder;
+  document.getElementById("previewTitle").innerText =
+    text[lang].preview;
+  document.getElementById("printAllBtn").innerText =
+    text[lang].printAll;
+  document.getElementById("clearAllBtn").innerText =
+    text[lang].clearAll;
+
+  renderDate();
+  renderBatchList();
+  renderPreview();
+}
+
+function toggleLanguage(){
+  setLanguage(
+    currentLang === "ar" ? "en" : "ar"
+  );
+}
+
+function renderDate(){
+  const now =
+    new Date();
+  const date =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:"Asia/Riyadh"
+      }
+    ).format(now);
+  const dayName =
+    new Intl.DateTimeFormat(
+      currentLang === "ar" ? "ar-SA" : "en-US",
+      {
+        timeZone:"Asia/Riyadh",
+        weekday:"long"
+      }
+    ).format(now);
+
+  document.getElementById("dateBox").innerText =
+    `${dayName} - ${date}`;
+}
+
+function escapeHtml(value){
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function escapeRegExp(value){
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+document.addEventListener(
+  "input",
+  function(event){
+    const action =
+      event.target.getAttribute("data-action");
+    const id =
+      event.target.getAttribute("data-id");
+
+    if (!action || !id){
+      return;
+    }
+
+    if (action === "name"){
+      updateItem(id, "printName", event.target.value);
+    }
+
+    if (action === "copies"){
+      updateItem(id, "copies", event.target.value);
+    }
+  }
+);
+
+document.addEventListener(
+  "change",
+  function(event){
+    const action =
+      event.target.getAttribute("data-action");
+    const id =
+      event.target.getAttribute("data-id");
+
+    if (action === "expiry" && id){
+      updateItem(id, "selectedExpiry", event.target.value);
+    }
+  }
+);
+
+document.addEventListener(
+  "click",
+  function(event){
+    const action =
+      event.target.getAttribute("data-action");
+    const id =
+      event.target.getAttribute("data-id");
+
+    if (action === "remove" && id){
+      removeItem(id);
+    }
+
+    if (!event.target.closest(".search-wrap")){
+      document.getElementById("searchResults").style.display =
+        "none";
+    }
+  }
+);
+
+document.getElementById("password").addEventListener(
+  "keydown",
+  function(event){
+    if (event.key === "Enter"){
+      loginEmployee();
+    }
+  }
+);
+
+migrateOldSession();
+buildLabelSizeOptions();
+setLanguage("en");
+restoreSession();
+</script>
+</body>
+</html>
