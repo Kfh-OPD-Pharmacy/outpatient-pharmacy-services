@@ -543,14 +543,45 @@ input[type="number"]{
   html,
   body{
     width:210mm;
-    min-height:297mm;
+    height:auto;
+    min-height:0;
     background:#fff;
     margin:0;
-    padding:0
+    padding:0;
+    overflow:visible
   }
 
   body *{
     visibility:hidden
+  }
+
+  .container,
+  #appView,
+  .preview-panel{
+    display:block;
+    width:auto;
+    max-width:none;
+    min-height:0;
+    height:auto;
+    margin:0;
+    padding:0;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+    background:transparent
+  }
+
+  .top-bar,
+  hr,
+  .meta-row,
+  .title-row,
+  #loginView,
+  .employee-strip,
+  .size-row,
+  .grid,
+  .preview-title,
+  .status{
+    display:none !important
   }
 
   .print-area,
@@ -559,12 +590,12 @@ input[type="number"]{
   }
 
   .print-area{
-    position:absolute;
-    inset:0 auto auto 0;
+    position:static;
     width:200mm;
-    min-height:auto;
+    min-height:0;
+    height:auto;
     padding:0;
-    margin:0;
+    margin:0 auto;
     border:0;
     border-radius:0;
     overflow:visible
@@ -691,22 +722,22 @@ const KIDNEY_SESSION_TOKEN_KEY =
 const LABEL_SIZES = {
   standard:{
     label:"Standard",
-    widthMm:94,
+    widthMm:89,
     heightMm:30
   },
   small:{
     label:"Small",
-    widthMm:85,
+    widthMm:81,
     heightMm:30
   },
   tall:{
     label:"Tall",
-    widthMm:94,
+    widthMm:89,
     heightMm:40
   },
   wide:{
     label:"Wide",
-    widthMm:155,
+    widthMm:147,
     heightMm:60
   }
 };
