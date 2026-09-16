@@ -958,15 +958,15 @@ let currentLang =
   "en";
 
 let currentEmployeeName =
-  localStorage.getItem(ORDER_SESSION_NAME_KEY) ||
+  sessionStorage.getItem(ORDER_SESSION_NAME_KEY) ||
   "";
 
 let currentEmployeeUsername =
-  localStorage.getItem(ORDER_SESSION_USERNAME_KEY) ||
+  sessionStorage.getItem(ORDER_SESSION_USERNAME_KEY) ||
   "";
 
 let currentSessionToken =
-  localStorage.getItem(ORDER_SESSION_TOKEN_KEY) ||
+  sessionStorage.getItem(ORDER_SESSION_TOKEN_KEY) ||
   "";
 
 let inactivityTimer =
@@ -1218,17 +1218,29 @@ function showOrderView(){
 }
 
 function saveStoredSession(){
-  localStorage.setItem(
+  localStorage.removeItem(
+    ORDER_SESSION_NAME_KEY
+  );
+
+  localStorage.removeItem(
+    ORDER_SESSION_USERNAME_KEY
+  );
+
+  localStorage.removeItem(
+    ORDER_SESSION_TOKEN_KEY
+  );
+
+  sessionStorage.setItem(
     ORDER_SESSION_NAME_KEY,
     currentEmployeeName
   );
 
-  localStorage.setItem(
+  sessionStorage.setItem(
     ORDER_SESSION_USERNAME_KEY,
     currentEmployeeUsername
   );
 
-  localStorage.setItem(
+  sessionStorage.setItem(
     ORDER_SESSION_TOKEN_KEY,
     currentSessionToken
   );
@@ -1247,6 +1259,9 @@ function clearStoredSession(){
   localStorage.removeItem(ORDER_SESSION_NAME_KEY);
   localStorage.removeItem(ORDER_SESSION_USERNAME_KEY);
   localStorage.removeItem(ORDER_SESSION_TOKEN_KEY);
+  sessionStorage.removeItem(ORDER_SESSION_NAME_KEY);
+  sessionStorage.removeItem(ORDER_SESSION_USERNAME_KEY);
+  sessionStorage.removeItem(ORDER_SESSION_TOKEN_KEY);
 }
 
 async function loginUser(){
@@ -1326,6 +1341,18 @@ async function loginUser(){
 }
 
 async function restoreSession(){
+  currentSessionToken =
+    sessionStorage.getItem(ORDER_SESSION_TOKEN_KEY) ||
+    "";
+
+  currentEmployeeName =
+    sessionStorage.getItem(ORDER_SESSION_NAME_KEY) ||
+    "";
+
+  currentEmployeeUsername =
+    sessionStorage.getItem(ORDER_SESSION_USERNAME_KEY) ||
+    "";
+
   if (
     !ordersApiReady()
   ){
@@ -1377,7 +1404,17 @@ async function restoreSession(){
   }
 }
 
-function logoutUser(){
+async function logoutUser(){
+  if (currentSessionToken){
+    try{
+      await postApi(
+        "revokeSession",
+        {},
+        true
+      );
+    }catch(error){}
+  }
+
   clearStoredSession();
   orderItems = [];
   savedOrder = null;
@@ -2022,14 +2059,21 @@ async function postApi(
   };
 
   if (
-    includeSession &&
-    currentSessionToken
+    includeSession
   ){
+    currentSessionToken =
+      sessionStorage.getItem(ORDER_SESSION_TOKEN_KEY) ||
+      currentSessionToken;
+
+    if (
+      currentSessionToken
+    ){
     requestData.sessionToken =
       currentSessionToken;
 
     requestData.token =
       currentSessionToken;
+    }
   }
 
   const response =

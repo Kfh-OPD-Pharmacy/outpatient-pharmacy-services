@@ -890,59 +890,17 @@ let currentLang =
 
 function migrateOldSession(){
 
-  const oldToken =
-    sessionStorage.getItem(
-      KIDNEY_SESSION_TOKEN_KEY
-    );
+  localStorage.removeItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  );
 
-  const oldName =
-    sessionStorage.getItem(
-      KIDNEY_SESSION_NAME_KEY
-    );
+  localStorage.removeItem(
+    KIDNEY_SESSION_NAME_KEY
+  );
 
-  const oldUsername =
-    sessionStorage.getItem(
-      KIDNEY_SESSION_USERNAME_KEY
-    );
-
-
-  if (
-    oldToken &&
-    !localStorage.getItem(
-      KIDNEY_SESSION_TOKEN_KEY
-    )
-  ) {
-    localStorage.setItem(
-      KIDNEY_SESSION_TOKEN_KEY,
-      oldToken
-    );
-  }
-
-
-  if (
-    oldName &&
-    !localStorage.getItem(
-      KIDNEY_SESSION_NAME_KEY
-    )
-  ) {
-    localStorage.setItem(
-      KIDNEY_SESSION_NAME_KEY,
-      oldName
-    );
-  }
-
-
-  if (
-    oldUsername &&
-    !localStorage.getItem(
-      KIDNEY_SESSION_USERNAME_KEY
-    )
-  ) {
-    localStorage.setItem(
-      KIDNEY_SESSION_USERNAME_KEY,
-      oldUsername
-    );
-  }
+  localStorage.removeItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  );
 
 }
 
@@ -951,17 +909,17 @@ migrateOldSession();
 
 
 let currentEmployeeName =
-  localStorage.getItem(
+  sessionStorage.getItem(
     KIDNEY_SESSION_NAME_KEY
   ) || "";
 
 let currentEmployeeUsername =
-  localStorage.getItem(
+  sessionStorage.getItem(
     KIDNEY_SESSION_USERNAME_KEY
   ) || "";
 
 let currentSessionToken =
-  localStorage.getItem(
+  sessionStorage.getItem(
     KIDNEY_SESSION_TOKEN_KEY
   ) || "";
 
@@ -1437,22 +1395,6 @@ function clearExpiryDate(){
 
 function saveStoredSession(){
 
-  localStorage.setItem(
-    KIDNEY_SESSION_NAME_KEY,
-    currentEmployeeName
-  );
-
-  localStorage.setItem(
-    KIDNEY_SESSION_USERNAME_KEY,
-    currentEmployeeUsername
-  );
-
-  localStorage.setItem(
-    KIDNEY_SESSION_TOKEN_KEY,
-    currentSessionToken
-  );
-
-
   sessionStorage.setItem(
     KIDNEY_SESSION_NAME_KEY,
     currentEmployeeName
@@ -1624,19 +1566,19 @@ async function loginEmployee(){
 async function restoreSession(){
 
   currentSessionToken =
-    localStorage.getItem(
+    sessionStorage.getItem(
       KIDNEY_SESSION_TOKEN_KEY
     ) || "";
 
 
   currentEmployeeName =
-    localStorage.getItem(
+    sessionStorage.getItem(
       KIDNEY_SESSION_NAME_KEY
     ) || "";
 
 
   currentEmployeeUsername =
-    localStorage.getItem(
+    sessionStorage.getItem(
       KIDNEY_SESSION_USERNAME_KEY
     ) || "";
 
@@ -1828,7 +1770,23 @@ async function changePassword(){
    LOGOUT
 ========================================================= */
 
-function logoutEmployee(){
+async function logoutEmployee(){
+
+  if (
+    currentSessionToken
+  ){
+
+    try{
+
+      await postApi(
+        "revokeSession",
+        {},
+        true
+      );
+
+    }catch(error){}
+
+  }
 
   clearStoredSession();
 
@@ -2597,7 +2555,7 @@ async function postApi(
   ){
 
     currentSessionToken =
-      localStorage.getItem(
+      sessionStorage.getItem(
         KIDNEY_SESSION_TOKEN_KEY
       ) ||
       currentSessionToken;

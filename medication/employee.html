@@ -661,17 +661,29 @@ function renderPharmacyFilter() {
 
 function saveSession() {
 
-  localStorage.setItem(
+  localStorage.removeItem(
+    SESSION_TOKEN_KEY
+  );
+
+  localStorage.removeItem(
+    SESSION_NAME_KEY
+  );
+
+  localStorage.removeItem(
+    SESSION_USERNAME_KEY
+  );
+
+  sessionStorage.setItem(
     SESSION_TOKEN_KEY,
     currentSessionToken
   );
 
-  localStorage.setItem(
+  sessionStorage.setItem(
     SESSION_NAME_KEY,
     currentEmployee
   );
 
-  localStorage.setItem(
+  sessionStorage.setItem(
     SESSION_USERNAME_KEY,
     currentUsername
   );
@@ -690,6 +702,18 @@ function clearStoredSession() {
   );
 
   localStorage.removeItem(
+    SESSION_USERNAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    SESSION_TOKEN_KEY
+  );
+
+  sessionStorage.removeItem(
+    SESSION_NAME_KEY
+  );
+
+  sessionStorage.removeItem(
     SESSION_USERNAME_KEY
   );
 
@@ -718,7 +742,7 @@ async function postApi(
   if (includeSession) {
 
     currentSessionToken =
-      localStorage.getItem(
+      sessionStorage.getItem(
         SESSION_TOKEN_KEY
       ) ||
       currentSessionToken;
@@ -846,17 +870,17 @@ async function loginEmployee() {
 async function restoreSession() {
 
   currentSessionToken =
-    localStorage.getItem(
+    sessionStorage.getItem(
       SESSION_TOKEN_KEY
     ) || "";
 
   currentEmployee =
-    localStorage.getItem(
+    sessionStorage.getItem(
       SESSION_NAME_KEY
     ) || "";
 
   currentUsername =
-    localStorage.getItem(
+    sessionStorage.getItem(
       SESSION_USERNAME_KEY
     ) || "";
 
@@ -1161,7 +1185,7 @@ function resetEmployeeInactivityTimer() {
       function() {
 
         if (
-          localStorage.getItem(
+          sessionStorage.getItem(
             SESSION_TOKEN_KEY
           )
         ) {
