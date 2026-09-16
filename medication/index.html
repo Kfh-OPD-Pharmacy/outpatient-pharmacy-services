@@ -523,6 +523,192 @@ hr{
     font-size:12px
   }
 }
+
+
+/* PHASE C: unified portal design system */
+@media screen{
+  body{
+    background:#f3f4f6;
+  }
+
+  .container,
+  .employee-shell{
+    max-width:980px;
+    margin:auto;
+    background:#fff;
+    padding:22px;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
+  }
+
+  .logo,
+  .official-logo{
+    width:120px;
+    height:120px;
+    object-fit:contain;
+  }
+
+  .official-header h2,
+  .official-header h3{
+    margin:2px 0;
+    color:#168fb3;
+    font-size:13px;
+    line-height:1.4;
+  }
+
+  hr,
+  .official-divider{
+    border-top-color:#e5e7eb;
+    margin:14px 0;
+  }
+
+  .page-title,
+  .employee-page-title{
+    color:#168fb3;
+    font-size:23px;
+    font-weight:bold;
+    line-height:1.25;
+    margin:18px 0 12px;
+    text-align:center;
+  }
+
+  .title-row{
+    margin:18px 0 12px;
+  }
+
+  .panel,
+  .toolbar,
+  .empty-box,
+  .order-panel,
+  .size-row,
+  .result-card,
+  .upload-box,
+  .users-form,
+  .upload-standalone,
+  .employee-toolbar,
+  .upload-toolbar,
+  .supervisor-panel,
+  .user-summary-panel,
+  .filter-panel,
+  .filters-panel,
+  .summary-card,
+  .stat-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.04);
+  }
+
+  .portal-card,
+  .service-card,
+  .control-card,
+  .pharmacy-card,
+  .card-link{
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.04);
+  }
+
+  input,
+  select,
+  textarea{
+    min-height:40px;
+    padding:8px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    font-size:14px;
+    font-family:inherit;
+    box-sizing:border-box;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus{
+    border-color:#168fb3;
+    box-shadow:0 0 0 2px rgba(22,143,179,.12);
+    outline:none;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .action-btn,
+  .ghost-btn,
+  button[type="submit"]{
+    min-height:40px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:bold;
+  }
+
+  .actions,
+  .form-actions,
+  .login-actions,
+  .card-actions,
+  .row-actions,
+  .scan-actions{
+    gap:10px;
+  }
+
+  .table-wrap,
+  .dashboard-table-wrap,
+  .orders-table-wrap{
+    overflow-x:auto;
+    border-radius:10px;
+  }
+
+  table{
+    border-collapse:collapse;
+  }
+
+  th{
+    background:#168fb3;
+    color:#fff;
+    font-weight:bold;
+  }
+
+  th,
+  td{
+    border-color:#e5e7eb;
+  }
+
+  @media (max-width:700px){
+    body{
+      padding:10px;
+      background:#fff;
+    }
+
+    .container,
+    .employee-shell{
+      padding:14px;
+      border-radius:0;
+      box-shadow:none;
+    }
+
+    .logo,
+    .official-logo{
+      width:84px;
+      height:84px;
+    }
+
+    .official-header h2,
+    .official-header h3{
+      font-size:12px;
+    }
+
+    .page-title,
+    .employee-page-title{
+      font-size:20px;
+      margin:16px 0 12px;
+    }
+
+    input,
+    select,
+    textarea{
+      width:100%;
+      font-size:13px;
+    }
+  }
+}
+
 </style>
 </head>
 
