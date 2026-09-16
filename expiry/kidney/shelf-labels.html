@@ -255,13 +255,18 @@ input[type="number"]{
 .primary-btn,
 .secondary-btn,
 .danger-btn{
+  min-width:36px;
   min-height:36px;
   border-radius:8px;
-  font-size:13px;
+  font-size:17px;
   font-weight:bold;
   cursor:pointer;
   font-family:inherit;
-  padding:8px 13px
+  padding:7px 10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1
 }
 
 .primary-btn{
@@ -280,6 +285,13 @@ input[type="number"]{
   border:1px solid #fecaca;
   background:#fff5f5;
   color:#b91c1c
+}
+
+.icon-btn{
+  width:36px;
+  height:36px;
+  padding:0;
+  font-size:18px
 }
 
 .primary-btn:hover,
@@ -402,7 +414,7 @@ input[type="number"]{
   grid-template-columns:repeat(auto-fill, var(--label-width));
   align-items:start;
   justify-content:center;
-  gap:4mm;
+  gap:4mm 5mm;
   width:100%
 }
 
@@ -414,7 +426,7 @@ input[type="number"]{
   border-radius:2.5mm;
   padding:4mm;
   display:grid;
-  grid-template-columns:minmax(0, 1fr) 20%;
+  grid-template-columns:minmax(0, 1fr) 15%;
   grid-template-rows:1fr auto;
   gap:2mm 3mm;
   direction:ltr;
@@ -436,7 +448,7 @@ input[type="number"]{
 }
 
 .label-name{
-  font-size:18pt;
+  font-size:16pt;
   line-height:1.12;
   font-weight:700;
   max-width:100%;
@@ -469,7 +481,7 @@ input[type="number"]{
 
 .label-logo{
   max-width:100%;
-  max-height:70%;
+  max-height:68%;
   object-fit:contain
 }
 
@@ -519,7 +531,7 @@ input[type="number"]{
 
 @page{
   size:A4 portrait;
-  margin:8mm
+  margin:5mm
 }
 
 @media print{
@@ -549,7 +561,7 @@ input[type="number"]{
   .print-area{
     position:absolute;
     inset:0 auto auto 0;
-    width:194mm;
+    width:200mm;
     min-height:auto;
     padding:0;
     margin:0;
@@ -561,10 +573,12 @@ input[type="number"]{
   .labels-sheet{
     display:grid;
     grid-template-columns:repeat(auto-fill, var(--label-width));
-    justify-content:start;
+    justify-content:center;
     align-items:start;
-    gap:4mm;
-    width:194mm
+    gap:4mm 5mm;
+    width:200mm;
+    margin-left:auto;
+    margin-right:auto
   }
 
   .shelf-label{
@@ -623,8 +637,8 @@ input[type="number"]{
         <select id="labelSize" onchange="handleSizeChange()"></select>
       </div>
       <div class="actions">
-        <button class="primary-btn" type="button" id="printAllBtn" onclick="printAll()">Print All</button>
-        <button class="secondary-btn" type="button" id="clearAllBtn" onclick="clearAll()">Clear All</button>
+        <button class="primary-btn icon-btn" type="button" id="printAllBtn" onclick="printAll()" title="Print All" aria-label="Print All">🖨️</button>
+        <button class="secondary-btn icon-btn" type="button" id="clearAllBtn" onclick="clearAll()" title="Clear All" aria-label="Clear All">🧹</button>
       </div>
     </div>
 
@@ -675,18 +689,23 @@ const KIDNEY_SESSION_TOKEN_KEY =
   "kidneySessionToken";
 
 const LABEL_SIZES = {
+  standard:{
+    label:"Standard",
+    widthMm:94,
+    heightMm:30
+  },
   small:{
     label:"Small",
     widthMm:85,
-    heightMm:45
+    heightMm:30
   },
-  medium:{
-    label:"Medium",
-    widthMm:125,
-    heightMm:55
+  tall:{
+    label:"Tall",
+    widthMm:94,
+    heightMm:40
   },
-  large:{
-    label:"Large",
+  wide:{
+    label:"Wide",
     widthMm:155,
     heightMm:60
   }
@@ -759,12 +778,15 @@ const text = {
     selected:"Selected Labels",
     noLabels:"No labels selected.",
     preview:"Preview",
-    printAll:"Print All",
-    clearAll:"Clear All",
+    printAll:"🖨️",
+    clearAll:"🧹",
+    printAllTitle:"Print All",
+    clearAllTitle:"Clear All",
     printName:"Medication Print Name",
     expiry:"Expiry Date",
     copies:"Copies",
-    remove:"Remove",
+    remove:"✕",
+    removeTitle:"Remove",
     add:"Add",
     alreadyAdded:"Already selected",
     noMatches:"No matching medication.",
@@ -793,12 +815,15 @@ const text = {
     selected:"الليبلات المحددة",
     noLabels:"لا توجد ليبلات محددة.",
     preview:"المعاينة",
-    printAll:"طباعة الكل",
-    clearAll:"مسح الكل",
+    printAll:"🖨️",
+    clearAll:"🧹",
+    printAllTitle:"طباعة الكل",
+    clearAllTitle:"مسح الكل",
     printName:"اسم الدواء في الطباعة",
     expiry:"تاريخ الانتهاء",
     copies:"عدد النسخ",
-    remove:"حذف",
+    remove:"✕",
+    removeTitle:"حذف",
     add:"إضافة",
     alreadyAdded:"تم اختياره",
     noMatches:"لا يوجد دواء مطابق.",
@@ -1140,10 +1165,13 @@ async function loadExpiryRecords(){
 }
 
 function getExpiryDatesForMedication(name){
+  const medicationKey =
+    normalizeMedicationKey(name);
+
   const dates =
     expiryRecords
       .filter(function(item){
-        return item.name === name;
+        return normalizeMedicationKey(item.name) === medicationKey;
       })
       .map(function(item){
         return normalizeDate(item.expiry);
@@ -1155,6 +1183,30 @@ function getExpiryDatesForMedication(name){
       .sort();
 
   return dates;
+}
+
+function normalizeMedicationKey(value){
+  return String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/\s*([%/.,()+-])\s*/g, "$1")
+    .replace(/(\d)\s+(mg|mcg|g|ml|l|iu|unit|units|%)/g, "$1$2")
+    .replace(/\b(tablet|tablets|tab|tabs)\b/g, "tab")
+    .replace(/\b(capsule|capsules|cap|caps)\b/g, "cap")
+    .replace(/\b(injection|injections|inj)\b/g, "inj")
+    .replace(/\b(syrup|syp)\b/g, "syp")
+    .replace(/\b(solution|sol)\b/g, "sol")
+    .replace(/\b(suspension|susp)\b/g, "susp")
+    .replace(/\b(ointment|oint)\b/g, "oint")
+    .replace(/\b(cream|cr)\b/g, "cr")
+    .replace(/\b(inhaler|inh)\b/g, "inh")
+    .replace(/\b(ampoule|ampoules|amp)\b/g, "amp")
+    .replace(/\b(vial|vials)\b/g, "vial")
+    .replace(/\b(drop|drops)\b/g, "drops")
+    .replace(/\b(suppository|suppositories|supp)\b/g, "supp")
+    .replace(/\b(powder|pwd)\b/g, "pwd")
+    .replace(/\b(spray|spr)\b/g, "spr")
+    .trim();
 }
 
 function normalizeDate(value){
@@ -1278,7 +1330,9 @@ function addMedicationToBatch(name){
   selectedLabels.push({
     id:"label_" + Date.now() + "_" + Math.random().toString(16).slice(2),
     sourceName:name,
+    originalMedicationName:name,
     printName:formatMedicationPrintName(name),
+    printMedicationName:formatMedicationPrintName(name),
     expiryDates:dates,
     selectedExpiry:dates[0] || "",
     copies:1
@@ -1368,7 +1422,7 @@ function renderBatchList(){
         "<div class=\"batch-row\">" +
           "<div>" +
             "<label>" + text[currentLang].printName + "</label>" +
-            "<input type=\"text\" value=\"" + escapeHtml(item.printName) + "\" data-action=\"name\" data-id=\"" + item.id + "\">" +
+            "<input type=\"text\" value=\"" + escapeHtml(item.printMedicationName || item.printName) + "\" data-action=\"name\" data-id=\"" + item.id + "\">" +
           "</div>" +
           "<div>" +
             "<label>" + text[currentLang].expiry + "</label>" +
@@ -1380,7 +1434,7 @@ function renderBatchList(){
             "<label>" + text[currentLang].copies + "</label>" +
             "<input type=\"number\" min=\"1\" step=\"1\" value=\"" + escapeHtml(String(item.copies)) + "\" data-action=\"copies\" data-id=\"" + item.id + "\">" +
           "</div>" +
-          "<button class=\"danger-btn\" type=\"button\" data-action=\"remove\" data-id=\"" + item.id + "\">" + text[currentLang].remove + "</button>" +
+          "<button class=\"danger-btn icon-btn\" type=\"button\" data-action=\"remove\" data-id=\"" + item.id + "\" title=\"" + escapeHtml(text[currentLang].removeTitle) + "\" aria-label=\"" + escapeHtml(text[currentLang].removeTitle) + "\">" + text[currentLang].remove + "</button>" +
         "</div>";
 
       list.appendChild(card);
@@ -1403,6 +1457,11 @@ function updateItem(id, key, value){
   if (key === "copies"){
     item.copies =
       Math.max(1, parseInt(value, 10) || 1);
+  }else if (key === "printName"){
+    item.printName =
+      value;
+    item.printMedicationName =
+      value;
   }else{
     item[key] =
       value;
@@ -1466,7 +1525,12 @@ function createLabelElement(item){
     "shelf-label";
 
   const name =
-    String(item.printName || "").trim() ||
+    String(
+      item.printMedicationName ||
+      item.printName ||
+      ""
+    ).trim() ||
+    item.originalMedicationName ||
     item.sourceName;
 
   const expiry =
@@ -1495,7 +1559,7 @@ function fitAllLabelNames(){
 
 function fitLabelName(element){
   let size =
-    18;
+    16;
   element.style.fontSize =
     size + "pt";
   element.style.whiteSpace =
@@ -1548,7 +1612,7 @@ function buildLabelSizeOptions(){
   );
 
   select.value =
-    "medium";
+    "standard";
   handleSizeChange();
 }
 
@@ -1556,7 +1620,7 @@ function handleSizeChange(){
   const selected =
     LABEL_SIZES[
       document.getElementById("labelSize").value
-    ] || LABEL_SIZES.medium;
+    ] || LABEL_SIZES.standard;
 
   document.documentElement.style.setProperty(
     "--label-width",
@@ -1647,6 +1711,18 @@ function setLanguage(lang){
     text[lang].printAll;
   document.getElementById("clearAllBtn").innerText =
     text[lang].clearAll;
+  document.getElementById("printAllBtn").title =
+    text[lang].printAllTitle;
+  document.getElementById("printAllBtn").setAttribute(
+    "aria-label",
+    text[lang].printAllTitle
+  );
+  document.getElementById("clearAllBtn").title =
+    text[lang].clearAllTitle;
+  document.getElementById("clearAllBtn").setAttribute(
+    "aria-label",
+    text[lang].clearAllTitle
+  );
 
   renderDate();
   renderBatchList();
