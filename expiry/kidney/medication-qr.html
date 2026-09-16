@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medication Live Expiry</title>
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --main:#168fb3;
+  --main-dark:#0f7592;
+  --border:#cbd5e1;
+  --soft:#f8fafc;
+  --text:#111827;
+  --muted:#64748b;
+  --expired:#a12727;
+  --soon:#a16207;
+  --ok:#0f7592;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f3f4f6;
+  margin:0;
+  padding:16px;
+  color:var(--text);
+}
+
+.container{
+  max-width:760px;
+  margin:auto;
+  background:#fff;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+  min-height:calc(100vh - 32px);
+}
+
+.top-bar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+  direction:ltr;
+}
+
+.logo{
+  width:120px;
+  height:120px;
+  object-fit:contain;
+}
+
+.official-header{
+  width:fit-content;
+  max-width:100%;
+  transform:translateY(14px);
+  border-left:4px solid var(--main);
+  text-align:left;
+  direction:ltr;
+  padding-left:6px;
+  padding-right:0;
+}
+
+.official-header h2,
+.official-header h3{
+  margin:2px 0;
+  font-size:13px;
+  line-height:1.4;
+  color:var(--main);
+}
+
+hr{
+  border:none;
+  border-top:1px solid #e5e7eb;
+  margin:14px 0;
+}
+
+.page-title{
+  text-align:center;
+  font-size:23px;
+  font-weight:bold;
+  margin:18px 0 16px;
+  color:var(--main);
+}
+
+.card{
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,.04);
+  padding:20px;
+}
+
+.med-name{
+  margin:0;
+  color:var(--text);
+  font-size:26px;
+  line-height:1.25;
+  font-weight:bold;
+  text-align:center;
+}
+
+.section-title{
+  margin:22px 0 12px;
+  color:var(--main);
+  font-size:17px;
+  text-align:center;
+}
+
+.expiry-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+
+.expiry-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  padding:12px 14px;
+}
+
+.expiry-date{
+  font-size:18px;
+  font-weight:bold;
+  color:var(--text);
+  line-height:1.2;
+}
+
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  border-radius:999px;
+  padding:4px 12px;
+  font-size:12px;
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+.status-pill.expired{
+  background:rgba(161,39,39,.12);
+  color:var(--expired);
+}
+
+.status-pill.soon{
+  background:rgba(234,179,8,.2);
+  color:var(--soon);
+}
+
+.status-pill.ok{
+  background:rgba(15,117,146,.12);
+  color:var(--ok);
+}
+
+.message{
+  text-align:center;
+  color:var(--muted);
+  font-size:15px;
+  line-height:1.7;
+  margin:18px 0 0;
+}
+
+.message.error{
+  color:var(--expired);
+  font-weight:bold;
+}
+
+.meta{
+  margin-top:18px;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+}
+
+@media (max-width:700px){
+  body{
+    padding:0;
+  }
+
+  .container{
+    padding:14px;
+    border-radius:0;
+    box-shadow:none;
+    min-height:100vh;
+  }
+
+  .logo{
+    width:84px;
+    height:84px;
+  }
+
+  .official-header h2,
+  .official-header h3{
+    font-size:12px;
+  }
+
+  .page-title{
+    font-size:20px;
+    margin:16px 0 12px;
+  }
+
+  .card{
+    padding:16px;
+  }
+
+  .med-name{
+    font-size:22px;
+  }
+
+  .expiry-row{
+    grid-template-columns:1fr;
+    text-align:center;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="top-bar">
+    <img class="logo" src="../../logo.png" alt="Logo">
+    <div class="official-header">
+      <h2>Madinah Health Cluster</h2>
+      <h3>King Fahad Hospital - Madinah</h3>
+      <h3>Pharmaceutical Care Administration</h3>
+    </div>
+  </div>
+
+  <hr>
+
+  <h1 class="page-title">Medication Live Expiry</h1>
+
+  <main class="card" id="contentCard">
+    <p class="message" id="messageBox">Loading medication data...</p>
+  </main>
+</div>
+
+<script>
+const KIDNEY_API_URL =
+  "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
+
+const CENTRAL_MEDICATIONS_API_URL =
+  "https://script.google.com/macros/s/AKfycbxtK-J87-gmKVXExW_kbVXBuYTxArtP5pnvnp3HJh2s_BL2nPQn8vPrwMX_bDUkp4uq/exec";
+
+function getMedId(){
+  return new URLSearchParams(window.location.search).get("medId") || "";
+}
+
+async function fetchJson(url){
+  const response =
+    await fetch(url, {
+      method:"GET",
+      cache:"no-store"
+    });
+
+  if (!response.ok){
+    throw new Error("Request failed");
+  }
+
+  return response.json();
+}
+
+async function loadMedication(){
+  const medId =
+    getMedId();
+
+  if (!medId){
+    renderError("Medication not found");
+    return;
+  }
+
+  try{
+    const centralData =
+      await fetchJson(
+        CENTRAL_MEDICATIONS_API_URL +
+        "?action=listMedications&service=kidney&t=" + Date.now()
+      );
+
+    const medication =
+      (centralData.medications || []).find(
+        function(item){
+          return String(item.id || "") === medId;
+        }
+      );
+
+    if (!medication){
+      renderError("Medication not found");
+      return;
+    }
+
+    const dashboardData =
+      await fetchJson(
+        KIDNEY_API_URL +
+        "?action=dashboard&t=" + Date.now()
+      );
+
+    const dates =
+      getExpiryDatesForMedication(
+        medication.name,
+        dashboardData.items || dashboardData.medications || []
+      );
+
+    renderMedication(
+      medication.name,
+      dates
+    );
+  }catch(error){
+    renderError("Medication not found");
+  }
+}
+
+function getExpiryDatesForMedication(name, items){
+  const key =
+    normalizeMedicationKey(name);
+
+  return items
+    .filter(function(item){
+      const itemName =
+        item.medicationName ||
+        item.name ||
+        item.medication ||
+        "";
+
+      return normalizeMedicationKey(itemName) === key;
+    })
+    .map(function(item){
+      return normalizeDate(
+        item.expiry ||
+        item.expiryDate ||
+        ""
+      );
+    })
+    .filter(Boolean)
+    .filter(function(date, index, list){
+      return list.indexOf(date) === index;
+    })
+    .sort();
+}
+
+function normalizeMedicationKey(value){
+  return String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/\s*([%/.,()+-])\s*/g, "$1")
+    .replace(/(\d)\s+(mg|mcg|g|ml|l|iu|unit|units|%)/g, "$1$2")
+    .replace(/\b(tablet|tablets|tab|tabs)\b/g, "tab")
+    .replace(/\b(capsule|capsules|cap|caps)\b/g, "cap")
+    .replace(/\b(injection|injections|inj)\b/g, "inj")
+    .replace(/\b(syrup|syp)\b/g, "syp")
+    .replace(/\b(solution|sol)\b/g, "sol")
+    .replace(/\b(suspension|susp)\b/g, "susp")
+    .replace(/\b(ointment|oint)\b/g, "oint")
+    .replace(/\b(cream|cr)\b/g, "cr")
+    .replace(/\b(inhaler|inh)\b/g, "inh")
+    .replace(/\b(ampoule|ampoules|amp)\b/g, "amp")
+    .replace(/\b(vial|vials)\b/g, "vial")
+    .replace(/\b(drop|drops)\b/g, "drops")
+    .replace(/\b(suppository|suppositories|supp)\b/g, "supp")
+    .replace(/\b(powder|pwd)\b/g, "pwd")
+    .replace(/\b(spray|spr)\b/g, "spr")
+    .trim();
+}
+
+function normalizeDate(value){
+  if (!value){
+    return "";
+  }
+
+  const textValue =
+    String(value).trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(textValue)){
+    return textValue;
+  }
+
+  const date =
+    new Date(textValue);
+
+  if (Number.isNaN(date.getTime())){
+    return "";
+  }
+
+  const year =
+    date.getFullYear();
+  const month =
+    String(date.getMonth() + 1).padStart(2, "0");
+  const day =
+    String(date.getDate()).padStart(2, "0");
+
+  return year + "-" + month + "-" + day;
+}
+
+function getCurrentMonth(){
+  const now =
+    new Date();
+
+  return now.getFullYear() +
+    "-" +
+    String(now.getMonth() + 1).padStart(2, "0");
+}
+
+function monthDistance(fromMonth, toMonth){
+  const from =
+    String(fromMonth || "").split("-");
+  const to =
+    String(toMonth || "").split("-");
+
+  if (from.length < 2 || to.length < 2){
+    return 999;
+  }
+
+  return ((Number(to[0]) - Number(from[0])) * 12) +
+    (Number(to[1]) - Number(from[1]));
+}
+
+function getBucket(date){
+  const itemMonth =
+    String(date || "").substring(0, 7);
+  const currentMonth =
+    getCurrentMonth();
+
+  if (itemMonth <= currentMonth){
+    return "expired";
+  }
+
+  const distance =
+    monthDistance(currentMonth, itemMonth);
+
+  if (distance > 0 && distance <= 3){
+    return "soon";
+  }
+
+  return "ok";
+}
+
+function statusLabel(bucket){
+  if (bucket === "expired"){
+    return "This Month";
+  }
+
+  if (bucket === "soon"){
+    return "Within 3 Months";
+  }
+
+  return "Within Safe Range";
+}
+
+function renderMedication(name, dates){
+  const card =
+    document.getElementById("contentCard");
+
+  let html =
+    "<h2 class=\"med-name\">" + escapeHtml(name) + "</h2>" +
+    "<h3 class=\"section-title\">Expiry Dates</h3>";
+
+  if (!dates.length){
+    html +=
+      "<p class=\"message\">No expiry dates found</p>";
+  }else{
+    html +=
+      "<ul class=\"expiry-list\">" +
+      dates.map(function(date){
+        const bucket =
+          getBucket(date);
+
+        return "<li class=\"expiry-row\">" +
+          "<span class=\"expiry-date\">" + escapeHtml(date) + "</span>" +
+          "<span class=\"status-pill " + bucket + "\">" + statusLabel(bucket) + "</span>" +
+        "</li>";
+      }).join("") +
+      "</ul>";
+  }
+
+  html +=
+    "<p class=\"meta\">Live read-only view</p>";
+
+  card.innerHTML =
+    html;
+}
+
+function renderError(message){
+  document.getElementById("contentCard").innerHTML =
+    "<p class=\"message error\">" + escapeHtml(message) + "</p>";
+}
+
+function escapeHtml(value){
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+loadMedication();
+</script>
+</body>
+</html>

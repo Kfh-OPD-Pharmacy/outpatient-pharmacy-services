@@ -463,11 +463,20 @@ input[type="number"]{
   grid-row:2;
   align-self:end;
   justify-self:start;
-  font-size:8.5pt;
-  line-height:1.2;
-  color:#334155;
-  font-weight:700;
-  white-space:nowrap
+  width:15mm;
+  height:15mm;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden
+}
+
+.label-qr{
+  width:15mm;
+  height:15mm;
+  display:block;
+  object-fit:contain;
+  image-rendering:pixelated
 }
 
 .label-logo-wrap{
@@ -1087,6 +1096,9 @@ const KIDNEY_SESSION_USERNAME_KEY =
 const KIDNEY_SESSION_TOKEN_KEY =
   "kidneySessionToken";
 
+const QR_IMAGE_API =
+  "https://api.qrserver.com/v1/create-qr-code/";
+
 const LABEL_SIZES = {
   standard:{
     label:"Standard",
@@ -1501,13 +1513,24 @@ async function loadCentralMedicationList(){
   const data =
     await response.json();
 
+  centralMedicationIdByName = {};
+
   if (data && data.success && Array.isArray(data.medications)){
     centralMedicationList =
       data.medications
         .map(function(item){
-          return item && item.name
-            ? String(item.name).trim()
-            : "";
+          const name =
+            item && item.name
+              ? String(item.name).trim()
+              : "";
+
+          if (name && item && item.id){
+            centralMedicationIdByName[
+              normalizeMedicationKey(name)
+            ] = String(item.id).trim();
+          }
+
+          return name;
         })
         .filter(Boolean)
         .filter(function(name, index, list){
@@ -1596,6 +1619,38 @@ function normalizeMedicationKey(value){
     .trim();
 }
 
+function getMedicationIdForName(name){
+  return centralMedicationIdByName[
+    normalizeMedicationKey(name)
+  ] || "";
+}
+
+function buildMedicationQrUrl(medicationId){
+  const pageUrl =
+    new URL(
+      "medication-qr.html",
+      window.location.href
+    );
+
+  pageUrl.searchParams.set(
+    "medId",
+    medicationId
+  );
+
+  return pageUrl.href;
+}
+
+function buildMedicationQrImageUrl(medicationId){
+  if (!medicationId){
+    return "";
+  }
+
+  return QR_IMAGE_API +
+    "?size=180x180&margin=8&data=" +
+    encodeURIComponent(
+      buildMedicationQrUrl(medicationId)
+    );
+}
 function normalizeDate(value){
   if (!value){
     return "";
@@ -1716,6 +1771,7 @@ function addMedicationToBatch(name){
 
   selectedLabels.push({
     id:"label_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+    medicationId:getMedicationIdForName(name),
     sourceName:name,
     originalMedicationName:name,
     printName:formatMedicationPrintName(name),
@@ -1920,15 +1976,20 @@ function createLabelElement(item){
     item.originalMedicationName ||
     item.sourceName;
 
-  const expiry =
-    item.selectedExpiry ||
-    text[currentLang].noExpiry;
+  const qrImageUrl =
+    buildMedicationQrImageUrl(
+      item.medicationId
+    );
 
   label.innerHTML =
     "<div class=\"label-main\">" +
       "<div class=\"label-name\">" + escapeHtml(name) + "</div>" +
     "</div>" +
-    "<div class=\"label-exp\">" + text[currentLang].expPrefix + " " + escapeHtml(expiry) + "</div>" +
+    "<div class=\"label-exp\">" +
+      (qrImageUrl
+        ? "<img class=\"label-qr\" src=\"" + escapeHtml(qrImageUrl) + "\" alt=\"Medication QR\">"
+        : "") +
+    "</div>" +
     "<div class=\"label-logo-wrap\">" +
       "<img class=\"label-logo\" src=\"../../logo.png\" alt=\"Logo\">" +
     "</div>";
@@ -2229,5 +2290,8 @@ restoreSession();
 </script>
 </body>
 </html>
+
+
+
 
 
