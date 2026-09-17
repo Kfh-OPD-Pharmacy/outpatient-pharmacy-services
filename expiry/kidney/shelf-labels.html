@@ -462,7 +462,7 @@ input[type="number"]{
 }
 
 .label-name{
-  font-size:clamp(15px, 16pt, 25px);
+  font-size:18px;
   line-height:1.08;
   font-weight:800;
   width:100%;
@@ -473,6 +473,24 @@ input[type="number"]{
   overflow-wrap:break-word;
   word-break:normal;
   text-align:center
+}
+
+.medication-primary{
+  white-space:nowrap;
+  font-size:1em;
+  font-weight:inherit
+}
+
+.medication-details{
+  white-space:nowrap;
+  font-size:.86em;
+  font-weight:700
+}
+
+.label-name.extreme-name .medication-primary{
+  white-space:normal;
+  overflow-wrap:break-word;
+  word-break:normal
 }
 
 .tall-man-segment{
@@ -2094,6 +2112,42 @@ function formatMedicationPrintName(name){
   return value;
 }
 
+function splitMedicationDisplayName(value){
+  const textValue =
+    String(value || "").trim();
+  const strengthMatch =
+    textValue.match(
+      /\s+(?=\d+(?:[.,]\d+)?\s*(?:mcg|mg|kg|g|ml|iu|units?|meq|mmol|l|%)(?:\s|$))/i
+    );
+  const dosageFormMatch =
+    textValue.match(
+      /\s+(?=(?:Supp|Susp|Inj|Sol|Cap|Amp|Tab|Inh|Syp|Cr|Oint|Drops|Vial|Pwd|Spr|Gel)(?:\s|$))/i
+    );
+  const splitPoints =
+    [strengthMatch, dosageFormMatch]
+      .filter(Boolean)
+      .map(
+        function(match){
+          return match.index;
+        }
+      );
+
+  if (!splitPoints.length){
+    return {
+      medicationName:textValue,
+      details:""
+    };
+  }
+
+  const splitAt =
+    Math.min.apply(null, splitPoints);
+
+  return {
+    medicationName:textValue.slice(0, splitAt).trim(),
+    details:textValue.slice(splitAt).trim()
+  };
+}
+
 function getTallManIngredient(originalName){
   const value =
     String(originalName || "").trim().toLowerCase();
@@ -2319,6 +2373,8 @@ function createLabelElement(item){
     ).trim() ||
     item.originalMedicationName ||
     item.sourceName;
+  const nameParts =
+    splitMedicationDisplayName(name);
 
   const qrImageUrl =
     buildMedicationQrImageUrl(
@@ -2332,10 +2388,17 @@ function createLabelElement(item){
   label.innerHTML =
     "<div class=\"label-main\">" +
       "<div class=\"label-name\">" +
-        formatTallManNameHtml(
-          name,
-          item.originalMedicationName || item.sourceName
-        ) +
+        "<span class=\"medication-primary\">" +
+          formatTallManNameHtml(
+            nameParts.medicationName,
+            item.originalMedicationName || item.sourceName
+          ) +
+        "</span>" +
+        (nameParts.details
+          ? " <span class=\"medication-details\">" +
+              escapeHtml(nameParts.details) +
+            "</span>"
+          : "") +
       "</div>" +
       (highAlert
         ? "<div class=\"high-alert-badge\">HIGH ALERT</div>"
@@ -2362,12 +2425,27 @@ function fitAllLabelNames(){
 }
 
 function fitLabelName(element){
+  const sizeKey =
+    document.getElementById("labelSize").value;
+  const typographyBySize = {
+    standard:{base:18, minimum:12},
+    small:{base:17, minimum:12},
+    tall:{base:18, minimum:13},
+    wide:{base:19, minimum:14}
+  };
+  const typography =
+    typographyBySize[sizeKey] ||
+    typographyBySize.standard;
   let size =
-    16;
+    typography.base;
   const minimumSize =
-    7.5;
+    typography.minimum;
   const parent =
     element.parentElement;
+  const primaryName =
+    element.querySelector(".medication-primary");
+  const details =
+    element.querySelector(".medication-details");
   const badge =
     parent.querySelector(".high-alert-badge");
   const parentStyle =
@@ -2376,7 +2454,7 @@ function fitLabelName(element){
     parseFloat(parentStyle.rowGap || parentStyle.gap) || 0;
 
   element.style.fontSize =
-    size + "pt";
+    size + "px";
   element.style.whiteSpace =
     "normal";
   element.style.overflow =
@@ -2387,9 +2465,17 @@ function fitLabelName(element){
     "break-word";
   element.style.wordBreak =
     "normal";
+  element.classList.remove(
+    "extreme-name"
+  );
+
+  if (primaryName){
+    primaryName.style.whiteSpace =
+      "nowrap";
+  }
 
   while (
-    size > minimumSize
+    size >= minimumSize
   ){
     const lineHeight =
       parseFloat(
@@ -2401,8 +2487,18 @@ function fitLabelName(element){
       badge ? badge.offsetHeight + rowGap : 0;
     const availableNameHeight =
       Math.max(0, parent.clientHeight - badgeHeight);
+    const primaryFits =
+      !primaryName ||
+      primaryName.getBoundingClientRect().width <=
+        parent.clientWidth + 1;
+    const detailsFit =
+      !details ||
+      details.getBoundingClientRect().width <=
+        parent.clientWidth + 1;
     const fitsWidth =
-      element.scrollWidth <= parent.clientWidth + 1;
+      element.scrollWidth <= parent.clientWidth + 1 &&
+      primaryFits &&
+      detailsFit;
     const fitsHeight =
       element.scrollHeight <=
         Math.min(availableNameHeight, twoLineHeight) + 1;
@@ -2411,9 +2507,20 @@ function fitLabelName(element){
       break;
     }
 
+    if (size === minimumSize){
+      element.classList.add(
+        "extreme-name"
+      );
+      break;
+    }
+
     size -= 0.5;
+    if (size < minimumSize){
+      size =
+        minimumSize;
+    }
     element.style.fontSize =
-      size + "pt";
+      size + "px";
   }
 }
 
