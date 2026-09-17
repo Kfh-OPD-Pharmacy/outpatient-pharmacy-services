@@ -344,6 +344,12 @@ input[type="number"]{
   font-size:13px
 }
 
+.select-all-btn{
+  min-height:30px;
+  padding:5px 10px;
+  font-size:12px
+}
+
 .empty-note{
   color:var(--muted);
   font-size:13px;
@@ -469,8 +475,8 @@ input[type="number"]{
   grid-row:1;
   align-self:center;
   justify-self:center;
-  width:clamp(18mm, calc(var(--label-height) - 8mm), 30mm);
-  height:clamp(18mm, calc(var(--label-height) - 8mm), 30mm);
+  width:clamp(16mm, calc(var(--label-height) - 11mm), 27mm);
+  height:clamp(16mm, calc(var(--label-height) - 11mm), 27mm);
   padding:2mm;
   display:flex;
   align-items:center;
@@ -1076,6 +1082,7 @@ input[type="number"]{
       <section class="panel">
         <div class="selection-head">
           <div class="selection-count" id="selectedCount">Selected Labels: 0</div>
+          <button class="secondary-btn select-all-btn" type="button" id="selectAllBtn" onclick="selectAllMedications()">Select All</button>
         </div>
         <div id="batchList" class="batch-list">
           <div class="empty-note" id="emptyNote">No labels selected.</div>
@@ -1206,6 +1213,7 @@ const text = {
     clearAll:"🧹",
     printAllTitle:"Print All",
     clearAllTitle:"Clear All",
+    selectAll:"Select All",
     printName:"Medication Print Name",
     expiry:"Expiry Date",
     copies:"Copies",
@@ -1243,6 +1251,7 @@ const text = {
     clearAll:"🧹",
     printAllTitle:"طباعة الكل",
     clearAllTitle:"مسح الكل",
+    selectAll:"اختيار الكل",
     printName:"اسم الدواء في الطباعة",
     expiry:"تاريخ الانتهاء",
     copies:"عدد النسخ",
@@ -1800,6 +1809,41 @@ function addMedicationToBatch(name){
   renderPreview();
 }
 
+function selectAllMedications(){
+  centralMedicationList.forEach(
+    function(name){
+      const exists =
+        selectedLabels.some(
+          function(item){
+            return item.sourceName === name;
+          }
+        );
+
+      if (!exists){
+        const dates =
+          getExpiryDatesForMedication(name);
+
+        selectedLabels.push({
+          id:"label_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+          medicationId:getMedicationIdForName(name),
+          sourceName:name,
+          originalMedicationName:name,
+          printName:formatMedicationPrintName(name),
+          printMedicationName:formatMedicationPrintName(name),
+          expiryDates:dates,
+          selectedExpiry:dates[0] || "",
+          copies:1
+        });
+      }
+    }
+  );
+
+  document.getElementById("medSearch").value = "";
+  document.getElementById("searchResults").style.display = "none";
+  renderBatchList();
+  renderPreview();
+}
+
 function formatMedicationPrintName(name){
   let value =
     String(name || "").trim().replace(/\s+/g, " ");
@@ -2184,6 +2228,8 @@ function setLanguage(lang){
     "aria-label",
     text[lang].clearAllTitle
   );
+  document.getElementById("selectAllBtn").innerText =
+    text[lang].selectAll;
 
   renderDate();
   renderBatchList();
