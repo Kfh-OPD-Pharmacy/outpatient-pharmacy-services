@@ -470,6 +470,10 @@ input[type="number"]{
   text-align:center
 }
 
+.tall-man-segment{
+  font-weight:900
+}
+
 .label-exp{
   grid-column:1;
   grid-row:1;
@@ -1160,6 +1164,188 @@ const DOSAGE_FORM_ABBREVIATIONS = [
   ["Spray", "Spr"],
   ["Gel", "Gel"]
 ];
+
+// Explicit FDA and ISMP 2023 Tall Man lettering recommendations.
+const TALL_MAN_MAP = Object.freeze({
+  "acetazolamide":"acetaZOLAMIDE",
+  "acetohexamide":"acetoHEXAMIDE",
+  "alfentanil":"ALfentanil",
+  "alprazolam":"ALPRAZolam",
+  "amiloride":"aMILoride",
+  "amlodipine":"amLODIPine",
+  "aripiprazole":"ARIPiprazole",
+  "azacitidine":"azaCITIDine",
+  "azathioprine":"azaTHIOprine",
+  "bupivacaine":"BUPivacaine",
+  "bupropion":"buPROPion",
+  "buspirone":"busPIRone",
+  "carbamazepine":"carBAMazepine",
+  "carboplatin":"CARBOplatin",
+  "cefazolin":"ceFAZolin",
+  "cefotetan":"cefoTEtan",
+  "cefoxitin":"cefOXitin",
+  "ceftazidime":"cefTAZidime",
+  "ceftriaxone":"cefTRIAXone",
+  "celebrex":"CeleBREX",
+  "celexa":"CeleXA",
+  "chlordiazepoxide":"chlordiazePOXIDE",
+  "chlorpromazine":"chlorproMAZINE",
+  "chlorpropamide":"chlorproPAMIDE",
+  "cisplatin":"CISplatin",
+  "clobazam":"cloBAZam",
+  "clomiphene":"clomiPHENE",
+  "clomipramine":"clomiPRAMINE",
+  "clonazepam":"clonazePAM",
+  "clonidine":"cloNIDine",
+  "clozapine":"cloZAPine",
+  "cyclophosphamide":"cycloPHOSphamide",
+  "cycloserine":"cycloSERINE",
+  "cyclosporine":"cycloSPORINE",
+  "dactinomycin":"DACTINomycin",
+  "daptomycin":"DAPTOmycin",
+  "daunorubicin":"DAUNOrubicin",
+  "depo-medrol":"DEPO-Medrol",
+  "dexamethasone":"dexAMETHasone",
+  "dexmedetomidine":"dexmedeTOMIDine",
+  "diazepam":"diazePAM",
+  "diltiazem":"dilTIAZem",
+  "dimenhydrinate":"dimenhyDRINATE",
+  "diphenhydramine":"diphenhydrAMINE",
+  "dobutamine":"DOBUTamine",
+  "docetaxel":"DOCEtaxel",
+  "dopamine":"DOPamine",
+  "doxorubicin":"DOXOrubicin",
+  "dronabinol":"droNABinol",
+  "droperidol":"droPERidol",
+  "duloxetine":"DULoxetine",
+  "ephedrine":"ePHEDrine",
+  "epinephrine":"EPINEPHrine",
+  "epirubicin":"epiRUBicin",
+  "eribulin":"eriBULin",
+  "fentanyl":"fentaNYL",
+  "flavoxate":"flavoxATE",
+  "fluoxetine":"FLUoxetine",
+  "fluphenazine":"fluPHENAZine",
+  "fluvoxamine":"fluvoxaMINE",
+  "glipizide":"glipiZIDE",
+  "glyburide":"glyBURIDE",
+  "guaifenesin":"guaiFENesin",
+  "guanfacine":"guanFACINE",
+  "humalog":"HumaLOG",
+  "humulin":"HumuLIN",
+  "hydralazine":"hydrALAZINE",
+  "hydrochlorothiazide":"hydroCHLOROthiazide",
+  "hydrocodone":"HYDROcodone",
+  "hydromorphone":"HYDROmorphone",
+  "hydroxyprogesterone":"HYDROXYprogesterone",
+  "hydroxyzine":"hydrOXYzine",
+  "idarubicin":"IDArubicin",
+  "idarucizumab":"idaruCIZUmab",
+  "infliximab":"inFLIXimab",
+  "isotretinoin":"ISOtretinoin",
+  "klonopin":"KlonoPIN",
+  "lamictal":"LaMICtal",
+  "lamisil":"LamISIL",
+  "lamivudine":"lamiVUDine",
+  "lamotrigine":"lamoTRIgine",
+  "levetiracetam":"levETIRAcetam",
+  "levocarnitine":"levOCARNitine",
+  "levofloxacin":"levoFLOXacin",
+  "levoleucovorin":"LEVOleucovorin",
+  "lorazepam":"LORazepam",
+  "medroxyprogesterone":"medroxyPROGESTERone",
+  "metformin":"metFORMIN",
+  "methazolamide":"methazolAMIDE",
+  "methimazole":"methIMAzole",
+  "methylprednisolone":"methylPREDNISolone",
+  "methyltestosterone":"methylTESTOSTERone",
+  "metolazone":"metOLazone",
+  "metronidazole":"metroNIDAZOLE",
+  "metyrapone":"metyraPONE",
+  "metyrosine":"metyroSINE",
+  "mifepristone":"miFEPRIStone",
+  "migalastat":"migALAstat",
+  "miglustat":"migLUstat",
+  "misoprostol":"miSOPROStol",
+  "mitomycin":"mitoMYcin",
+  "mitoxantrone":"mitoXANTRONE",
+  "nexavar":"NexAVAR",
+  "nexium":"NexIUM",
+  "nicardipine":"niCARdipine",
+  "nifedipine":"NIFEdipine",
+  "nimodipine":"niMODipine",
+  "novolin":"NovoLIN",
+  "novolog":"NovoLOG",
+  "olanzapine":"OLANZapine",
+  "oxcarbazepine":"OXcarbazepine",
+  "oxybutynin":"oxyBUTYnin",
+  "oxycodone":"oxyCODONE",
+  "oxycontin":"OxyCONTIN",
+  "oxymorphone":"oxyMORphone",
+  "paclitaxel":"PACLitaxel",
+  "paroxetine":"PARoxetine",
+  "pazopanib":"PAZOPanib",
+  "pemetrexed":"PEMEtrexed",
+  "penicillamine":"penicillAMINE",
+  "pentobarbital":"PENTobarbital",
+  "phenobarbital":"PHENobarbital",
+  "physostigmine":"PHYSostigmine",
+  "ponatinib":"PONATinib",
+  "pralatrexate":"PRALAtrexate",
+  "prednisolone":"prednisoLONE",
+  "prednisone":"predniSONE",
+  "prilosec":"PriLOSEC",
+  "prozac":"PROzac",
+  "pyridostigmine":"pyRIDostigmine",
+  "quetiapine":"QUEtiapine",
+  "quinidine":"quiNIDine",
+  "quinine":"quiNINE",
+  "rabeprazole":"RABEprazole",
+  "ranitidine":"raNITIdine",
+  "rifampin":"rifAMPin",
+  "rifaximin":"rifAXIMin",
+  "rimantadine":"riMANTAdine",
+  "risperdal":"RisperDAL",
+  "risperidone":"risperiDONE",
+  "rituximab":"riTUXimab",
+  "romidepsin":"romiDEPsin",
+  "romiplostim":"romiPLOStim",
+  "ropinirole":"rOPINIRole",
+  "ropivacaine":"ROPivacaine",
+  "sandimmune":"SandIMMUNE",
+  "sandostatin":"SandoSTATIN",
+  "saxagliptin":"sAXagliptin",
+  "sitagliptin":"SITagliptin",
+  "solu-cortef":"Solu-CORTEF",
+  "solu-medrol":"SOLU-Medrol",
+  "sorafenib":"SORAfenib",
+  "sufentanil":"SUFentanil",
+  "sulfadiazine":"sulfADIAZINE",
+  "sulfasalazine":"sulfaSALAzine",
+  "sulfisoxazole":"sulfiSOXAZOLE",
+  "sumatriptan":"SUMAtriptan",
+  "sunitinib":"SUNItinib",
+  "tiagabine":"tiaGABine",
+  "tizanidine":"tiZANidine",
+  "tolazamide":"TOLAZamide",
+  "tolbutamide":"TOLBUTamide",
+  "tramadol":"traMADol",
+  "trazodone":"traZODone",
+  "valacyclovir":"valACYclovir",
+  "valganciclovir":"valGANciclovir",
+  "vinblastine":"vinBLAStine",
+  "vincristine":"vinCRIStine",
+  "zolmitriptan":"ZOLMitriptan",
+  "zyprexa":"ZyPREXA",
+  "zyrtec":"ZyrTEC"
+});
+
+const TALL_MAN_INGREDIENTS =
+  Object.keys(TALL_MAN_MAP).sort(
+    function(a, b){
+      return b.length - a.length;
+    }
+  );
 
 let currentLang =
   "en";
@@ -1869,6 +2055,68 @@ function formatMedicationPrintName(name){
   return value;
 }
 
+function getTallManIngredient(originalName){
+  const value =
+    String(originalName || "").trim().toLowerCase();
+
+  return TALL_MAN_INGREDIENTS.find(
+    function(ingredient){
+      if (!value.startsWith(ingredient)){
+        return false;
+      }
+
+      const nextCharacter =
+        value.charAt(ingredient.length);
+
+      return !nextCharacter || !/[a-z]/i.test(nextCharacter);
+    }
+  ) || "";
+}
+
+function formatTallManNameHtml(displayName, originalName){
+  const value =
+    String(displayName || "").trim();
+  const ingredient =
+    getTallManIngredient(originalName);
+
+  if (!ingredient){
+    return escapeHtml(value);
+  }
+
+  const ingredientPattern =
+    new RegExp(
+      "^" + escapeRegExp(ingredient) + "(?=$|[^a-z])",
+      "i"
+    );
+  const match =
+    value.match(ingredientPattern);
+
+  if (!match){
+    return escapeHtml(value);
+  }
+
+  const tallManName =
+    TALL_MAN_MAP[ingredient];
+  const tallManHtml =
+    tallManName
+      .split(/([A-Z]{2,})/)
+      .map(
+        function(part){
+          if (/^[A-Z]{2,}$/.test(part)){
+            return "<span class=\"tall-man-segment\">" +
+              escapeHtml(part) +
+              "</span>";
+          }
+
+          return escapeHtml(part);
+        }
+      )
+      .join("");
+
+  return tallManHtml +
+    escapeHtml(value.slice(match[0].length));
+}
+
 function renderBatchList(){
   const list =
     document.getElementById("batchList");
@@ -2040,7 +2288,12 @@ function createLabelElement(item){
 
   label.innerHTML =
     "<div class=\"label-main\">" +
-      "<div class=\"label-name\">" + escapeHtml(name) + "</div>" +
+      "<div class=\"label-name\">" +
+        formatTallManNameHtml(
+          name,
+          item.originalMedicationName || item.sourceName
+        ) +
+      "</div>" +
     "</div>" +
     "<div class=\"label-exp\">" +
       (qrImageUrl
