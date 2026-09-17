@@ -1230,6 +1230,12 @@ const KIDNEY_SESSION_TOKEN_KEY =
 let centralMedicationList =
   [];
 
+let centralMedicationListUpdatedAt =
+  0;
+
+const CENTRAL_MEDICATION_LIST_FRESH_MS =
+  30000;
+
 let selectedMedicationId =
   "";
 
@@ -2470,7 +2476,8 @@ async function loadCentralMedicationList(){
     const response =
       await fetch(
         CENTRAL_MEDICATIONS_API_URL +
-          "?action=listMedications&service=kidney"
+          "?action=listMedications&service=kidney&_ts=" +
+          Date.now()
       );
 
     const data =
@@ -2508,6 +2515,9 @@ async function loadCentralMedicationList(){
               );
             }
           );
+
+      centralMedicationListUpdatedAt =
+        Date.now();
 
     }
 
@@ -2987,8 +2997,9 @@ async function saveMedication(
 
 
     document.getElementById(
-      "medName"
-    ).focus();
+      "medNameOptions"
+    ).style.display =
+      "none";
 
   }catch(error){
 
@@ -3316,9 +3327,41 @@ document.getElementById(
   "focus",
   function(){
 
+    const input =
+      this;
+
     renderMedOptions(
-      this.value
+      input.value
     );
+
+    if (
+      Date.now() -
+        centralMedicationListUpdatedAt >=
+        CENTRAL_MEDICATION_LIST_FRESH_MS
+    ){
+
+      loadCentralMedicationList()
+        .then(
+          function(){
+
+            const optionsBox =
+              document.getElementById(
+                "medNameOptions"
+              );
+
+            if (
+              document.activeElement === input &&
+              optionsBox.style.display === "block"
+            ){
+              renderMedOptions(
+                input.value
+              );
+            }
+
+          }
+        );
+
+    }
 
   }
 );
