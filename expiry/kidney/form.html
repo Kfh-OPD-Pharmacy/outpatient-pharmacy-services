@@ -1320,6 +1320,7 @@ const text = {
     medExpiry:"تاريخ الانتهاء",
     submit:"تسجيل",
     missingFields:"الرجاء تعبئة اسم الدواء وتاريخ الانتهاء.",
+    pastExpiry:"لا يمكن تسجيل تاريخ انتهاء سابق لتاريخ اليوم.",
     englishNameOnly:"اسم الدواء يجب أن يكون باللغة الإنجليزية فقط.",
     saved:"تم تسجيل الدواء بنجاح.",
     saveFailed:"تعذر حفظ البيانات.",
@@ -1353,6 +1354,7 @@ const text = {
     medExpiry:"Expiry Date",
     submit:"Register",
     missingFields:"Please fill in the medication name and expiry date.",
+    pastExpiry:"Expiry date cannot be in the past.",
     englishNameOnly:"Medication name must be in English only.",
     saved:"Medication registered successfully.",
     saveFailed:"Could not save the data.",
@@ -1582,15 +1584,66 @@ function updateExpiryDays(){
       "expiryDay"
     );
 
-  const month =
+  const monthSelect =
     document.getElementById(
       "expiryMonth"
-    ).value;
+    );
 
-  const year =
+  const yearSelect =
     document.getElementById(
       "expiryYear"
-    ).value;
+    );
+
+  const today =
+    getRiyadhTodayDate();
+
+  const todayYear =
+    Number(
+      today.slice(
+        0,
+        4
+      )
+    );
+
+  const todayMonth =
+    Number(
+      today.slice(
+        5,
+        7
+      )
+    );
+
+  const selectedYear =
+    yearSelect.value
+      ? Number(yearSelect.value)
+      : todayYear;
+
+  Array.from(
+    monthSelect.options
+  ).forEach(
+    function(option){
+
+      option.disabled =
+        Boolean(option.value) &&
+        selectedYear === todayYear &&
+        Number(option.value) < todayMonth;
+
+    }
+  );
+
+  if (
+    monthSelect.selectedOptions.length &&
+    monthSelect.selectedOptions[0].disabled
+  ){
+    monthSelect.value =
+      "";
+  }
+
+  const month =
+    monthSelect.value;
+
+  const year =
+    yearSelect.value;
 
   const previousDay =
     daySelect.value;
@@ -1643,6 +1696,14 @@ function updateExpiryDays(){
     option.textContent =
       value;
 
+    option.disabled =
+      effectiveYear +
+        "-" +
+        month +
+        "-" +
+        value <
+      today;
+
     daySelect.appendChild(
       option
     );
@@ -1652,7 +1713,13 @@ function updateExpiryDays(){
 
   if (
     previousDay &&
-    Number(previousDay) <= daysInMonth
+    Number(previousDay) <= daysInMonth &&
+    effectiveYear +
+      "-" +
+      month +
+      "-" +
+      previousDay >=
+      today
   ){
 
     daySelect.value =
@@ -2391,6 +2458,39 @@ function getMedicationSource(){
 
 }
 
+
+function getRiyadhTodayDate(){
+
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone:"Asia/Riyadh",
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    ).formatToParts(
+      new Date()
+    );
+
+  const values = {};
+
+  parts.forEach(
+    function(part){
+      values[part.type] =
+        part.value;
+    }
+  );
+
+  return values.year +
+    "-" +
+    values.month +
+    "-" +
+    values.day;
+
+}
+
 function normalizeCentralMedicationName(
   value
 ){
@@ -2615,6 +2715,21 @@ async function submitMedication(){
     showResult(
       "error",
       text[currentLang].missingFields
+    );
+
+    return;
+
+  }
+
+
+  if (
+    expiry <
+    getRiyadhTodayDate()
+  ){
+
+    showResult(
+      "error",
+      text[currentLang].pastExpiry
     );
 
     return;
