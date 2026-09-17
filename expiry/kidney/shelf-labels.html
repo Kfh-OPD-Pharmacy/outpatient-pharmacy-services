@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Labels Generator</title>
+<title>Labiles Generator</title>
 
 <style>
 *{box-sizing:border-box}
@@ -472,14 +472,14 @@ input[type="number"]{
   white-space:normal;
   overflow:visible;
   text-overflow:clip;
-  overflow-wrap:normal;
+  overflow-wrap:break-word;
   word-break:normal;
   text-align:center
 }
 
 .medication-primary{
   white-space:normal;
-  overflow-wrap:normal;
+  overflow-wrap:break-word;
   word-break:normal;
   font-size:1em;
   font-weight:inherit
@@ -487,7 +487,7 @@ input[type="number"]{
 
 .medication-details{
   white-space:normal;
-  overflow-wrap:normal;
+  overflow-wrap:break-word;
   word-break:normal;
   font-size:.86em;
   font-weight:700
@@ -1013,6 +1013,13 @@ input[type="number"]{
 
 /* Labels page visual-only refinements */
 @media screen{
+  #appView .panel{
+    background:transparent;
+    border:0;
+    box-shadow:none;
+    padding:0;
+  }
+
   .size-row{
     align-items:end;
   }
@@ -1040,12 +1047,20 @@ input[type="number"]{
     color:var(--main);
   }
 
+  #clearAllBtn.icon-btn{
+    color:#a12727;
+  }
+
   #printAllBtn.icon-btn:hover,
   #clearAllBtn.icon-btn:hover{
     background:transparent;
     box-shadow:none;
     color:var(--main-dark);
     filter:none;
+  }
+
+  #clearAllBtn.icon-btn:hover{
+    color:#7f1d1d;
   }
 
   .container:has(#appView[style*="display: block"]) .title-row .back-button,
@@ -1124,7 +1139,7 @@ input[type="number"]{
       </div>
       <div class="actions">
         <button class="primary-btn icon-btn" type="button" id="printAllBtn" onclick="printAll()" title="Print All" aria-label="Print All">🖨️</button>
-        <button class="secondary-btn icon-btn" type="button" id="clearAllBtn" onclick="clearAll()" title="Clear All" aria-label="Clear All">🧹</button>
+        <button class="secondary-btn icon-btn" type="button" id="clearAllBtn" onclick="clearAll()" title="Clear All" aria-label="Clear All">🗑️</button>
       </div>
     </div>
 
@@ -1200,25 +1215,6 @@ const LABEL_SIZES = {
     heightMm:60
   }
 };
-
-const DOSAGE_FORM_ABBREVIATIONS = [
-  ["Suppository", "Supp"],
-  ["Suspension", "Susp"],
-  ["Injection", "Inj"],
-  ["Solution", "Sol"],
-  ["Capsule", "Cap"],
-  ["Ampoule", "Amp"],
-  ["Tablet", "Tab"],
-  ["Inhaler", "Inh"],
-  ["Syrup", "Syp"],
-  ["Cream", "Cr"],
-  ["Ointment", "Oint"],
-  ["Drops", "Drops"],
-  ["Vial", "Vial"],
-  ["Powder", "Pwd"],
-  ["Spray", "Spr"],
-  ["Gel", "Gel"]
-];
 
 // Explicit FDA and ISMP 2023 Tall Man lettering recommendations.
 const TALL_MAN_MAP = Object.freeze({
@@ -1466,7 +1462,7 @@ const text = {
     noLabels:"No labels selected.",
     preview:"Preview",
     printAll:"🖨️",
-    clearAll:"🧹",
+    clearAll:"🗑️",
     printAllTitle:"Print All",
     clearAllTitle:"Clear All",
     selectAll:"Select All",
@@ -1504,7 +1500,7 @@ const text = {
     noLabels:"لا توجد ليبلات محددة.",
     preview:"المعاينة",
     printAll:"🖨️",
-    clearAll:"🧹",
+    clearAll:"🗑️",
     printAllTitle:"طباعة الكل",
     clearAllTitle:"مسح الكل",
     selectAll:"اختيار الكل",
@@ -2136,28 +2132,7 @@ function selectAllMedications(){
 }
 
 function formatMedicationPrintName(name){
-  let value =
-    String(name || "").trim().replace(/\s+/g, " ");
-
-  DOSAGE_FORM_ABBREVIATIONS.forEach(
-    function(pair){
-      const full =
-        pair[0];
-      const abbr =
-        pair[1];
-      const fullPattern =
-        new RegExp("\\b" + escapeRegExp(full) + "\\b", "gi");
-      const abbrPattern =
-        new RegExp("\\b" + escapeRegExp(abbr) + "\\b", "gi");
-
-      value =
-        value.replace(fullPattern, abbr);
-      value =
-        value.replace(abbrPattern, abbr);
-    }
-  );
-
-  return value;
+  return String(name || "").trim();
 }
 
 function splitMedicationDisplayName(value){
@@ -2169,7 +2144,7 @@ function splitMedicationDisplayName(value){
     );
   const dosageFormMatch =
     textValue.match(
-      /\s+(?=(?:Supp|Susp|Inj|Sol|Cap|Amp|Tab|Inh|Syp|Cr|Oint|Drops|Vial|Pwd|Spr|Gel)(?:\s|$))/i
+      /\s+(?=(?:Suppository|Suspension|Injection|Solution|Capsule|Ampoule|Tablet|Inhaler|Syrup|Cream|Ointment|Drops|Vial|Powder|Spray|Gel|Supp|Susp|Inj|Sol|Cap|Amp|Tab|Inh|Syp|Cr|Oint|Pwd|Spr)(?:\s|$))/i
     );
   const splitPoints =
     [strengthMatch, dosageFormMatch]
