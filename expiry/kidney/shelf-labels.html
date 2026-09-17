@@ -344,10 +344,26 @@ input[type="number"]{
   font-size:13px
 }
 
-.select-all-btn{
-  min-height:30px;
-  padding:5px 10px;
-  font-size:12px
+.select-all-control{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin:0;
+  color:var(--text);
+  font-size:12px;
+  font-weight:bold;
+  cursor:pointer;
+  white-space:nowrap
+}
+
+.select-all-control input[type="checkbox"]{
+  width:16px;
+  height:16px;
+  min-height:0;
+  margin:0;
+  padding:0;
+  accent-color:var(--main);
+  cursor:pointer
 }
 
 .empty-note{
@@ -1156,7 +1172,10 @@ input[type="number"]{
       <section class="panel">
         <div class="selection-head">
           <div class="selection-count" id="selectedCount">Selected Labels: 0</div>
-          <button class="secondary-btn select-all-btn" type="button" id="selectAllBtn" onclick="selectAllMedications()">Select All</button>
+          <label class="select-all-control" for="selectAllBtn">
+            <input type="checkbox" id="selectAllBtn" onchange="handleSelectAllChange(this)">
+            <span id="selectAllText">Select All</span>
+          </label>
         </div>
         <div id="batchList" class="batch-list">
           <div class="empty-note" id="emptyNote">No labels selected.</div>
@@ -2131,6 +2150,35 @@ function selectAllMedications(){
   renderPreview();
 }
 
+function handleSelectAllChange(checkbox){
+  if (checkbox.checked){
+    selectAllMedications();
+  }else{
+    clearAll();
+  }
+}
+
+function updateSelectAllState(){
+  const checkbox =
+    document.getElementById("selectAllBtn");
+
+  if (!checkbox){
+    return;
+  }
+
+  checkbox.checked =
+    centralMedicationList.length > 0 &&
+    centralMedicationList.every(
+      function(name){
+        return selectedLabels.some(
+          function(item){
+            return item.sourceName === name;
+          }
+        );
+      }
+    );
+}
+
 function formatMedicationPrintName(name){
   return String(name || "").trim();
 }
@@ -2249,6 +2297,8 @@ function renderBatchList(){
 
   list.innerHTML =
     "";
+
+  updateSelectAllState();
 
   if (!selectedLabels.length){
     const empty =
@@ -2667,7 +2717,7 @@ function setLanguage(lang){
   document.documentElement.dir =
     lang === "ar" ? "rtl" : "ltr";
   document.title =
-    text[lang].title;
+    "Labiles Generator";
 
   document.getElementById("officialLine1").innerText =
     text[lang].officialLine1;
@@ -2707,7 +2757,7 @@ function setLanguage(lang){
     "aria-label",
     text[lang].clearAllTitle
   );
-  document.getElementById("selectAllBtn").innerText =
+  document.getElementById("selectAllText").innerText =
     text[lang].selectAll;
 
   renderDate();
