@@ -1429,6 +1429,9 @@ let currentSessionToken =
 let centralMedicationList =
   [];
 
+let centralMedicationIdByName =
+  {};
+
 let expiryRecords =
   [];
 
@@ -1832,6 +1835,11 @@ async function loadExpiryRecords(){
       []
     ).map(function(item){
       return {
+        medicationId:String(
+          item.medicationId ||
+          item.medId ||
+          ""
+        ).trim(),
         name:String(
           item.medicationName ||
           item.name ||
@@ -1849,14 +1857,22 @@ async function loadExpiryRecords(){
     });
 }
 
-function getExpiryDatesForMedication(name){
+function getExpiryDatesForMedication(medicationId, name){
   const medicationKey =
-    normalizeMedicationKey(name);
+    normalizeExactMedicationName(name);
 
   const dates =
     expiryRecords
       .filter(function(item){
-        return normalizeMedicationKey(item.name) === medicationKey;
+        if (item.medicationId){
+          return item.medicationId === medicationId;
+        }
+
+        return (
+          normalizeExactMedicationName(
+            item.name
+          ) === medicationKey
+        );
       })
       .map(function(item){
         return normalizeDate(item.expiry);
@@ -1868,6 +1884,13 @@ function getExpiryDatesForMedication(name){
       .sort();
 
   return dates;
+}
+
+function normalizeExactMedicationName(value){
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 function normalizeMedicationKey(value){
@@ -2014,7 +2037,10 @@ function renderSearchResults(){
         );
 
       const count =
-        getExpiryDatesForMedication(name).length;
+        getExpiryDatesForMedication(
+          getMedicationIdForName(name),
+          name
+        ).length;
 
       option.innerHTML =
         "<span>" + escapeHtml(name) + "</span><small>" +
@@ -2048,7 +2074,10 @@ function addMedicationToBatch(name){
   }
 
   const dates =
-    getExpiryDatesForMedication(name);
+    getExpiryDatesForMedication(
+      getMedicationIdForName(name),
+      name
+    );
 
   selectedLabels.push({
     id:"label_" + Date.now() + "_" + Math.random().toString(16).slice(2),
@@ -2080,7 +2109,10 @@ function selectAllMedications(){
 
       if (!exists){
         const dates =
-          getExpiryDatesForMedication(name);
+          getExpiryDatesForMedication(
+            getMedicationIdForName(name),
+            name
+          );
 
         selectedLabels.push({
           id:"label_" + Date.now() + "_" + Math.random().toString(16).slice(2),

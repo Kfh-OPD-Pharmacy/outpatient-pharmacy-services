@@ -1230,6 +1230,12 @@ const KIDNEY_SESSION_TOKEN_KEY =
 let centralMedicationList =
   [];
 
+let selectedMedicationId =
+  "";
+
+let selectedMedicationName =
+  "";
+
 
 let currentLang =
   "en";
@@ -2292,7 +2298,7 @@ function renderMedOptions(
     q
       ? medicationSource.filter(
           function(m){
-            return m
+            return m.name
               .toLowerCase()
               .includes(
                 q
@@ -2333,7 +2339,7 @@ function renderMedOptions(
         50
       )
       .forEach(
-        function(name){
+        function(medication){
 
           const opt =
             document.createElement(
@@ -2344,7 +2350,7 @@ function renderMedOptions(
             "combo-option";
 
           opt.innerText =
-            name;
+            medication.name;
 
           opt.onmousedown =
             function(e){
@@ -2352,7 +2358,7 @@ function renderMedOptions(
               e.preventDefault();
 
               selectMedication(
-                name
+                medication
               );
 
             };
@@ -2376,6 +2382,64 @@ function renderMedOptions(
 function getMedicationSource(){
 
   return centralMedicationList;
+
+}
+
+function normalizeCentralMedicationName(
+  value
+){
+
+  return String(
+    value ||
+    ""
+  )
+    .trim()
+    .toLowerCase()
+    .replace(
+      /\s+/g,
+      " "
+    );
+
+}
+
+
+function resolveSelectedMedication(
+  name
+){
+
+  const normalizedName =
+    normalizeCentralMedicationName(
+      name
+    );
+
+  if (
+    selectedMedicationId &&
+    normalizeCentralMedicationName(
+      selectedMedicationName
+    ) === normalizedName
+  ){
+    return {
+      id:
+        selectedMedicationId,
+      name:
+        selectedMedicationName
+    };
+  }
+
+  const matches =
+    centralMedicationList.filter(
+      function(item){
+        return (
+          normalizeCentralMedicationName(
+            item.name
+          ) === normalizedName
+        );
+      }
+    );
+
+  return matches.length === 1
+    ? matches[0]
+    : null;
 
 }
 
@@ -2424,12 +2488,26 @@ async function loadCentralMedicationList(){
         data.medications
           .map(
             function(item){
-              return item && item.name
-                ? String(item.name).trim()
-                : "";
+              return {
+                id:
+                  item && item.id
+                    ? String(item.id).trim()
+                    : "",
+                name:
+                  item && item.name
+                    ? String(item.name).trim()
+                    : ""
+              };
             }
           )
-          .filter(Boolean);
+          .filter(
+            function(item){
+              return (
+                item.id &&
+                item.name
+              );
+            }
+          );
 
     }
 
@@ -2444,13 +2522,27 @@ async function loadCentralMedicationList(){
 
 
 function selectMedication(
-  name
+  medication
 ){
+
+  selectedMedicationId =
+    String(
+      medication &&
+      medication.id ||
+      ""
+    ).trim();
+
+  selectedMedicationName =
+    String(
+      medication &&
+      medication.name ||
+      ""
+    ).trim();
 
   document.getElementById(
     "medName"
   ).value =
-    name;
+    selectedMedicationName;
 
   document.getElementById(
     "medNameOptions"
@@ -2499,6 +2591,10 @@ async function submitMedication(){
 
   const expiry =
     getExpiryDate();
+  const selectedMedication =
+    resolveSelectedMedication(
+      name
+    );
 
 
   if (
@@ -2531,6 +2627,19 @@ async function submitMedication(){
 
   }
 
+  if (
+    !selectedMedication
+  ){
+
+    showResult(
+      "error",
+      text[currentLang].noMatches
+    );
+
+    return;
+
+  }
+
 
   try{
 
@@ -2539,7 +2648,9 @@ async function submitMedication(){
         "checkMedication",
         {
           name:name,
-          medicationName:name
+          medicationName:name,
+          medicationId:
+            selectedMedication.id
         },
         true
       );
@@ -2607,6 +2718,8 @@ async function submitMedication(){
 
       pendingMedication = {
         name:name,
+        medicationId:
+          selectedMedication.id,
         expiry:expiry
       };
 
@@ -2634,6 +2747,7 @@ async function submitMedication(){
 
   await saveMedication(
     name,
+    selectedMedication.id,
     expiry
   );
 
@@ -2724,6 +2838,7 @@ async function confirmSave(){
 
   const {
     name,
+    medicationId,
     expiry
   } =
     pendingMedication;
@@ -2737,6 +2852,7 @@ async function confirmSave(){
 
   await saveMedication(
     name,
+    medicationId,
     expiry,
     false
   );
@@ -2755,6 +2871,7 @@ async function replaceOldAndSave(){
 
   const {
     name,
+    medicationId,
     expiry
   } =
     pendingMedication;
@@ -2768,6 +2885,7 @@ async function replaceOldAndSave(){
 
   await saveMedication(
     name,
+    medicationId,
     expiry,
     true
   );
@@ -2781,6 +2899,7 @@ async function replaceOldAndSave(){
 
 async function saveMedication(
   name,
+  medicationId,
   expiry,
   deleteOlderExisting
 ){
@@ -2793,6 +2912,8 @@ async function saveMedication(
         {
           name:name,
           medicationName:name,
+          medicationId:
+            medicationId,
 
           expiry:expiry,
           expiryDate:expiry,
@@ -2857,6 +2978,12 @@ async function saveMedication(
 
     pendingMedication =
       null;
+
+    selectedMedicationId =
+      "";
+
+    selectedMedicationName =
+      "";
 
 
     document.getElementById(
@@ -3160,6 +3287,20 @@ document.getElementById(
 ).addEventListener(
   "input",
   function(){
+
+    if (
+      normalizeCentralMedicationName(
+        this.value
+      ) !==
+      normalizeCentralMedicationName(
+        selectedMedicationName
+      )
+    ){
+      selectedMedicationId =
+        "";
+      selectedMedicationName =
+        "";
+    }
 
     renderMedOptions(
       this.value

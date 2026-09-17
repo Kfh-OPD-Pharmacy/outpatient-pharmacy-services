@@ -307,6 +307,7 @@ async function loadMedication(){
 
     const dates =
       getExpiryDatesForMedication(
+        medId,
         medication.name,
         dashboardData.items || dashboardData.medications || []
       );
@@ -320,19 +321,30 @@ async function loadMedication(){
   }
 }
 
-function getExpiryDatesForMedication(name, items){
+function getExpiryDatesForMedication(medicationId, name, items){
   const key =
-    normalizeMedicationKey(name);
+    normalizeExactMedicationName(name);
 
   return items
     .filter(function(item){
+      const itemMedicationId =
+        String(
+          item.medicationId ||
+          item.medId ||
+          ""
+        ).trim();
+
+      if (itemMedicationId){
+        return itemMedicationId === medicationId;
+      }
+
       const itemName =
         item.medicationName ||
         item.name ||
         item.medication ||
         "";
 
-      return normalizeMedicationKey(itemName) === key;
+      return normalizeExactMedicationName(itemName) === key;
     })
     .map(function(item){
       return normalizeDate(
@@ -346,6 +358,13 @@ function getExpiryDatesForMedication(name, items){
       return list.indexOf(date) === index;
     })
     .sort();
+}
+
+function normalizeExactMedicationName(value){
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 function normalizeMedicationKey(value){
