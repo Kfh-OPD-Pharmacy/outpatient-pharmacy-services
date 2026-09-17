@@ -439,7 +439,7 @@ input[type="number"]{
   direction:ltr;
   break-inside:avoid;
   page-break-inside:avoid;
-  overflow:hidden;
+  overflow:visible;
   color:#111827;
   -webkit-print-color-adjust:exact;
   print-color-adjust:exact
@@ -458,6 +458,7 @@ input[type="number"]{
   max-width:100%;
   width:100%;
   height:100%;
+  box-sizing:border-box;
   text-align:center
 }
 
@@ -467,24 +468,39 @@ input[type="number"]{
   font-weight:800;
   width:100%;
   max-width:100%;
+  box-sizing:border-box;
   white-space:normal;
   overflow:visible;
   text-overflow:clip;
-  overflow-wrap:break-word;
+  overflow-wrap:normal;
   word-break:normal;
   text-align:center
 }
 
 .medication-primary{
-  white-space:nowrap;
+  white-space:normal;
+  overflow-wrap:normal;
+  word-break:normal;
   font-size:1em;
   font-weight:inherit
 }
 
 .medication-details{
-  white-space:nowrap;
+  white-space:normal;
+  overflow-wrap:normal;
+  word-break:normal;
   font-size:.86em;
   font-weight:700
+}
+
+.label-name.single-line .medication-primary,
+.label-name.single-line .medication-details{
+  display:inline
+}
+
+.label-name.two-line .medication-primary,
+.label-name.two-line .medication-details{
+  display:block
 }
 
 .label-name.extreme-name .medication-primary{
@@ -2453,8 +2469,6 @@ function fitLabelName(element){
   const rowGap =
     parseFloat(parentStyle.rowGap || parentStyle.gap) || 0;
 
-  element.style.fontSize =
-    size + "px";
   element.style.whiteSpace =
     "normal";
   element.style.overflow =
@@ -2462,66 +2476,96 @@ function fitLabelName(element){
   element.style.textOverflow =
     "clip";
   element.style.overflowWrap =
-    "break-word";
+    "normal";
   element.style.wordBreak =
     "normal";
   element.classList.remove(
-    "extreme-name"
+    "extreme-name",
+    "single-line",
+    "two-line"
   );
+  element.classList.add(
+    "single-line"
+  );
+
+  function applyFontSize(){
+    element.style.fontSize =
+      size + "px";
+  }
+
+  function fitsWithinLines(maxLines){
+    const lineHeight =
+      parseFloat(
+        window.getComputedStyle(element).lineHeight
+      );
+    const allowedLineHeight =
+      Math.ceil(lineHeight * maxLines) + 1;
+    const badgeHeight =
+      badge ? badge.offsetHeight + rowGap : 0;
+    const availableNameHeight =
+      Math.max(0, parent.clientHeight - badgeHeight);
+    const fitsWidth =
+      element.scrollWidth <= parent.clientWidth + 1;
+    const fitsHeight =
+      element.scrollHeight <=
+        Math.min(availableNameHeight, allowedLineHeight) + 1;
+
+    return fitsWidth && fitsHeight;
+  }
+
+  applyFontSize();
 
   if (primaryName){
     primaryName.style.whiteSpace =
       "nowrap";
   }
-
-  while (
-    size >= minimumSize
-  ){
-    const lineHeight =
-      parseFloat(
-        window.getComputedStyle(element).lineHeight
-      );
-    const twoLineHeight =
-      Math.ceil(lineHeight * 2) + 1;
-    const badgeHeight =
-      badge ? badge.offsetHeight + rowGap : 0;
-    const availableNameHeight =
-      Math.max(0, parent.clientHeight - badgeHeight);
-    const primaryFits =
-      !primaryName ||
-      primaryName.getBoundingClientRect().width <=
-        parent.clientWidth + 1;
-    const detailsFit =
-      !details ||
-      details.getBoundingClientRect().width <=
-        parent.clientWidth + 1;
-    const fitsWidth =
-      element.scrollWidth <= parent.clientWidth + 1 &&
-      primaryFits &&
-      detailsFit;
-    const fitsHeight =
-      element.scrollHeight <=
-        Math.min(availableNameHeight, twoLineHeight) + 1;
-
-    if (fitsWidth && fitsHeight){
-      break;
-    }
-
-    if (size === minimumSize){
-      element.classList.add(
-        "extreme-name"
-      );
-      break;
-    }
-
-    size -= 0.5;
-    if (size < minimumSize){
-      size =
-        minimumSize;
-    }
-    element.style.fontSize =
-      size + "px";
+  if (details){
+    details.style.whiteSpace =
+      "nowrap";
   }
+
+  if (fitsWithinLines(1)){
+    return;
+  }
+
+  element.classList.remove(
+    "single-line"
+  );
+  element.classList.add(
+    "two-line"
+  );
+  if (!details && primaryName){
+    primaryName.style.whiteSpace =
+      "normal";
+  }
+
+  if (fitsWithinLines(2)){
+    return;
+  }
+
+  while (size > minimumSize){
+    size =
+      Math.max(minimumSize, size - 0.5);
+    applyFontSize();
+
+    if (fitsWithinLines(2)){
+      return;
+    }
+  }
+
+  if (primaryName){
+    primaryName.style.whiteSpace =
+      "normal";
+  }
+  if (details){
+    details.style.whiteSpace =
+      "normal";
+  }
+  element.classList.add(
+    "extreme-name"
+  );
+  element.style.overflowWrap =
+    "break-word";
 }
 
 function buildLabelSizeOptions(){

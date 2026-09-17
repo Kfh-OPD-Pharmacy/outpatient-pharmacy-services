@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>متابعة تواريخ صلاحية الأدوية</title>
+<title>صيدلية مركز الكلى</title>
 
 <style>
 *{box-sizing:border-box}
@@ -107,13 +107,53 @@ hr{
   font-family:inherit
 }
 
+
+/* TITLE + BACK BUTTON */
+
+.title-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin:18px 0 22px;
+  direction:rtl
+}
+
 .page-title{
   text-align:center;
-  font-size:24px;
+  font-size:23px;
   font-weight:bold;
-  margin:18px 0 8px;
+  margin:0;
   color:#168fb3
 }
+
+.back-button{
+  width:38px;
+  height:38px;
+  margin:0;
+  padding:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:#168fb3;
+  font-size:34px;
+  font-weight:400;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-family:Arial,sans-serif;
+  flex:0 0 auto;
+  transition:.15s ease
+}
+
+.back-button:hover{
+  background:transparent;
+  color:#0f7592;
+  transform:translateX(-2px)
+}
+
 
 .subtitle{
   display:none
@@ -121,43 +161,56 @@ hr{
 
 .portal-grid{
   display:grid;
-  grid-template-columns:max-content;
+  grid-template-columns:repeat(3,208px);
   justify-content:center;
   gap:14px;
-  max-width:620px;
-  margin:24px auto 0
+  max-width:720px;
+  margin:0 auto
 }
 
 .portal-card{
-  width:fit-content;
+  width:208px;
+  height:132px;
+  box-sizing:border-box;
   background:#168fb3;
   border:1px solid #168fb3;
   border-radius:8px;
-  padding:10px 14px;
+  padding:14px;
   text-decoration:none;
   color:#fff;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:10px;
-  min-height:52px;
+  gap:8px;
   transition:.15s ease
 }
 
-a.portal-card:hover{
+a.portal-card:hover,
+.portal-card:hover{
   border-color:#0f7592;
   transform:translateY(-1px);
   box-shadow:0 8px 18px rgba(22,143,179,.28);
   filter:brightness(1.05)
 }
 
+.card-head{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  text-align:center
+}
+
 .card-text{
-  text-align:start;
+  text-align:center;
   min-width:0
 }
 
 .card-title{
-  font-size:16px;
+  font-size:15px;
   font-weight:bold;
   color:#fff;
   margin:0;
@@ -169,8 +222,8 @@ a.portal-card:hover{
 }
 
 .card-icon{
-  width:30px;
-  height:30px;
+  width:32px;
+  height:32px;
   border-radius:8px;
   background:rgba(255,255,255,.2);
   color:#fff;
@@ -179,6 +232,29 @@ a.portal-card:hover{
   justify-content:center;
   font-size:18px;
   flex:0 0 auto
+}
+
+.card-actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  margin-top:4px
+}
+
+.mini-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#168fb3;
+  color:#fff;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:bold;
+  white-space:nowrap
 }
 
 .main-home-link{
@@ -229,23 +305,36 @@ a.portal-card:hover{
     font-size:12px
   }
 
+  .title-row{
+    gap:8px;
+    margin:16px 0 20px
+  }
+
   .page-title{
-    font-size:20px
+    font-size:20px;
+    margin:0
+  }
+
+  .back-button{
+    width:34px;
+    height:34px;
+    font-size:31px
   }
 
   .portal-grid{
-    grid-template-columns:max-content;
-    max-width:100%;
-    margin-top:22px
+    grid-template-columns:1fr;
+    max-width:260px;
+    gap:12px
   }
 
   .portal-card{
-    min-height:48px;
-    padding:9px 12px
+    width:100%;
+    height:112px;
+    padding:12px
   }
 
   .card-title{
-    font-size:15px
+    font-size:14px
   }
 
   .card-icon{
@@ -451,7 +540,7 @@ a.portal-card:hover{
 
     <img
       class="logo"
-      src="../logo.png"
+      src="../../logo.png"
       alt="Logo">
 
     <div class="official-header">
@@ -491,42 +580,127 @@ a.portal-card:hover{
 
   </div>
 
-  <h1
-    class="page-title"
-    id="pageTitle">
-    متابعة تواريخ صلاحية الأدوية
-  </h1>
+
+  <div class="title-row">
+
+    <button
+      type="button"
+      class="back-button"
+      onclick="history.back()"
+      title="رجوع"
+      aria-label="رجوع">
+      ↩
+    </button>
+
+    <h1
+      class="page-title"
+      id="pageTitle">
+      صيدلية مركز الكلى
+    </h1>
+
+  </div>
+
 
   <p
     class="subtitle"
     id="subtitle">
-    اختر الصيدلية لمتابعة تواريخ صلاحية الأدوية.
+    بوابة داخلية لتسجيل ومراقبة تواريخ انتهاء صلاحية الأدوية بالصيدلية.
   </p>
+
 
   <div class="portal-grid">
 
     <a
       class="portal-card"
-      href="kidney/index.html">
+      id="formCard"
+      href="form.html">
 
-      <div class="card-text">
+      <div class="card-head">
 
-        <p
-          class="card-title"
-          id="kidneyTitle">
-          صيدلية مركز الكلى
-        </p>
+        <div class="card-text">
 
-        <p
-          class="card-desc"
-          id="kidneyDesc">
-          متابعة تواريخ صلاحية أدوية صيدلية مركز الكلى.
-        </p>
+          <p
+            class="card-title"
+            id="formTitle">
+            تسجيل تاريخ الانتهاء
+          </p>
+
+          <p
+            class="card-desc"
+            id="formDesc">
+            إدخال بيانات دواء جديد، مع تنبيه تلقائي عند وجود تاريخ أقدم مسجل مسبقا.
+          </p>
+
+        </div>
+
+        <div class="card-icon">
+          💊
+        </div>
 
       </div>
 
-      <div class="card-icon">
-        💊
+    </a>
+
+
+    <a
+      class="portal-card"
+      id="dashboardCard"
+      href="dashboard.html">
+
+      <div class="card-head">
+
+        <div class="card-text">
+
+          <p
+            class="card-title"
+            id="dashboardTitle">
+            مؤشر صلاحية الأدوية
+          </p>
+
+          <p
+            class="card-desc"
+            id="dashboardDesc">
+            عرض فوري لكل الأدوية المسجلة، مرتبة حسب الأقرب لتاريخ الانتهاء.
+          </p>
+
+        </div>
+
+        <div class="card-icon">
+          📊
+        </div>
+
+      </div>
+
+    </a>
+
+
+    <a
+      class="portal-card"
+      id="orderCard"
+      href="kidneyorder.html">
+
+      <div class="card-head">
+
+        <div class="card-text">
+
+          <p
+            class="card-title"
+            id="orderTitle">
+            Kidney Order / الطلبية
+          </p>
+
+          <p
+            class="card-desc"
+            id="orderDesc">
+            إنشاء طلبية أدوية لصيدلية مركز الكلى.
+          </p>
+
+        </div>
+
+        <div class="card-icon">
+          📦
+        </div>
+
       </div>
 
     </a>
@@ -545,23 +719,33 @@ let currentLang =
 const text = {
 
   ar:{
-    title:"متابعة تواريخ صلاحية الأدوية",
+    title:"صيدلية مركز الكلى",
     officialLine1:"تجمع المدينة المنورة الصحي",
     officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
     officialLine3:"إدارة الرعاية الصيدلانية",
-    subtitle:"اختر الصيدلية لمتابعة تواريخ صلاحية الأدوية.",
-    kidneyTitle:"صيدلية مركز الكلى",
-    kidneyDesc:"متابعة تواريخ صلاحية أدوية صيدلية مركز الكلى."
+    subtitle:"بوابة داخلية لتسجيل ومراقبة تواريخ انتهاء صلاحية الأدوية بالصيدلية.",
+    dashboardTitle:"مؤشر صلاحية الأدوية",
+    dashboardDesc:"عرض فوري لكل الأدوية المسجلة، مرتبة حسب الأقرب لتاريخ الانتهاء.",
+    formTitle:"تسجيل تاريخ الانتهاء",
+    formDesc:"إدخال بيانات دواء جديد، مع تنبيه تلقائي عند وجود تاريخ أقدم مسجل مسبقا.",
+    orderTitle:"Kidney Order / الطلبية",
+    orderDesc:"إنشاء طلبية أدوية لصيدلية مركز الكلى.",
+    back:"العودة إلى اختيار الصيدلية"
   },
 
   en:{
-    title:"Medication Expiry Monitoring",
+    title:"Kidney Center Pharmacy",
     officialLine1:"Madinah Health Cluster",
     officialLine2:"King Fahad Hospital - Madinah",
     officialLine3:"Pharmaceutical Care Administration",
-    subtitle:"Select a pharmacy to monitor medication expiry dates.",
-    kidneyTitle:"Kidney Center Pharmacy",
-    kidneyDesc:"Monitor medication expiry dates for the Kidney Center Pharmacy."
+    subtitle:"An internal portal to record and monitor medication expiry dates in the pharmacy.",
+    dashboardTitle:"Live Dashboard",
+    dashboardDesc:"Instant view of registered medications, sorted by nearest expiry date.",
+    formTitle:"Register Expiry Date",
+    formDesc:"Enter a new medication record with an automatic alert when an older expiry date already exists.",
+    orderTitle:"Kidney Order",
+    orderDesc:"Create a medication order for the Kidney Center Pharmacy.",
+    back:"Back to pharmacy selection"
   }
 
 };
@@ -583,29 +767,57 @@ function setLanguage(lang){
   document.title =
     text[lang].title;
 
-  document.getElementById("officialLine1").innerText =
-    text[lang].officialLine1;
 
-  document.getElementById("officialLine2").innerText =
-    text[lang].officialLine2;
+  [
+    "officialLine1",
+    "officialLine2",
+    "officialLine3",
+    "pageTitle",
+    "subtitle",
+    "dashboardTitle",
+    "dashboardDesc",
+    "formTitle",
+    "formDesc",
+    "orderTitle",
+    "orderDesc"
+  ].forEach(function(id){
 
-  document.getElementById("officialLine3").innerText =
-    text[lang].officialLine3;
+    document.getElementById(id).innerText =
+      text[lang][
+        id.replace(
+          "pageTitle",
+          "title"
+        )
+      ];
 
-  document.getElementById("pageTitle").innerText =
-    text[lang].title;
+  });
 
-  document.getElementById("subtitle").innerText =
-    text[lang].subtitle;
 
-  document.getElementById("kidneyTitle").innerText =
-    text[lang].kidneyTitle;
+  const homeLink =
+    document.querySelector(
+      ".main-home-link"
+    );
 
-  document.getElementById("kidneyDesc").innerText =
-    text[lang].kidneyDesc;
+  if (
+    homeLink
+  ){
 
-  document.getElementById("languageToggle").innerText =
+    homeLink.title =
+      text[lang].back;
+
+    homeLink.setAttribute(
+      "aria-label",
+      text[lang].back
+    );
+
+  }
+
+
+  document.getElementById(
+    "languageToggle"
+  ).innerText =
     "🌐 ع | E";
+
 
   renderDate();
 
@@ -634,7 +846,9 @@ function renderDate(){
       {
         timeZone:"Asia/Riyadh"
       }
-    ).format(now);
+    ).format(
+      now
+    );
 
   const dayName =
     new Intl.DateTimeFormat(
@@ -645,7 +859,10 @@ function renderDate(){
         timeZone:"Asia/Riyadh",
         weekday:"long"
       }
-    ).format(now);
+    ).format(
+      now
+    );
+
 
   document.getElementById(
     "dateBox"
