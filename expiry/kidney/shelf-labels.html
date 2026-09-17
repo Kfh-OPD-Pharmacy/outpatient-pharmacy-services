@@ -432,7 +432,7 @@ input[type="number"]{
   border-radius:2.5mm;
   padding:3mm;
   display:grid;
-  grid-template-columns:minmax(0, 22fr) minmax(0, 56fr) minmax(0, 22fr);
+  grid-template-columns:auto minmax(0, 1fr) auto;
   grid-template-rows:1fr;
   align-items:center;
   gap:2mm;
@@ -449,10 +449,13 @@ input[type="number"]{
   grid-column:2;
   grid-row:1;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
+  gap:.8mm;
   min-width:0;
   min-height:0;
+  max-width:100%;
   width:100%;
   height:100%;
   text-align:center
@@ -474,6 +477,22 @@ input[type="number"]{
 
 .tall-man-segment{
   font-weight:900
+}
+
+.high-alert-badge{
+  flex:0 0 auto;
+  max-width:100%;
+  padding:1mm 2mm;
+  border-radius:2mm;
+  background:#b91c1c;
+  color:#fff;
+  font-size:7pt;
+  line-height:1;
+  font-weight:800;
+  white-space:nowrap;
+  text-align:center;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
 }
 
 .label-exp{
@@ -507,13 +526,13 @@ input[type="number"]{
   align-items:center;
   justify-content:center;
   min-width:0;
-  width:100%;
-  height:100%
+  width:clamp(17mm, calc(var(--label-height) - 10mm), 28mm);
+  height:clamp(17mm, calc(var(--label-height) - 10mm), 28mm)
 }
 
 .label-logo{
-  width:clamp(17mm, calc(var(--label-height) - 10mm), 28mm);
-  height:clamp(17mm, calc(var(--label-height) - 10mm), 28mm);
+  width:100%;
+  height:100%;
   max-width:100%;
   max-height:100%;
   object-fit:contain
@@ -1349,6 +1368,18 @@ const TALL_MAN_INGREDIENTS =
     }
   );
 
+// Add only hospital-approved, exact central medication names here.
+const HIGH_ALERT_MEDICATION_NAMES = [];
+
+const HIGH_ALERT_MEDICATIONS =
+  new Set(
+    HIGH_ALERT_MEDICATION_NAMES.map(
+      function(name){
+        return normalizeMedicationKey(name);
+      }
+    )
+  );
+
 let currentLang =
   "en";
 
@@ -1829,6 +1860,12 @@ function normalizeMedicationKey(value){
     .trim();
 }
 
+function isHighAlertMedication(name){
+  return HIGH_ALERT_MEDICATIONS.has(
+    normalizeMedicationKey(name)
+  );
+}
+
 function getMedicationIdForName(name){
   return centralMedicationIdByName[
     normalizeMedicationKey(name)
@@ -2287,6 +2324,10 @@ function createLabelElement(item){
     buildMedicationQrImageUrl(
       item.medicationId
     );
+  const highAlert =
+    isHighAlertMedication(
+      item.originalMedicationName || item.sourceName
+    );
 
   label.innerHTML =
     "<div class=\"label-main\">" +
@@ -2296,6 +2337,9 @@ function createLabelElement(item){
           item.originalMedicationName || item.sourceName
         ) +
       "</div>" +
+      (highAlert
+        ? "<div class=\"high-alert-badge\">HIGH ALERT</div>"
+        : "") +
     "</div>" +
     "<div class=\"label-exp\">" +
       (qrImageUrl
@@ -2324,6 +2368,12 @@ function fitLabelName(element){
     7.5;
   const parent =
     element.parentElement;
+  const badge =
+    parent.querySelector(".high-alert-badge");
+  const parentStyle =
+    window.getComputedStyle(parent);
+  const rowGap =
+    parseFloat(parentStyle.rowGap || parentStyle.gap) || 0;
 
   element.style.fontSize =
     size + "pt";
@@ -2347,11 +2397,15 @@ function fitLabelName(element){
       );
     const twoLineHeight =
       Math.ceil(lineHeight * 2) + 1;
+    const badgeHeight =
+      badge ? badge.offsetHeight + rowGap : 0;
+    const availableNameHeight =
+      Math.max(0, parent.clientHeight - badgeHeight);
     const fitsWidth =
       element.scrollWidth <= parent.clientWidth + 1;
     const fitsHeight =
       element.scrollHeight <=
-        Math.min(parent.clientHeight, twoLineHeight) + 1;
+        Math.min(availableNameHeight, twoLineHeight) + 1;
 
     if (fitsWidth && fitsHeight){
       break;
