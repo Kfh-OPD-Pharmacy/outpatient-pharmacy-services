@@ -432,7 +432,7 @@ input[type="number"]{
   border-radius:2.5mm;
   padding:3mm;
   display:grid;
-  grid-template-columns:22% minmax(0, 56%) 22%;
+  grid-template-columns:minmax(0, 22fr) minmax(0, 56fr) minmax(0, 22fr);
   grid-template-rows:1fr;
   align-items:center;
   gap:2mm;
@@ -462,9 +462,11 @@ input[type="number"]{
   font-size:clamp(15px, 16pt, 25px);
   line-height:1.08;
   font-weight:800;
+  width:100%;
   max-width:100%;
-  max-height:2.2em;
-  overflow:hidden;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
   overflow-wrap:break-word;
   word-break:normal;
   text-align:center
@@ -2318,34 +2320,46 @@ function fitAllLabelNames(){
 function fitLabelName(element){
   let size =
     16;
-  element.style.fontSize =
-    size + "pt";
-  element.style.whiteSpace =
-    "nowrap";
-
+  const minimumSize =
+    7.5;
   const parent =
     element.parentElement;
 
+  element.style.fontSize =
+    size + "pt";
+  element.style.whiteSpace =
+    "normal";
+  element.style.overflow =
+    "visible";
+  element.style.textOverflow =
+    "clip";
+  element.style.overflowWrap =
+    "break-word";
+  element.style.wordBreak =
+    "normal";
+
   while (
-    size > 9 &&
-    (
-      element.scrollWidth > parent.clientWidth ||
-      element.scrollHeight > parent.clientHeight
-    )
+    size > minimumSize
   ){
+    const lineHeight =
+      parseFloat(
+        window.getComputedStyle(element).lineHeight
+      );
+    const twoLineHeight =
+      Math.ceil(lineHeight * 2) + 1;
+    const fitsWidth =
+      element.scrollWidth <= parent.clientWidth + 1;
+    const fitsHeight =
+      element.scrollHeight <=
+        Math.min(parent.clientHeight, twoLineHeight) + 1;
+
+    if (fitsWidth && fitsHeight){
+      break;
+    }
+
     size -= 0.5;
     element.style.fontSize =
       size + "pt";
-  }
-
-  if (
-    size <= 9 &&
-    element.scrollWidth > parent.clientWidth
-  ){
-    element.style.whiteSpace =
-      "normal";
-    element.style.overflowWrap =
-      "break-word";
   }
 }
 
