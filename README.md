@@ -1,153 +1,221 @@
-# مشروع تتبع تحضير وصفات الصيدلية
+Unified Pharmacy Portal
 
-مشروع ويب بسيط بواجهة عربية للجوال:
+A unified pharmacy web portal that brings multiple pharmacy workflows into one interface while keeping authentication, user management, medication master data, and service-level access centrally controlled.
 
-- تسجيل دخول المحضّر باسم المستخدم و PIN.
-- حفظ اسم المستخدم في `localStorage` بعد أول دخول.
-- فتح الكاميرا مباشرة بعد الدخول لقراءة الباركود أو QR.
-- عرض رقم الملف واسم المريض فقط.
-- تسجيل كل عملية تحضير في Google Sheet، ويسمح بتسجيل نفس رقم الملف أكثر من مرة.
-- صفحة مستقلة لرفع ملف Excel أو CSV وحفظ عمودي رقم الملف واسم المريض فقط.
-- صفحة Dashboard مستقلة للمشرف تعرض قائمة اليوم وحالة كل مريض مع زر طباعة تقرير يومي.
+The portal is designed around a shared central medication database, separate operational data stores where appropriate, and lightweight web interfaces built with HTML, CSS, JavaScript, Google Apps Script, and Google Sheets.
 
-## صفحات الموقع
+## Current Features
 
-- `index.html`: صفحة التحضير وقراءة الباركود.
-- `upload.html`: صفحة رفع قائمة اليوم.
-- `dashboard.html`: صفحة المشرف والتقرير اليومي.
-- `users.html`: صفحة إدارة المستخدمين، إضافة وحذف.
+### Medication Pickup / Booking
+- Same-day medication pickup booking.
+- Capacity-controlled time slots.
+- Dynamic slot availability.
+- Bilingual user interface.
+- Google Apps Script backend with locking to prevent overbooking.
 
-## 1. إنشاء Google Sheet
+### Kidney Pharmacy / Expiry Management
+- Medication expiry-date registration.
+- Central medication selection.
+- Expiry dashboard and indicator.
+- Medication search and filtering.
+- Printable dashboard/report views.
+- Registration tracking with staff information where available.
 
-1. افتح Google Sheets وأنشئ ملفاً جديداً.
-2. غيّر اسم الملف إلى اسم مناسب، مثل: `Pharmacy Preparation`.
-3. أنشئ الشيتات الموضحة في القسم التالي بالأسماء نفسها تماماً.
+### Expiry Indicator
+The dashboard currently classifies expiry records using the operational indicator logic:
+- **This Month**
+- **Within 3 Months**
+- **Within Safe Range**
 
-## 2. أسماء الشيتات المطلوبة
+The same indicator logic is intended to remain consistent wherever expiry status is displayed.
 
-أنشئ 3 شيتات:
+### Central Medication Database
+A shared medication master database is used to standardize medication names across pharmacy services.
 
-### Users
+Core design principle:
+- **Medication ID** is the stable medication identifier.
+- **Medication Name** is the current display name.
+- Service records should remain linked by Medication ID so that medication-name changes do not break historical or operational relationships.
 
-الصف الأول:
+Medication administration is handled separately from expiry records so medication names can be centrally controlled without mixing operational expiry data into the master database.
 
-| Username | PIN | Active | Name |
-|---|---|---|---|
+### Dynamic Medication QR
+Shelf labels can use a fixed QR linked to a medication identifier.
 
-مثال:
+The QR design follows these principles:
+- The QR remains stable for the medication.
+- The expiry date itself is not encoded into the QR.
+- Scanning the QR opens a live read-only medication page.
+- The live page can display the medication's current information and available expiry dates.
+- Expiry dates are intended to use the same status logic as the expiry dashboard.
 
-| Username | PIN | Active | Name |
-|---|---|---|---|
-| ahmad | 1234 | TRUE | أحمد محمد |
+This allows expiry information to change without requiring the physical QR label to be reprinted.
 
-### Prescriptions
+### Labels Generator
+The portal includes a shelf-label generation workflow with support for:
+- Medication selection.
+- Multiple-label / batch printing.
+- Copies.
+- Label-size selection.
+- Dynamic medication QR.
+- Portal/pharmacy logo.
+- Medication-name display.
+- Print preview.
+- Select-all workflow.
 
-الصف الأول:
+The label workflow is intentionally separated from medication-master editing and expiry-data entry.
 
-| FileNumber | PatientName | UploadedAt | UploadedBy |
-|---|---|---|---|
+### Unified Medication Management
+Central medication administration provides one place to manage the medication master list used by connected pharmacy services.
 
-هذا الشيت يتم تعبئته من ملف Excel أو CSV. عند رفع ملف جديد يتم استبدال قائمة الوصفات الحالية، وتكون القائمة صالحة فقط في يوم رفعها.
+This helps reduce naming inconsistency between forms, dashboards, labels, and other medication-based workflows.
 
-### Prepared
+### Unified User Management
+The portal uses a central user store and service-specific access model.
 
-الصف الأول:
+Current access architecture includes existing service permissions such as:
+- `MedAccess`
+- `MailAccess`
+- `KidneyAccess`
 
-| FileNumber | PatientName | PreparedBy | PreparedAt |
-|---|---|---|---|
+Additional service permissions are being added only when the corresponding service is ready for controlled rollout.
 
-هذا الشيت يسجل كل عملية تحضير. إذا تم تحضير نفس رقم الملف أكثر من مرة، سيتم إضافة صف جديد لكل مرة.
+The primary administrator account is responsible for central user administration and service access control.
 
-## لوحة المشرف
+## Main Administrator
 
-لوحة المشرف في صفحة مستقلة:
+The main administrator is responsible for:
+- User management.
+- Granting and revoking service permissions.
+- Central medication management.
+- Access to administrative functions across the portal.
+
+No PINs, passwords, session tokens, internal IDs, or other sensitive authentication data should be documented in this repository.
+
+## Data Architecture
 
 ```text
-dashboard.html
+Unified Pharmacy Portal
+│
+├── Central Users / Authentication
+├── Central Medication Database
+│
+├── Medication Pickup / Booking
+│
+├── Kidney Pharmacy
+│   ├── Expiry Registration
+│   ├── Expiry Dashboard
+│   ├── Dynamic Medication QR
+│   └── Labels Generator
+│
+└── Additional Pharmacy Services
 ```
 
-إذا كان رابط صفحة التحضير:
+The central medication database provides shared medication identity, while each operational service can keep its own workflow-specific data.
 
-```text
-https://USER.github.io/REPO/
-```
+## Authentication and Permissions
 
-فرابط لوحة المشرف يكون:
+The portal uses centralized authentication and service-level authorization.
 
-```text
-https://USER.github.io/REPO/dashboard.html
-```
+General principles:
+- Session validation is centralized.
+- Access is checked per service.
+- Backend permission checks are preferred over frontend-only hiding.
+- Inactive users should not retain access simply because a previous frontend state exists.
+- Sensitive permissions are managed centrally.
+- Direct page access should not bypass service authorization where protected access is required.
 
-تعرض اللوحة:
+## Technology Stack
 
-- إجمالي قائمة اليوم.
-- عدد الوصفات الجاهزة للإرسال.
-- عدد الوصفات تحت المعالجة.
-- رقم الملف واسم المريض وحالته واسم المحضّر ووقت التحضير.
+- HTML
+- CSS
+- JavaScript
+- Google Apps Script
+- Google Sheets
+- GitHub Pages / static web hosting for applicable frontend pages
 
-زر `طباعة التقرير` يطبع ملخص اليوم وجدول القائمة الحالية فقط.
+No frontend framework is required for the current architecture.
 
-## 3. نشر Apps Script كـ Web App
+## Deployment Overview
 
-1. من Google Sheet اختر: `Extensions` ثم `Apps Script`.
-2. احذف أي كود موجود.
-3. انسخ محتوى ملف `Code.gs` والصقه في محرر Apps Script.
-4. اضغط `Save`.
-5. اختر `Deploy` ثم `New deployment`.
-6. اضغط أيقونة الترس واختر `Web app`.
-7. في `Execute as` اختر: `Me`.
-8. في `Who has access` اختر: `Anyone`.
-9. اضغط `Deploy`.
-10. وافق على الصلاحيات المطلوبة.
-11. انسخ رابط `Web app URL`.
+### Frontend
+Static HTML/CSS/JavaScript pages hosted through the current static hosting workflow.
 
-## 4. أين أضع رابط API في script.js
+### Backend
+Google Apps Script Web Apps.
 
-افتح ملف `script.js` وابحث عن السطر:
+### Data
+Google Sheets used as lightweight operational and administrative data stores.
 
-```js
-const API_URL = "PUT_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
-```
+Deployment URLs, sheet IDs, script IDs, tokens, and credentials are intentionally not documented here.
 
-استبدل النص داخل علامات التنصيص برابط Web App الذي نسخته من Apps Script:
+## Key Files
 
-```js
-const API_URL = "https://script.google.com/macros/s/XXXXXXXX/exec";
-```
+The exact file set may evolve, but the current portal commonly uses files such as:
+- `home.html` — main portal.
+- `form.html` — kidney expiry registration.
+- `dashboard.html` — expiry dashboard / indicator.
+- `admin.html` — unified user administration.
+- `medications-admin.html` — central medication administration.
+- `Code.gs` — Google Apps Script backend in services that use the default Apps Script filename.
 
-## 5. طريقة رفع الموقع على GitHub Pages
+Some service pages may use different filenames depending on the deployment. Repository filenames should be treated as authoritative.
 
-1. أنشئ مستودعاً جديداً في GitHub.
-2. ارفع الملفات التالية إلى المستودع:
-   - `index.html`
-   - `upload.html`
-   - `upload.js`
-   - `dashboard.html`
-   - `dashboard.js`
-   - `style.css`
-   - `script.js`
-   - `README.md`
-3. ادخل إلى `Settings` في المستودع.
-4. اختر `Pages`.
-5. من `Build and deployment` اختر:
-   - Source: `Deploy from a branch`
-   - Branch: `main`
-   - Folder: `/root`
-6. اضغط `Save`.
-7. بعد دقيقة تقريباً سيظهر رابط الموقع.
+## Safety and Data Rules
 
-ملاحظة: الكاميرا تعمل عادة عبر HTTPS فقط. GitHub Pages يستخدم HTTPS، لذلك يناسب تشغيل قارئ الباركود/QR.
+- Medication IDs should remain stable when medication names are edited.
+- Expiry data should not be deleted simply because a medication is renamed or deactivated.
+- Name-based fuzzy matching should not be used as a runtime identity mechanism when Medication ID is available.
+- Public/read-only QR views should expose only the medication information required for the workflow.
+- Authentication credentials and session data must not be stored in this README.
 
-## صيغة ملف Excel أو CSV
+## Planned / In Progress
 
-يفضل أن يحتوي الملف على أعمدة بهذه الأسماء:
+The following items have been discussed or are being integrated, but should be considered incomplete until verified in the deployed files.
 
-| رقم الملف | اسم المريض |
-|---|---|
+### Medication Name Synchronization
+- Use Medication ID as the canonical key.
+- Synchronize the current medication name into connected operational records.
+- Preserve an original medication-name snapshot for historical auditing where implemented.
 
-يمكن أيضاً استخدام:
+### LASA / Tall Man Lettering
+- Apply explicit Tall Man formatting for selected LASA medications.
+- Do not convert the entire medication name to uppercase.
+- Use an explicit approved mapping rather than automatic or fuzzy capitalization.
+- Keep Medication ID and source medication data unchanged.
 
-| FileNumber | PatientName |
-|---|---|
+### High Alert Medication Identification
+- Add a clear visual High Alert marker for medications included in an approved hospital/reference list.
+- Keep the classification explicit rather than inferred automatically.
 
-إذا لم يجد النظام هذه الأسماء، سيقرأ أول عمودين في الملف كرقم الملف واسم المريض.
+### Labels Access Control
+- Add a dedicated `LabelsAccess` permission.
+- Main administrator retains access.
+- Other users receive access through unified user management.
+- Protect the page itself, not only the portal entry icon.
+
+### Order Service
+Planned / in-progress order workflow may include:
+- Multiple medications per order.
+- One order number per complete order.
+- Automatic order date.
+- Optional current-stock field.
+- Optional requested-quantity field.
+- Printable A4 order report.
+- Dedicated `OrderAccess` permission managed centrally.
+
+This section should be moved into **Current Features** only after the deployed implementation is verified.
+
+## Maintenance Notes
+
+When extending the portal:
+1. Prefer Medication ID over medication-name matching.
+2. Preserve backward compatibility with existing operational records.
+3. Avoid changing unrelated services during a service-specific update.
+4. Keep frontend access visibility and backend authorization consistent.
+5. Verify preview and print behavior separately for printable workflows.
+6. Keep sensitive deployment and authentication details out of public documentation.
+
+---
+
+This README intentionally documents the architecture and operational behavior at a high level. Deployment-specific secrets and internal identifiers are excluded.
