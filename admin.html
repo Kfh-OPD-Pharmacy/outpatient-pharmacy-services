@@ -490,6 +490,11 @@ table{min-width:760px}
       </label>
 
       <label class="check-pill">
+        <input id="orderAccessInput" type="checkbox">
+        <span id="orderAccessLabel"></span>
+      </label>
+
+      <label class="check-pill">
         <input id="activeInput" type="checkbox" checked>
         <span id="activeLabel"></span>
       </label>
@@ -517,6 +522,7 @@ table{min-width:760px}
           <th id="mailHeader"></th>
           <th id="kidneyHeader"></th>
           <th id="labelsHeader"></th>
+          <th id="orderHeader"></th>
           <th id="activeHeader"></th>
           <th id="editHeader"></th>
           <th id="deleteHeader"></th>
@@ -603,6 +609,9 @@ const text = {
 
     labelsAccess:
       "طباعة الليبلات",
+
+    orderAccess:
+      "الطلبية",
 
     active:
       "نشط",
@@ -702,6 +711,9 @@ const text = {
 
     labelsAccess:
       "Labels Generator",
+
+    orderAccess:
+      "Kidney Order",
 
     active:
       "Active",
@@ -858,6 +870,11 @@ function setLanguage(lang) {
     text[lang].labelsAccess;
 
   document.getElementById(
+    "orderAccessLabel"
+  ).innerText =
+    text[lang].orderAccess;
+
+  document.getElementById(
     "activeLabel"
   ).innerText =
     text[lang].active;
@@ -908,6 +925,11 @@ function setLanguage(lang) {
     "labelsHeader"
   ).innerText =
     text[lang].labelsAccess;
+
+  document.getElementById(
+    "orderHeader"
+  ).innerText =
+    text[lang].orderAccess;
 
   document.getElementById(
     "activeHeader"
@@ -1163,9 +1185,35 @@ function showAdminView() {
   ).innerText =
     adminUsername;
 
+  updateRestrictedPermissionControls();
+
   startInactivityWatcher();
 
   loadUsers();
+}
+
+
+function updateRestrictedPermissionControls() {
+
+  const restricted =
+    adminUsername.toLowerCase() !==
+    "admin";
+
+  [
+    "labelsAccessInput",
+    "orderAccessInput"
+  ].forEach(function(id) {
+
+    const input =
+      document.getElementById(id);
+
+    if (input) {
+      input.disabled =
+        restricted;
+    }
+
+  });
+
 }
 
 /* ================================
@@ -1427,6 +1475,11 @@ async function saveUser() {
       "labelsAccessInput"
     ).checked;
 
+  const orderAccess =
+    document.getElementById(
+      "orderAccessInput"
+    ).checked;
+
   const active =
     document.getElementById(
       "activeInput"
@@ -1450,7 +1503,8 @@ async function saveUser() {
     !medAccess &&
     !mailAccess &&
     !kidneyAccess &&
-    !labelsAccess
+    !labelsAccess &&
+    !orderAccess
   ) {
 
     showResult(
@@ -1521,7 +1575,10 @@ async function saveUser() {
             kidneyAccess,
 
           labelsAccess:
-            labelsAccess
+            labelsAccess,
+
+          orderAccess:
+            orderAccess
         });
 
     } else {
@@ -1553,7 +1610,10 @@ async function saveUser() {
             kidneyAccess,
 
           labelsAccess:
-            labelsAccess
+            labelsAccess,
+
+          orderAccess:
+            orderAccess
         });
     }
 
@@ -1654,6 +1714,13 @@ function editUser(username) {
   ).checked =
     Boolean(
       user.labelsAccess
+    );
+
+  document.getElementById(
+    "orderAccessInput"
+  ).checked =
+    Boolean(
+      user.orderAccess
     );
 
   document.getElementById(
@@ -1770,6 +1837,11 @@ function clearForm() {
     false;
 
   document.getElementById(
+    "orderAccessInput"
+  ).checked =
+    false;
+
+  document.getElementById(
     "activeInput"
   ).checked =
     true;
@@ -1876,6 +1948,13 @@ function renderUsers() {
         <td>
           ${permissionStatus(
             user.labelsAccess,
+            user.active
+          )}
+        </td>
+
+        <td>
+          ${permissionStatus(
+            user.orderAccess,
             user.active
           )}
         </td>
