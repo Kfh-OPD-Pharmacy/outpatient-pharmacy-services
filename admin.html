@@ -397,6 +397,206 @@ table{min-width:760px}
   }
 }
 
+/* Unified User Management UI only */
+.management-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  max-width:900px;
+  margin:0 auto 14px;
+  padding:10px 0
+}
+.management-toolbar input{
+  width:min(100%, 340px);
+  margin:0
+}
+.toolbar-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto
+}
+.toolbar-actions select{
+  width:140px;
+  margin:0
+}
+.add-user-btn{
+  white-space:nowrap
+}
+.user-form-panel{
+  max-width:760px;
+  margin:0 auto 16px;
+  padding:18px
+}
+.form-section-title{
+  margin:0 0 12px;
+  color:#168fb3;
+  font-size:15px;
+  font-weight:bold
+}
+.service-section-title{
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb
+}
+.user-form-panel .form-grid{
+  grid-template-columns:1fr 1fr;
+  max-width:none;
+  gap:12px 16px;
+  justify-content:stretch
+}
+.user-form-panel .form-grid input{
+  margin-bottom:0
+}
+.permissions-row{
+  justify-content:flex-start;
+  gap:10px 22px;
+  margin:0 0 16px
+}
+.simple-check{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:30px;
+  margin:0;
+  color:#111827;
+  font-size:13px;
+  font-weight:normal;
+  cursor:pointer
+}
+.simple-check input{
+  width:16px;
+  height:16px;
+  min-height:0;
+  margin:0;
+  padding:0;
+  box-shadow:none
+}
+.simple-check input:disabled{
+  cursor:not-allowed;
+  opacity:.65
+}
+.active-control{
+  align-self:center;
+  justify-self:start;
+  margin-top:20px
+}
+.table-wrap{
+  max-width:900px;
+  margin-top:12px;
+  border:1px solid #e5e7eb
+}
+table{
+  min-width:680px
+}
+th,td{
+  padding:10px 8px;
+  border-width:0 0 1px;
+  text-align:start
+}
+th{
+  font-size:12px
+}
+tbody tr:last-child td{
+  border-bottom:0
+}
+.inactive-user-row{
+  background:#f8fafc;
+  opacity:.72
+}
+.user-name-cell{
+  font-weight:bold
+}
+.main-admin-badge{
+  display:inline-block;
+  margin-inline-start:6px;
+  padding:2px 6px;
+  border:1px solid #a5d8e7;
+  border-radius:8px;
+  background:#eef9fc;
+  color:#0f7592;
+  font-size:10px;
+  font-weight:bold;
+  white-space:nowrap
+}
+.access-list{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px
+}
+.access-badge{
+  display:inline-block;
+  padding:3px 7px;
+  border:1px solid #cde7ef;
+  border-radius:8px;
+  background:#f2fafc;
+  color:#0f7592;
+  font-size:11px;
+  white-space:nowrap
+}
+.access-empty{
+  color:#94a3b8;
+  font-size:12px
+}
+.actions-cell{
+  white-space:nowrap
+}
+.icon-only{
+  width:30px;
+  height:30px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  border-radius:6px
+}
+.icon-only:hover{
+  background:#f1f5f9
+}
+.action-svg{
+  width:17px;
+  height:17px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.empty-box{
+  max-width:900px;
+  margin:12px auto 0;
+  padding:24px;
+  text-align:center;
+  color:#64748b
+}
+@media (max-width:700px){
+  .management-toolbar{
+    align-items:stretch;
+    flex-direction:column
+  }
+  .management-toolbar input{
+    width:100%
+  }
+  .toolbar-actions{
+    width:100%
+  }
+  .toolbar-actions select,
+  .toolbar-actions .add-user-btn{
+    flex:1
+  }
+  .user-form-panel .form-grid{
+    grid-template-columns:1fr
+  }
+  .active-control{
+    margin-top:2px
+  }
+  table{
+    min-width:620px
+  }
+}
+
 </style>
 </head>
 
@@ -446,7 +646,32 @@ table{min-width:760px}
     <button type="button" class="logout-btn" id="logoutBtn" onclick="logoutAdmin()"></button>
   </div>
 
-  <div class="panel">
+  <div class="management-toolbar">
+    <input
+      type="search"
+      id="usersSearchInput"
+      oninput="handleUsersSearch()">
+
+    <div class="toolbar-actions">
+      <select
+        id="usersStatusFilter"
+        onchange="handleUsersFilter()">
+        <option value="all"></option>
+        <option value="active"></option>
+        <option value="inactive"></option>
+      </select>
+
+      <button
+        type="button"
+        class="primary-btn add-user-btn"
+        id="addUserBtn"
+        onclick="openAddUserForm()"></button>
+    </div>
+  </div>
+
+  <div class="panel user-form-panel" id="userFormPanel" style="display:none">
+
+    <div class="form-section-title" id="userInformationTitle"></div>
 
     <div class="form-grid">
 
@@ -465,38 +690,40 @@ table{min-width:760px}
         <input type="text" id="nameInput">
       </div>
 
+      <label class="simple-check active-control">
+        <input id="activeInput" type="checkbox" checked>
+        <span id="activeLabel"></span>
+      </label>
+
     </div>
+
+    <div class="form-section-title service-section-title" id="serviceAccessTitle"></div>
 
     <div class="permissions-row">
 
-      <label class="check-pill">
+      <label class="simple-check">
         <input id="medAccessInput" type="checkbox" checked>
         <span id="medAccessLabel"></span>
       </label>
 
-      <label class="check-pill">
+      <label class="simple-check">
         <input id="mailAccessInput" type="checkbox">
         <span id="mailAccessLabel"></span>
       </label>
 
-      <label class="check-pill">
+      <label class="simple-check">
         <input id="kidneyAccessInput" type="checkbox">
         <span id="kidneyAccessLabel"></span>
       </label>
 
-      <label class="check-pill">
+      <label class="simple-check">
         <input id="labelsAccessInput" type="checkbox">
         <span id="labelsAccessLabel"></span>
       </label>
 
-      <label class="check-pill">
+      <label class="simple-check">
         <input id="orderAccessInput" type="checkbox">
         <span id="orderAccessLabel"></span>
-      </label>
-
-      <label class="check-pill">
-        <input id="activeInput" type="checkbox" checked>
-        <span id="activeLabel"></span>
       </label>
 
     </div>
@@ -517,15 +744,9 @@ table{min-width:760px}
         <tr>
           <th id="nameHeader"></th>
           <th id="usernameHeader"></th>
-          <th id="pinHeader"></th>
-          <th id="medHeader"></th>
-          <th id="mailHeader"></th>
-          <th id="kidneyHeader"></th>
-          <th id="labelsHeader"></th>
-          <th id="orderHeader"></th>
-          <th id="activeHeader"></th>
-          <th id="editHeader"></th>
-          <th id="deleteHeader"></th>
+          <th id="accessHeader"></th>
+          <th id="statusHeader"></th>
+          <th id="actionsHeader"></th>
         </tr>
       </thead>
 
@@ -560,6 +781,8 @@ sessionStorage.removeItem(
 
 let editingUsername = "";
 let users = [];
+let usersSearchTerm = "";
+let usersStatusFilter = "all";
 let inactivityTimer = null;
 
 const INACTIVITY_LIMIT_MS =
@@ -613,6 +836,42 @@ const text = {
     orderAccess:
       "الطلبية",
 
+    searchUsers:
+      "البحث بالاسم أو اسم المستخدم",
+
+    filterAll:
+      "الكل",
+
+    filterActive:
+      "النشطون",
+
+    filterInactive:
+      "غير النشطين",
+
+    addUser:
+      "إضافة مستخدم",
+
+    userInformation:
+      "بيانات المستخدم",
+
+    serviceAccess:
+      "صلاحيات الخدمات",
+
+    access:
+      "الصلاحيات",
+
+    status:
+      "الحالة",
+
+    actions:
+      "الإجراءات",
+
+    mainAdmin:
+      "الآدمن الرئيسي",
+
+    allServices:
+      "كل الخدمات",
+
     active:
       "نشط",
 
@@ -629,7 +888,7 @@ const text = {
       "تحديث المستخدم",
 
     clear:
-      "مسح الحقول",
+      "إلغاء",
 
     edit:
       "تعديل",
@@ -715,6 +974,42 @@ const text = {
     orderAccess:
       "Kidney Order",
 
+    searchUsers:
+      "Search by name or username",
+
+    filterAll:
+      "All",
+
+    filterActive:
+      "Active",
+
+    filterInactive:
+      "Inactive",
+
+    addUser:
+      "Add User",
+
+    userInformation:
+      "User Information",
+
+    serviceAccess:
+      "Service Access",
+
+    access:
+      "Access",
+
+    status:
+      "Status",
+
+    actions:
+      "Actions",
+
+    mainAdmin:
+      "MAIN ADMIN",
+
+    allServices:
+      "All Services",
+
     active:
       "Active",
 
@@ -731,7 +1026,7 @@ const text = {
       "Update User",
 
     clear:
-      "Clear Form",
+      "Cancel",
 
     edit:
       "Edit",
@@ -902,49 +1197,55 @@ function setLanguage(lang) {
     text[lang].username;
 
   document.getElementById(
-    "pinHeader"
+    "accessHeader"
   ).innerText =
-    text[lang].pin;
+    text[lang].access;
 
   document.getElementById(
-    "medHeader"
+    "statusHeader"
   ).innerText =
-    text[lang].medAccess;
+    text[lang].status;
 
   document.getElementById(
-    "mailHeader"
+    "actionsHeader"
   ).innerText =
-    text[lang].mailAccess;
+    text[lang].actions;
 
   document.getElementById(
-    "kidneyHeader"
-  ).innerText =
-    text[lang].kidneyAccess;
+    "usersSearchInput"
+  ).placeholder =
+    text[lang].searchUsers;
 
   document.getElementById(
-    "labelsHeader"
+    "addUserBtn"
   ).innerText =
-    text[lang].labelsAccess;
+    "+ " + text[lang].addUser;
 
   document.getElementById(
-    "orderHeader"
+    "userInformationTitle"
   ).innerText =
-    text[lang].orderAccess;
+    text[lang].userInformation;
 
   document.getElementById(
-    "activeHeader"
+    "serviceAccessTitle"
   ).innerText =
-    text[lang].active;
+    text[lang].serviceAccess;
 
-  document.getElementById(
-    "editHeader"
-  ).innerText =
-    text[lang].edit;
+  const filterOptions =
+    document.getElementById(
+      "usersStatusFilter"
+    ).options;
 
-  document.getElementById(
-    "deleteHeader"
-  ).innerText =
-    text[lang].delete;
+  filterOptions[0].text =
+    text[lang].filterAll;
+
+  filterOptions[1].text =
+    text[lang].filterActive;
+
+  filterOptions[2].text =
+    text[lang].filterInactive;
+
+  updateAdminIdentity();
 
   document.getElementById(
     "languageToggle"
@@ -1180,16 +1481,36 @@ function showAdminView() {
   ).style.display =
     "block";
 
-  document.getElementById(
-    "adminName"
-  ).innerText =
-    adminUsername;
+  updateAdminIdentity();
 
   updateRestrictedPermissionControls();
 
   startInactivityWatcher();
 
   loadUsers();
+}
+
+
+function updateAdminIdentity() {
+
+  const adminName =
+    document.getElementById(
+      "adminName"
+    );
+
+  if (!adminName) return;
+
+  adminName.innerHTML =
+    escapeHtml(
+      adminUsername
+    ) +
+    (
+      adminUsername.toLowerCase() ===
+      "admin"
+        ? ` <span class="main-admin-badge">${escapeHtml(text[currentLang].mainAdmin)}</span>`
+        : ""
+    );
+
 }
 
 
@@ -1213,6 +1534,62 @@ function updateRestrictedPermissionControls() {
     }
 
   });
+
+}
+
+
+function showUserForm() {
+
+  const panel =
+    document.getElementById(
+      "userFormPanel"
+    );
+
+  panel.style.display =
+    "block";
+
+  panel.scrollIntoView({
+    behavior:"smooth",
+    block:"nearest"
+  });
+
+}
+
+
+function openAddUserForm() {
+
+  clearForm();
+  showUserForm();
+
+  document.getElementById(
+    "nameInput"
+  ).focus();
+
+}
+
+
+function handleUsersSearch() {
+
+  usersSearchTerm =
+    document.getElementById(
+      "usersSearchInput"
+    ).value
+      .trim()
+      .toLowerCase();
+
+  renderUsers();
+
+}
+
+
+function handleUsersFilter() {
+
+  usersStatusFilter =
+    document.getElementById(
+      "usersStatusFilter"
+    ).value;
+
+  renderUsers();
 
 }
 
@@ -1734,6 +2111,8 @@ function editUser(username) {
     text[
       currentLang
     ].update;
+
+  showUserForm();
 }
 
 /* ================================
@@ -1850,6 +2229,11 @@ function clearForm() {
     "saveUserBtn"
   ).innerText =
     text[currentLang].save;
+
+  document.getElementById(
+    "userFormPanel"
+  ).style.display =
+    "none";
 }
 
 /* ================================
@@ -1878,7 +2262,49 @@ function renderUsers() {
   body.innerHTML =
     "";
 
-  if (!users.length) {
+  const filteredUsers =
+    users.filter(
+      function(user) {
+
+        const matchesSearch =
+          !usersSearchTerm ||
+          String(
+            user.name || ""
+          )
+            .toLowerCase()
+            .includes(
+              usersSearchTerm
+            ) ||
+          String(
+            user.username || ""
+          )
+            .toLowerCase()
+            .includes(
+              usersSearchTerm
+            );
+
+        const isActive =
+          user.active !== false;
+
+        const matchesStatus =
+          usersStatusFilter === "all" ||
+          (
+            usersStatusFilter === "active" &&
+            isActive
+          ) ||
+          (
+            usersStatusFilter === "inactive" &&
+            !isActive
+          );
+
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
+      }
+    );
+
+  if (!filteredUsers.length) {
 
     table.style.display =
       "none";
@@ -1898,7 +2324,7 @@ function renderUsers() {
   table.style.display =
     "table";
 
-  users.forEach(
+  filteredUsers.forEach(
     function(user) {
 
       const tr =
@@ -1906,56 +2332,37 @@ function renderUsers() {
           "tr"
         );
 
+      if (
+        user.active === false
+      ) {
+        tr.classList.add(
+          "inactive-user-row"
+        );
+      }
+
+      const isMainAdmin =
+        String(
+          user.username || ""
+        ).toLowerCase() ===
+        "admin";
+
       tr.innerHTML = `
 
-        <td>
-          ${escapeHtml(
-            user.name || ""
-          )}
+        <td class="user-name-cell">
+          ${escapeHtml(user.name || "")}
+          ${isMainAdmin
+            ? `<span class="main-admin-badge">${escapeHtml(text[currentLang].mainAdmin)}</span>`
+            : ""}
         </td>
 
         <td>
-          ${escapeHtml(
-            user.username || ""
-          )}
+          ${escapeHtml(user.username || "")}
         </td>
 
         <td>
-          ****
-        </td>
-
-        <td>
-          ${permissionStatus(
-            user.medAccess,
-            user.active
-          )}
-        </td>
-
-        <td>
-          ${permissionStatus(
-            user.mailAccess,
-            user.active
-          )}
-        </td>
-
-        <td>
-          ${permissionStatus(
-            user.kidneyAccess,
-            user.active
-          )}
-        </td>
-
-        <td>
-          ${permissionStatus(
-            user.labelsAccess,
-            user.active
-          )}
-        </td>
-
-        <td>
-          ${permissionStatus(
-            user.orderAccess,
-            user.active
+          ${renderAccessBadges(
+            user,
+            isMainAdmin
           )}
         </td>
 
@@ -1965,23 +2372,29 @@ function renderUsers() {
           )}
         </td>
 
-        <td>
+        <td class="actions-cell">
           <button
             type="button"
             class="icon-only edit-btn"
             title="${text[currentLang].edit}"
             onclick="editUser('${escapeAttribute(user.username)}')">
-            ✎
+            <svg class="action-svg" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+            </svg>
           </button>
-        </td>
 
-        <td>
           <button
             type="button"
             class="icon-only delete-btn"
             title="${text[currentLang].delete}"
             onclick="deleteUser('${escapeAttribute(user.username)}')">
-            ✕
+            <svg class="action-svg" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 6h18"></path>
+              <path d="M8 6V4h8v2"></path>
+              <path d="M19 6l-1 14H6L5 6"></path>
+              <path d="M10 11v5M14 11v5"></path>
+            </svg>
           </button>
         </td>
 
@@ -1992,6 +2405,71 @@ function renderUsers() {
       );
     }
   );
+}
+
+
+function renderAccessBadges(
+  user,
+  isMainAdmin
+) {
+
+  if (isMainAdmin) {
+    return `
+      <div class="access-list">
+        <span class="access-badge">
+          ${escapeHtml(
+            text[currentLang].allServices
+          )}
+        </span>
+      </div>
+    `;
+  }
+
+  const permissions = [
+    [
+      user.medAccess,
+      text[currentLang].medAccess
+    ],
+    [
+      user.mailAccess,
+      text[currentLang].mailAccess
+    ],
+    [
+      user.kidneyAccess,
+      text[currentLang].kidneyAccess
+    ],
+    [
+      user.labelsAccess,
+      text[currentLang].labelsAccess
+    ],
+    [
+      user.orderAccess,
+      text[currentLang].orderAccess
+    ]
+  ]
+    .filter(
+      function(permission) {
+        return Boolean(
+          permission[0]
+        );
+      }
+    )
+    .map(
+      function(permission) {
+        return `
+          <span class="access-badge">
+            ${escapeHtml(
+              permission[1]
+            )}
+          </span>
+        `;
+      }
+    )
+    .join("");
+
+  return permissions
+    ? `<div class="access-list">${permissions}</div>`
+    : `<span class="access-empty">${escapeHtml(text[currentLang].noAccess)}</span>`;
 }
 
 function permissionStatus(
