@@ -1197,6 +1197,9 @@ input[type="number"]{
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
 
+const UNIFIED_AUTH_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
 const CENTRAL_MEDICATIONS_API_URL =
   "https://script.google.com/macros/s/AKfycbxtK-J87-gmKVXExW_kbVXBuYTxArtP5pnvnp3HJh2s_BL2nPQn8vPrwMX_bDUkp4uq/exec";
 
@@ -1574,6 +1577,8 @@ async function postApi(action, payload = {}, includeSession = true){
   if (includeSession){
     currentSessionToken =
       sessionStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) ||
+      sessionStorage.getItem("unifiedAdminSessionToken") ||
+      sessionStorage.getItem("medSessionToken") ||
       currentSessionToken;
 
     if (currentSessionToken){
@@ -1585,6 +1590,44 @@ async function postApi(action, payload = {}, includeSession = true){
   const response =
     await fetch(
       KIDNEY_API_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"text/plain;charset=utf-8"
+        },
+        body:JSON.stringify(requestData)
+      }
+    );
+
+  if (!response.ok){
+    throw new Error("HTTP_" + response.status);
+  }
+
+  return await response.json();
+}
+
+async function postAuthApi(action, payload = {}, includeSession = true){
+  const requestData = {
+    action:action,
+    ...payload
+  };
+
+  if (includeSession){
+    currentSessionToken =
+      sessionStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) ||
+      sessionStorage.getItem("unifiedAdminSessionToken") ||
+      sessionStorage.getItem("medSessionToken") ||
+      currentSessionToken;
+
+    if (currentSessionToken){
+      requestData.sessionToken = currentSessionToken;
+      requestData.token = currentSessionToken;
+    }
+  }
+
+  const response =
+    await fetch(
+      UNIFIED_AUTH_API_URL,
       {
         method:"POST",
         headers:{
@@ -1614,27 +1657,28 @@ async function loginEmployee(){
 
   try{
     const result =
-      await postApi(
-        "employeeLogin",
+      await postAuthApi(
+        "checkUserAccess",
         {
           username:username,
           password:password,
-          pin:password
+          pin:password,
+          service:"labels"
         },
         false
       );
 
-    if (!result.success || !result.employee || !result.sessionToken){
+    if (!result.success || !result.user || !result.sessionToken){
       showLoginResult(text[currentLang].invalidLogin, "error");
       return;
     }
 
     currentEmployeeName =
-      result.employee.name ||
-      result.employee.username ||
+      result.user.name ||
+      result.user.username ||
       username;
     currentEmployeeUsername =
-      result.employee.username ||
+      result.user.username ||
       username;
     currentSessionToken =
       result.sessionToken;
@@ -1651,7 +1695,10 @@ async function loginEmployee(){
 
 async function restoreSession(){
   currentSessionToken =
-    sessionStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) || "";
+    sessionStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) ||
+    sessionStorage.getItem("unifiedAdminSessionToken") ||
+    sessionStorage.getItem("medSessionToken") ||
+    "";
   currentEmployeeName =
     sessionStorage.getItem(KIDNEY_SESSION_NAME_KEY) || "";
   currentEmployeeUsername =
@@ -1665,10 +1712,10 @@ async function restoreSession(){
 
   try{
     const result =
-      await postApi(
+      await postAuthApi(
         "validateSession",
         {
-          service:"kidney"
+          service:"labels"
         },
         true
       );
@@ -1714,7 +1761,7 @@ function showEmployeeView(){
 async function logoutEmployee(){
   if (currentSessionToken){
     try{
-      await postApi("revokeSession", {}, true);
+      await postAuthApi("revokeSession", {}, true);
     }catch(error){}
   }
 

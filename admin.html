@@ -485,6 +485,11 @@ table{min-width:760px}
       </label>
 
       <label class="check-pill">
+        <input id="labelsAccessInput" type="checkbox">
+        <span id="labelsAccessLabel"></span>
+      </label>
+
+      <label class="check-pill">
         <input id="activeInput" type="checkbox" checked>
         <span id="activeLabel"></span>
       </label>
@@ -511,6 +516,7 @@ table{min-width:760px}
           <th id="medHeader"></th>
           <th id="mailHeader"></th>
           <th id="kidneyHeader"></th>
+          <th id="labelsHeader"></th>
           <th id="activeHeader"></th>
           <th id="editHeader"></th>
           <th id="deleteHeader"></th>
@@ -594,6 +600,9 @@ const text = {
 
     kidneyAccess:
       "صيدلية الكلى",
+
+    labelsAccess:
+      "طباعة الليبلات",
 
     active:
       "نشط",
@@ -690,6 +699,9 @@ const text = {
 
     kidneyAccess:
       "Kidney Pharmacy",
+
+    labelsAccess:
+      "Labels Generator",
 
     active:
       "Active",
@@ -841,6 +853,11 @@ function setLanguage(lang) {
     text[lang].kidneyAccess;
 
   document.getElementById(
+    "labelsAccessLabel"
+  ).innerText =
+    text[lang].labelsAccess;
+
+  document.getElementById(
     "activeLabel"
   ).innerText =
     text[lang].active;
@@ -886,6 +903,11 @@ function setLanguage(lang) {
     "kidneyHeader"
   ).innerText =
     text[lang].kidneyAccess;
+
+  document.getElementById(
+    "labelsHeader"
+  ).innerText =
+    text[lang].labelsAccess;
 
   document.getElementById(
     "activeHeader"
@@ -1400,6 +1422,11 @@ async function saveUser() {
       "kidneyAccessInput"
     ).checked;
 
+  const labelsAccess =
+    document.getElementById(
+      "labelsAccessInput"
+    ).checked;
+
   const active =
     document.getElementById(
       "activeInput"
@@ -1422,7 +1449,8 @@ async function saveUser() {
   if (
     !medAccess &&
     !mailAccess &&
-    !kidneyAccess
+    !kidneyAccess &&
+    !labelsAccess
   ) {
 
     showResult(
@@ -1490,7 +1518,10 @@ async function saveUser() {
             mailAccess,
 
           kidneyAccess:
-            kidneyAccess
+            kidneyAccess,
+
+          labelsAccess:
+            labelsAccess
         });
 
     } else {
@@ -1519,7 +1550,10 @@ async function saveUser() {
             mailAccess,
 
           kidneyAccess:
-            kidneyAccess
+            kidneyAccess,
+
+          labelsAccess:
+            labelsAccess
         });
     }
 
@@ -1613,6 +1647,13 @@ function editUser(username) {
   ).checked =
     Boolean(
       user.kidneyAccess
+    );
+
+  document.getElementById(
+    "labelsAccessInput"
+  ).checked =
+    Boolean(
+      user.labelsAccess
     );
 
   document.getElementById(
@@ -1724,6 +1765,11 @@ function clearForm() {
     false;
 
   document.getElementById(
+    "labelsAccessInput"
+  ).checked =
+    false;
+
+  document.getElementById(
     "activeInput"
   ).checked =
     true;
@@ -1823,6 +1869,13 @@ function renderUsers() {
         <td>
           ${permissionStatus(
             user.kidneyAccess,
+            user.active
+          )}
+        </td>
+
+        <td>
+          ${permissionStatus(
+            user.labelsAccess,
             user.active
           )}
         </td>

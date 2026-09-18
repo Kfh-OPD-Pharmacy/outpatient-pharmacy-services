@@ -705,6 +705,39 @@ a.portal-card:hover,
 
     </a>
 
+
+    <a
+      class="portal-card"
+      id="labelsCard"
+      href="shelf-labels.html"
+      style="display:none">
+
+      <div class="card-head">
+
+        <div class="card-text">
+
+          <p
+            class="card-title"
+            id="labelsTitle">
+            مولد الليبلات
+          </p>
+
+          <p
+            class="card-desc"
+            id="labelsDesc">
+            إنشاء وطباعة ليبلات الأدوية.
+          </p>
+
+        </div>
+
+        <div class="card-icon">
+          🏷️
+        </div>
+
+      </div>
+
+    </a>
+
   </div>
 
 </div>
@@ -730,6 +763,8 @@ const text = {
     formDesc:"إدخال بيانات دواء جديد، مع تنبيه تلقائي عند وجود تاريخ أقدم مسجل مسبقا.",
     orderTitle:"Kidney Order / الطلبية",
     orderDesc:"إنشاء طلبية أدوية لصيدلية مركز الكلى.",
+    labelsTitle:"مولد الليبلات",
+    labelsDesc:"إنشاء وطباعة ليبلات الأدوية.",
     back:"العودة إلى اختيار الصيدلية"
   },
 
@@ -745,6 +780,8 @@ const text = {
     formDesc:"Enter a new medication record with an automatic alert when an older expiry date already exists.",
     orderTitle:"Kidney Order",
     orderDesc:"Create a medication order for the Kidney Center Pharmacy.",
+    labelsTitle:"Labels Generator",
+    labelsDesc:"Create and print medication shelf labels.",
     back:"Back to pharmacy selection"
   }
 
@@ -779,7 +816,9 @@ function setLanguage(lang){
     "formTitle",
     "formDesc",
     "orderTitle",
-    "orderDesc"
+    "orderDesc",
+    "labelsTitle",
+    "labelsDesc"
   ].forEach(function(id){
 
     document.getElementById(id).innerText =
@@ -872,9 +911,71 @@ function renderDate(){
 }
 
 
+async function updateLabelsCardVisibility(){
+
+  const labelsCard =
+    document.getElementById(
+      "labelsCard"
+    );
+
+  const sessionToken =
+    sessionStorage.getItem(
+      "kidneySessionToken"
+    ) ||
+    sessionStorage.getItem(
+      "unifiedAdminSessionToken"
+    ) ||
+    sessionStorage.getItem(
+      "medSessionToken"
+    );
+
+  if (
+    !labelsCard ||
+    !sessionToken
+  ){
+    return;
+  }
+
+  try{
+
+    const response =
+      await fetch(
+        "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec",
+        {
+          method:"POST",
+          headers:{
+            "Content-Type":"text/plain;charset=utf-8"
+          },
+          body:JSON.stringify({
+            action:"validateSession",
+            sessionToken:sessionToken,
+            token:sessionToken,
+            service:"labels"
+          })
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (
+      result &&
+      result.success
+    ){
+      labelsCard.style.display =
+        "";
+    }
+
+  }catch(error){}
+
+}
+
+
 setLanguage(
   "ar"
 );
+
+updateLabelsCardVisibility();
 
 </script>
 
