@@ -354,7 +354,7 @@ body{padding:10px;background:#fff}
   <h1 class="page-title" id="pageTitle">بوابة خدمات الرعاية الصيدلانية</h1>
   <p class="subtitle" id="subtitle">بوابة موحدة لتقديم الخدمات الصيدلانية.</p>
 
-  <div id="loginView" class="login-card" style="display:none">
+  <div id="loginView" class="login-card">
     <label id="usernameLabel" for="portalUsername">اسم المستخدم</label>
     <input type="text" id="portalUsername" autocomplete="username">
 
@@ -637,6 +637,10 @@ function clearPortalStorage() {
     "unifiedPortalSessionToken"
   );
 
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+
   portalUsername = "";
   portalSessionToken = "";
   currentUser = null;
@@ -888,6 +892,11 @@ async function loginPortal() {
       portalSessionToken
     );
 
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(currentUser)
+    );
+
     document.getElementById(
       "portalPin"
     ).value =
@@ -910,9 +919,53 @@ async function loginPortal() {
 
 
 async function restorePortalSession() {
+  portalSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
   if (!portalSessionToken) {
     showLoginView();
     return;
+  }
+
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  let cachedUser = null;
+
+  const cachedUserText =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
+
+  if (cachedUserText) {
+    try {
+      cachedUser =
+        JSON.parse(
+          cachedUserText
+        );
+
+      if (
+        cachedUser &&
+        typeof cachedUser === "object"
+      ) {
+        currentUser =
+          cachedUser;
+
+        portalUsername =
+          cachedUser.username ||
+          portalUsername;
+
+        showPortalView(
+          cachedUser
+        );
+      }
+    } catch (error) {
+      cachedUser = null;
+    }
   }
 
   try {
@@ -946,6 +999,11 @@ async function restorePortalSession() {
     sessionStorage.setItem(
       "unifiedPortalUsername",
       portalUsername
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(currentUser)
     );
 
     showPortalView(
