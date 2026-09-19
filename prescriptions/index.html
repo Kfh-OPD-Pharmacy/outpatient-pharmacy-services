@@ -5,6 +5,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title id="documentTitle">بوابة وصفات البريد</title>
   <link rel="stylesheet" href="style.css?v=20260614-hide-mail-home-icon">
+  <style>
+    .employee-meta{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+      align-items:center;
+      gap:12px;
+      direction:ltr
+    }
+
+    .employee-meta .date-box{
+      justify-self:start
+    }
+
+    .employee-meta .language-chip{
+      justify-self:end
+    }
+
+    .employee-toolbar{
+      grid-column:2;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      margin:0;
+      padding:0;
+      direction:rtl;
+      color:#168fb3
+    }
+
+    .employee-name{
+      white-space:nowrap;
+      font-size:18px;
+      line-height:1;
+      font-weight:bold;
+      color:#168fb3
+    }
+
+    .portal-back-button,
+    .logout-icon{
+      width:34px;
+      height:34px;
+      margin:0;
+      padding:0;
+      border:0;
+      background:transparent;
+      color:#168fb3;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      flex:0 0 auto;
+      font-family:Arial,sans-serif
+    }
+
+    .portal-back-button{
+      font-size:28px;
+      line-height:1;
+      text-decoration:none
+    }
+
+    .portal-back-button:hover{
+      color:#0f7592;
+      transform:translateX(-1px)
+    }
+
+    .logout-icon:hover{
+      color:#0f7592;
+      transform:scale(1.06)
+    }
+
+    .power-svg{
+      width:30px;
+      height:30px;
+      display:block;
+      fill:none;
+      stroke:currentColor;
+      stroke-width:2.35;
+      stroke-linecap:round;
+      stroke-linejoin:round
+    }
+
+    @media (max-width:700px){
+      .employee-meta{
+        grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+        gap:6px
+      }
+
+      .employee-toolbar{
+        gap:6px
+      }
+
+      .employee-name{
+        max-width:130px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        font-size:15px
+      }
+
+      .portal-back-button,
+      .logout-icon{
+        width:30px;
+        height:30px
+      }
+
+      .power-svg{
+        width:25px;
+        height:25px
+      }
+
+      .employee-meta .date-box,
+      .employee-meta .language-chip{
+        font-size:11px
+      }
+    }
+  </style>
 </head>
 <body class="portal-body">
   <main class="app-shell employee-shell portal-shell">
@@ -21,6 +136,35 @@
 
     <div class="employee-meta">
       <div class="date-box" id="dateBox"></div>
+
+      <div class="employee-toolbar">
+        <a
+          class="portal-back-button"
+          href="../outpatient-pharmacy.html"
+          title="رجوع"
+          aria-label="رجوع">↩</a>
+
+        <span
+          class="employee-name"
+          id="employeeName"></span>
+
+        <button
+          type="button"
+          class="logout-icon"
+          id="logoutBtn"
+          onclick="logoutPortal()"
+          title="خروج"
+          aria-label="خروج">
+          <svg
+            class="power-svg"
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+            <path d="M12 3v9"></path>
+            <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+          </svg>
+        </button>
+      </div>
+
       <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
     </div>
 
@@ -29,7 +173,7 @@
     </section>
 
     <nav class="portal-grid" id="portalNav" aria-label="روابط صفحات النظام">
-      <a class="portal-card primary" href="prep.html">
+      <a class="portal-card primary" id="prepCard" href="prep.html" style="display:none">
         <span class="portal-icon" aria-hidden="true">💊</span>
         <span>
           <strong id="prepTitle">وصفات البريد الدوائي</strong>
@@ -37,7 +181,7 @@
         </span>
       </a>
 
-      <a class="portal-card upload" href="upload.html">
+      <a class="portal-card upload" id="uploadCard" href="upload.html" style="display:none">
         <span class="portal-icon" aria-hidden="true">⇧</span>
         <span>
           <strong id="uploadTitle">إرسال القائمة اليومية</strong>
@@ -45,7 +189,7 @@
         </span>
       </a>
 
-      <a class="portal-card dashboard" href="dashboard.html">
+      <a class="portal-card dashboard" id="dashboardCard" href="dashboard.html" style="display:none">
         <span class="portal-icon" aria-hidden="true">◫</span>
         <span>
           <strong id="dashboardTitle">المؤشر اليومي للبريد الدوائي</strong>
@@ -124,9 +268,223 @@
       }).format(now);
       document.getElementById("dateBox").textContent = `${dayName} - ${date}`;
     }
+
+    const UNIFIED_API_URL =
+      "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
+    async function unifiedApi(payload) {
+      const response = await fetch(
+        UNIFIED_API_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      return response.json();
+    }
+
+    function clearPortalSession() {
+      sessionStorage.removeItem("unifiedPortalUsername");
+      sessionStorage.removeItem("unifiedPortalSessionToken");
+      sessionStorage.removeItem("unifiedPortalUser");
+    }
+
+    function hideAllMailCards() {
+      document.getElementById("prepCard").style.display = "none";
+      document.getElementById("uploadCard").style.display = "none";
+      document.getElementById("dashboardCard").style.display = "none";
+    }
+
+    function setEmployeeName(user) {
+      const employeeName = document.getElementById("employeeName");
+
+      if (!employeeName) {
+        return;
+      }
+
+      employeeName.textContent =
+        (user && (user.name || user.username)) || "";
+    }
+
+    function clearEmployeeName() {
+      const employeeName = document.getElementById("employeeName");
+
+      if (employeeName) {
+        employeeName.textContent = "";
+      }
+    }
+
+    function renderAllowedMailCards(user) {
+      const prepAllowed = Boolean(
+        user &&
+        user.opdMailRxAccess === true
+      );
+
+      const uploadAllowed = Boolean(
+        user &&
+        user.opdMailDailyListAccess === true
+      );
+
+      const dashboardAllowed = Boolean(
+        user &&
+        user.opdMailIndicatorAccess === true
+      );
+
+      document.getElementById("prepCard").style.display =
+        prepAllowed ? "" : "none";
+
+      document.getElementById("uploadCard").style.display =
+        uploadAllowed ? "" : "none";
+
+      document.getElementById("dashboardCard").style.display =
+        dashboardAllowed ? "" : "none";
+
+      return (
+        prepAllowed ||
+        uploadAllowed ||
+        dashboardAllowed
+      );
+    }
+
+    async function logoutPortal() {
+      const sessionToken =
+        sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+      if (sessionToken) {
+        try {
+          await unifiedApi({
+            action: "revokeSession",
+            sessionToken: sessionToken
+          });
+        } catch (error) {}
+      }
+
+      clearPortalSession();
+      hideAllMailCards();
+      clearEmployeeName();
+
+      window.location.replace("../index.html");
+    }
+
+    async function validatePageAccess() {
+      hideAllMailCards();
+
+      const sessionToken =
+        sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+      if (!sessionToken) {
+        clearEmployeeName();
+        window.location.replace("../outpatient-pharmacy.html");
+        return;
+      }
+
+      let cachedUserRendered = false;
+
+      const cachedUserText =
+        sessionStorage.getItem("unifiedPortalUser") || "";
+
+      if (cachedUserText) {
+        try {
+          const cachedUser =
+            JSON.parse(cachedUserText);
+
+          if (
+            cachedUser &&
+            typeof cachedUser === "object"
+          ) {
+            const hasCachedMailAccess =
+              renderAllowedMailCards(cachedUser);
+
+            if (hasCachedMailAccess) {
+              setEmployeeName(cachedUser);
+              cachedUserRendered = true;
+            } else {
+              hideAllMailCards();
+            }
+          }
+        } catch (error) {
+          hideAllMailCards();
+        }
+      }
+
+      try {
+        const result =
+          await unifiedApi({
+            action: "validateSession",
+            sessionToken: sessionToken,
+            service: ""
+          });
+
+        if (
+          !result ||
+          !result.success ||
+          !result.user ||
+          result.user.active === false
+        ) {
+          clearPortalSession();
+          hideAllMailCards();
+          clearEmployeeName();
+
+          window.location.replace("../outpatient-pharmacy.html");
+          return;
+        }
+
+        sessionStorage.setItem(
+          "unifiedPortalUser",
+          JSON.stringify(result.user)
+        );
+
+        sessionStorage.setItem(
+          "unifiedPortalUsername",
+          result.user.username || ""
+        );
+
+        setEmployeeName(result.user);
+
+        const hasMailAccess =
+          renderAllowedMailCards(result.user);
+
+        if (!hasMailAccess) {
+          hideAllMailCards();
+          clearEmployeeName();
+
+          window.location.replace("../outpatient-pharmacy.html");
+        }
+
+      } catch (error) {
+        if (cachedUserRendered) {
+          return;
+        }
+
+        hideAllMailCards();
+        clearEmployeeName();
+      }
+    }
+
+    window.addEventListener(
+      "pageshow",
+      function() {
+        const sessionToken =
+          sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+        if (sessionToken) {
+          return;
+        }
+
+        hideAllMailCards();
+        clearEmployeeName();
+
+        window.location.replace("../index.html");
+      }
+    );
+
     setLanguage("ar");
+    validatePageAccess();
   </script>
 </body>
 </html>
-
 
