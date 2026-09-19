@@ -252,7 +252,7 @@ body{padding:10px;background:#fff}
     <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
   </div>
   <div class="title-row">
-    <a class="back-button" href="home.html" title="رجوع" aria-label="رجوع">↩</a>
+    <a class="back-button" href="index.html" title="رجوع" aria-label="رجوع">↩</a>
     <h1 class="page-title" id="pageTitle">مركز السكر</h1>
   </div>
   <div class="portal-grid">
@@ -347,6 +347,7 @@ async function unifiedApi(payload) {
 function clearPortalSession() {
   sessionStorage.removeItem("unifiedPortalUsername");
   sessionStorage.removeItem("unifiedPortalSessionToken");
+  sessionStorage.removeItem("unifiedPortalUser");
 }
 
 function denyAndReturnHome() {
@@ -358,7 +359,7 @@ function denyAndReturnHome() {
   denied.style.display = "block";
 
   window.setTimeout(function() {
-    window.location.href = "home.html";
+    window.location.href = "index.html";
   }, 700);
 }
 
@@ -404,6 +405,24 @@ async function validatePageAccess() {
     return;
   }
 
+  const cachedUserText =
+    sessionStorage.getItem("unifiedPortalUser") || "";
+
+  if (cachedUserText) {
+    try {
+      const cachedUser =
+        JSON.parse(cachedUserText);
+
+      if (
+        cachedUser &&
+        typeof cachedUser === "object"
+      ) {
+        renderAllowedServices(cachedUser);
+      }
+    } catch (error) {
+    }
+  }
+
   try {
     const result = await unifiedApi({
       action: "validateSession",
@@ -420,6 +439,11 @@ async function validatePageAccess() {
       denyAndReturnHome();
       return;
     }
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(result.user)
+    );
 
     renderAllowedServices(result.user);
 
