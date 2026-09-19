@@ -1107,12 +1107,129 @@ tr:has(.date-ok) td{
   }
 }
 
+
+/* Unified portal security/top-row integration */
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+
+.meta-row .date-box{
+  justify-self:start
+}
+
+.meta-row .language-chip{
+  justify-self:end
+}
+
+.meta-row .employee-toolbar{
+  grid-column:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:auto;
+  margin:0;
+  padding:0;
+  direction:rtl
+}
+
+.meta-row .employee-name{
+  white-space:nowrap;
+  font-size:18px;
+  font-weight:bold;
+  color:#168fb3
+}
+
+.meta-row .portal-back-button,
+.meta-row .logout-icon{
+  width:34px;
+  height:34px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex:0 0 auto;
+  font-family:Arial,sans-serif
+}
+
+.meta-row .portal-back-button{
+  font-size:28px;
+  line-height:1
+}
+
+.meta-row .logout-icon{
+  font-size:0
+}
+
+.meta-row .portal-back-button:hover{
+  color:#0f7592;
+  transform:translateX(-1px)
+}
+
+.meta-row .logout-icon:hover{
+  transform:scale(1.06)
+}
+
+.meta-row .power-svg{
+  width:30px;
+  height:30px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+@media (max-width:700px){
+  .meta-row{
+    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+    gap:6px
+  }
+
+  .meta-row .employee-toolbar{
+    gap:6px
+  }
+
+  .meta-row .employee-name{
+    max-width:130px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:15px
+  }
+
+  .meta-row .portal-back-button,
+  .meta-row .logout-icon{
+    width:30px;
+    height:30px
+  }
+
+  .meta-row .power-svg{
+    width:25px;
+    height:25px
+  }
+
+  .meta-row .date-box,
+  .meta-row .language-chip{
+    font-size:11px
+  }
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container" id="dashboardContainer" style="display:none">
 
   <div class="top-bar">
 
@@ -1136,6 +1253,43 @@ tr:has(.date-ok) td{
     <div
       class="date-box"
       id="dateBox">
+    </div>
+
+    <div class="employee-toolbar">
+
+      <button
+        type="button"
+        class="portal-back-button"
+        id="portalBackBtn"
+        onclick="window.location.href='index.html'"
+        title="Back"
+        aria-label="Back">
+        ↩
+      </button>
+
+      <span
+        class="employee-name"
+        id="employeeName">
+      </span>
+
+      <button
+        type="button"
+        class="logout-icon"
+        id="logoutBtn"
+        onclick="logoutPortal()"
+        title="Logout"
+        aria-label="Logout">
+
+        <svg
+          class="power-svg"
+          viewBox="0 0 24 24"
+          aria-hidden="true">
+          <path d="M12 3v9"></path>
+          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        </svg>
+
+      </button>
+
     </div>
 
     <button
@@ -1302,16 +1456,6 @@ tr:has(.date-ok) td{
     <button
       type="button"
       class="action-btn"
-      id="backBtn"
-      onclick="window.history.back();"
-      title="Back"
-      aria-label="Back">
-      ↩
-    </button>
-
-    <button
-      type="button"
-      class="action-btn"
       id="refreshBtn"
       onclick="window.location.reload()"
       title="Refresh"
@@ -1362,6 +1506,22 @@ tr:has(.date-ok) td{
 
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
+
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
+const KIDNEY_SESSION_KEYS = [
+  "kidneyEmployeeName",
+  "kidneyEmployeeUsername",
+  "kidneySessionToken"
+];
+
+let dashboardRefreshTimer =
+  null;
+
+let currentPortalUser =
+  null;
+
 
 
 const MEDICATIONS = [
@@ -1565,7 +1725,7 @@ const text = {
     removeConfirm:"سيتم حذف أدوية الشهر المختار من القائمة. هل تريد المتابعة؟",
     removeSuccess:"تم حذف السجلات بنجاح.",
     removeFailed:"تعذر حذف السجلات.",
-    removeAdminRequired:"PIN الأدمن الرئيسي غير صحيح.",
+    removeAdminRequired:"هذه العملية تتطلب صلاحية إدارية.",
     refreshBtnText:"تحديث",
     refreshNote:"يتحدث تلقائياً كل 10 ثواني",
     emptyNote:"لا توجد بيانات لعرضها حالياً.",
@@ -1596,7 +1756,7 @@ const text = {
     removeConfirm:"Medications for the selected month will be removed from the list. Continue?",
     removeSuccess:"Records removed successfully.",
     removeFailed:"Could not remove records.",
-    removeAdminRequired:"Main admin PIN is incorrect.",
+    removeAdminRequired:"This action requires administrator permission.",
     refreshBtnText:"Refresh",
     refreshNote:"Auto-refreshes every 10 seconds",
     emptyNote:"No data to display yet.",
@@ -2981,45 +3141,100 @@ function refreshData(){
 }
 
 
-function loadData(){
+async function loadData(){
 
-  fetch(
-    API_URL +
-    "?action=dashboard"
-  )
-    .then(
-      function(response){
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
 
-        return response.json();
 
+  if (
+    !sessionToken
+  ){
+    handlePortalAuthorizationFailure();
+    return;
+  }
+
+
+  try{
+
+    const response =
+      await fetch(
+        API_URL,
+        {
+          method:"POST",
+          headers:{
+            "Content-Type":
+              "text/plain;charset=utf-8"
+          },
+          body:JSON.stringify({
+            action:"dashboard",
+            sessionToken:
+              sessionToken,
+            token:
+              sessionToken
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !data ||
+      !data.success
+    ){
+
+      if (
+        data &&
+        (
+          data.code === "MISSING_SESSION" ||
+          data.code === "INVALID_SESSION" ||
+          data.code === "NO_PERMISSION"
+        )
+      ){
+        handlePortalAuthorizationFailure();
+        return;
       }
-    )
-    .then(
-      function(data){
 
-        renderRows(
-          data.items ||
-          data.medications ||
-          []
-        );
 
-      }
-    )
-    .catch(
-      function(){
+      document.getElementById(
+        "emptyNote"
+      ).style.display =
+        "block";
 
-        document.getElementById(
-          "emptyNote"
-        ).style.display =
-          "block";
+      document.getElementById(
+        "emptyNote"
+      ).innerText =
+        text[currentLang].loadError;
 
-        document.getElementById(
-          "emptyNote"
-        ).innerText =
-          text[currentLang].loadError;
+      return;
+    }
 
-      }
+
+    renderRows(
+      data.items ||
+      data.medications ||
+      []
     );
+
+
+  }catch(error){
+
+    document.getElementById(
+      "emptyNote"
+    ).style.display =
+      "block";
+
+    document.getElementById(
+      "emptyNote"
+    ).innerText =
+      text[currentLang].loadError;
+
+  }
 
 }
 
@@ -3032,26 +3247,6 @@ async function removeSelectedMonth(){
     return;
   }
 
-  const adminPin =
-    window.prompt(
-      text[currentLang].removeAdminPinPrompt
-    );
-
-  if (
-    adminPin === null
-  ){
-    return;
-  }
-
-  if (
-    !adminPin.trim()
-  ){
-    window.alert(
-      text[currentLang].removeAdminRequired
-    );
-
-    return;
-  }
 
   if (
     !window.confirm(
@@ -3061,6 +3256,21 @@ async function removeSelectedMonth(){
     return;
   }
 
+
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+
+  if (
+    !sessionToken
+  ){
+    handlePortalAuthorizationFailure();
+    return;
+  }
+
+
   const removeBtn =
     document.getElementById(
       "removeBtn"
@@ -3068,6 +3278,7 @@ async function removeSelectedMonth(){
 
   removeBtn.disabled =
     true;
+
 
   try{
 
@@ -3077,28 +3288,51 @@ async function removeSelectedMonth(){
         {
           method:"POST",
           headers:{
-            "Content-Type":"text/plain"
+            "Content-Type":
+              "text/plain;charset=utf-8"
           },
           body:JSON.stringify({
-            action:"removeExpiredMonth",
-            reportMonth:getReportMonth(),
-            month:getReportMonth(),
-            adminUsername:"Admin",
-            adminPin:adminPin.trim()
+            action:
+              "removeExpiredMonth",
+            reportMonth:
+              getReportMonth(),
+            month:
+              getReportMonth(),
+            sessionToken:
+              sessionToken,
+            token:
+              sessionToken
           })
         }
       );
 
+
     const result =
       await response.json();
+
 
     if (
       !result ||
       !result.success
     ){
+
+      if (
+        result &&
+        (
+          result.code === "MISSING_SESSION" ||
+          result.code === "INVALID_SESSION" ||
+          result.code === "NO_PERMISSION"
+        )
+      ){
+        handlePortalAuthorizationFailure();
+        return;
+      }
+
+
       window.alert(
         result &&
-        result.code === "NO_ADMIN_PERMISSION"
+        result.code ===
+          "NO_ADMIN_PERMISSION"
           ? text[currentLang].removeAdminRequired
           : text[currentLang].removeFailed
       );
@@ -3106,17 +3340,20 @@ async function removeSelectedMonth(){
       return;
     }
 
+
     window.alert(
       text[currentLang].removeSuccess
     );
 
     loadData();
 
+
   }catch(error){
 
     window.alert(
       text[currentLang].removeFailed
     );
+
 
   }finally{
 
@@ -3162,6 +3399,419 @@ function escapeHtml(value){
     );
 
 }
+
+
+/* =========================================================
+   UNIFIED PORTAL AUTH
+========================================================= */
+
+async function unifiedApi(
+  payload
+){
+
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+        body:JSON.stringify(
+          payload
+        )
+      }
+    );
+
+  return response.json();
+
+}
+
+
+function getCachedPortalUser(){
+
+  const raw =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    );
+
+
+  if (
+    !raw
+  ){
+    return null;
+  }
+
+
+  try{
+    return JSON.parse(
+      raw
+    );
+  }catch(error){
+    return null;
+  }
+
+}
+
+
+function hasDashboardPermission(
+  user
+){
+
+  return Boolean(
+    user &&
+    user.kidneyExpiryDashboardAccess === true
+  );
+
+}
+
+
+function clearKidneyLegacySessions(){
+
+  KIDNEY_SESSION_KEYS.forEach(
+    function(key){
+
+      sessionStorage.removeItem(
+        key
+      );
+
+      localStorage.removeItem(
+        key
+      );
+
+    }
+  );
+
+}
+
+
+function clearUnifiedPortalSession(){
+
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+
+  clearKidneyLegacySessions();
+
+  currentPortalUser =
+    null;
+
+}
+
+
+function hideProtectedDashboard(){
+
+  const container =
+    document.getElementById(
+      "dashboardContainer"
+    );
+
+  if (
+    container
+  ){
+    container.style.display =
+      "none";
+  }
+
+
+  const printPages =
+    document.getElementById(
+      "printPages"
+    );
+
+  if (
+    printPages
+  ){
+    printPages.innerHTML =
+      "";
+  }
+
+}
+
+
+function showProtectedDashboard(
+  user
+){
+
+  currentPortalUser =
+    user || null;
+
+
+  const employeeName =
+    document.getElementById(
+      "employeeName"
+    );
+
+  if (
+    employeeName
+  ){
+    employeeName.innerText =
+      (
+        user &&
+        (
+          user.name ||
+          user.username
+        )
+      ) ||
+      "";
+  }
+
+
+  const container =
+    document.getElementById(
+      "dashboardContainer"
+    );
+
+  if (
+    container
+  ){
+    container.style.display =
+      "block";
+  }
+
+}
+
+
+function stopDashboardRefresh(){
+
+  if (
+    dashboardRefreshTimer
+  ){
+
+    window.clearInterval(
+      dashboardRefreshTimer
+    );
+
+    dashboardRefreshTimer =
+      null;
+
+  }
+
+}
+
+
+function startDashboardRefresh(){
+
+  if (
+    dashboardRefreshTimer
+  ){
+    return;
+  }
+
+
+  dashboardRefreshTimer =
+    window.setInterval(
+      loadData,
+      10000
+    );
+
+}
+
+
+function handlePortalAuthorizationFailure(){
+
+  stopDashboardRefresh();
+
+  hideProtectedDashboard();
+
+  clearUnifiedPortalSession();
+
+  window.location.replace(
+    "../../index.html"
+  );
+
+}
+
+
+async function restoreDashboardSession(){
+
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+
+  if (
+    !sessionToken
+  ){
+    handlePortalAuthorizationFailure();
+    return;
+  }
+
+
+  const cachedUser =
+    getCachedPortalUser();
+
+  const cachedAllowed =
+    hasDashboardPermission(
+      cachedUser
+    );
+
+
+  if (
+    cachedAllowed
+  ){
+
+    showProtectedDashboard(
+      cachedUser
+    );
+
+    loadData();
+
+    startDashboardRefresh();
+
+  }
+
+
+  try{
+
+    const result =
+      await unifiedApi({
+        action:
+          "validateSession",
+        sessionToken:
+          sessionToken,
+        service:
+          "kidneyExpiryDashboard"
+      });
+
+
+    if (
+      !result ||
+      !result.success ||
+      !result.user ||
+      result.user.active === false ||
+      !hasDashboardPermission(
+        result.user
+      )
+    ){
+      handlePortalAuthorizationFailure();
+      return;
+    }
+
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        result.user
+      )
+    );
+
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      result.user.username ||
+      ""
+    );
+
+
+    showProtectedDashboard(
+      result.user
+    );
+
+
+    if (
+      !cachedAllowed
+    ){
+      loadData();
+    }
+
+
+    startDashboardRefresh();
+
+
+  }catch(error){
+
+    /*
+      Network errors do not destroy a valid cached portal session.
+      If there is no authorized cached user, protected content stays hidden.
+    */
+    if (
+      !cachedAllowed
+    ){
+      hideProtectedDashboard();
+    }
+
+  }
+
+}
+
+
+async function logoutPortal(){
+
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+
+  if (
+    sessionToken
+  ){
+
+    try{
+
+      await unifiedApi({
+        action:
+          "revokeSession",
+        sessionToken:
+          sessionToken
+      });
+
+    }catch(error){}
+
+  }
+
+
+  stopDashboardRefresh();
+
+  hideProtectedDashboard();
+
+  clearUnifiedPortalSession();
+
+  window.location.replace(
+    "../../index.html"
+  );
+
+}
+
+
+window.addEventListener(
+  "pageshow",
+  function(){
+
+    const sessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+
+    if (
+      sessionToken
+    ){
+      return;
+    }
+
+
+    stopDashboardRefresh();
+
+    hideProtectedDashboard();
+
+    window.location.replace(
+      "../../index.html"
+    );
+
+  }
+);
 
 
 /* =========================================================
@@ -3236,12 +3886,7 @@ function init(){
     "en"
   );
 
-  loadData();
-
-  setInterval(
-    loadData,
-    10000
-  );
+  restoreDashboardSession();
 
 }
 
