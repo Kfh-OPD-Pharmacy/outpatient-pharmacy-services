@@ -2506,8 +2506,9 @@ async function logoutEmployee(){
   ).style.display =
     "none";
 
-  window.location.href =
-    "../../index.html";
+  window.location.replace(
+    "../../index.html"
+  );
 
 }
 
@@ -2601,7 +2602,7 @@ function showEmployeeView(){
   document.getElementById(
     "loginBackButton"
   ).style.display =
-    "none";
+    "inline-flex";
 
   document.getElementById(
     "employeeName"
@@ -3487,24 +3488,31 @@ async function postApi(
     includeSession
   ){
 
-    currentSessionToken =
+    const unifiedSessionToken =
       sessionStorage.getItem(
-        KIDNEY_SESSION_TOKEN_KEY
-      ) ||
-      currentSessionToken;
+        "unifiedPortalSessionToken"
+      ) || "";
 
 
     if (
-      currentSessionToken
+      !unifiedSessionToken
     ){
 
-      requestData.sessionToken =
-        currentSessionToken;
-
-      requestData.token =
-        currentSessionToken;
+      throw new Error(
+        "MISSING_UNIFIED_SESSION"
+      );
 
     }
+
+
+    currentSessionToken =
+      unifiedSessionToken;
+
+    requestData.sessionToken =
+      unifiedSessionToken;
+
+    requestData.token =
+      unifiedSessionToken;
 
   }
 
@@ -3636,6 +3644,8 @@ function isSessionError(
 
 function handleSessionExpired(){
 
+  clearUnifiedPortalSession();
+
   clearStoredSession();
 
   pendingMedication =
@@ -3648,12 +3658,19 @@ function handleSessionExpired(){
     "none";
 
 
-  showLoginView();
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "employeeView"
+  ).style.display =
+    "none";
 
 
-  showLoginResult(
-    "error",
-    text[currentLang].sessionExpired
+  window.location.replace(
+    "../../index.html"
   );
 
 }
