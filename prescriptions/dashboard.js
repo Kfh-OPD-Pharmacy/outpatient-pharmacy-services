@@ -1,6 +1,9 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbw0jSrbe1SM596Kyv0EpB6VTKEXT81c2Cn8Wlc2lEQ_RzbrS9b6w-k4gyrflwPBTgpKSQ/exec";
 
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
 const els = {
   dashboardLoginView: document.getElementById("dashboardLoginView"),
   supervisorPanel: document.getElementById("supervisorPanel"),
@@ -18,6 +21,7 @@ const els = {
   dashboardLoginMessage: document.getElementById("dashboardLoginMessage"),
   dashboardChangePinLoginBtn: document.getElementById("dashboardChangePinLoginBtn"),
   dashboardLogoutBtn: document.getElementById("dashboardLogoutBtn"),
+  currentUser: document.getElementById("currentUser"),
   refreshSupervisorBtn: document.getElementById("refreshSupervisorBtn"),
   printReportBtn: document.getElementById("printReportBtn"),
   dateBox: document.getElementById("dateBox"),
@@ -194,10 +198,7 @@ async function initDashboard() {
 
   setLanguage("ar");
 
-  els.dashboardLoginForm.addEventListener(
-    "submit",
-    dashboardLogin
-  );
+  clearLegacyDashboardSession();
 
   if (els.languageToggle) {
     els.languageToggle.addEventListener(
@@ -205,11 +206,6 @@ async function initDashboard() {
       toggleLanguage
     );
   }
-
-  els.dashboardChangePinLoginBtn.addEventListener(
-    "click",
-    changeLoginPin
-  );
 
   els.dashboardLogoutBtn.addEventListener(
     "click",
@@ -287,463 +283,111 @@ async function initDashboard() {
    RESTORE ADMIN SESSION
 ========================================================= */
 
-async function restoreDashboardSession() {
-  const token =
-    sessionStorage.getItem(
-      DASHBOARD_SESSION_TOKEN_KEY
+async function unifiedApi(
+  payload
+) {
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:
+          "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          )
+      }
     );
 
-  if (!token) {
-    clearDashboardSession();
+  if (!response.ok) {
+    throw new Error(
+      t("serverFailed")
+    );
+  }
+
+  return response.json();
+}
+
+
+function getCachedUnifiedUser() {
+  const raw =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(
+      raw
+    );
+  } catch (error) {
+    return null;
+  }
+}
+
+
+function hasOpdMailIndicatorAccess(
+  user
+) {
+  return Boolean(
+    user &&
+    user.opdMailIndicatorAccess === true
+  );
+}
+
+
+function setCurrentUser(
+  user
+) {
+  if (!els.currentUser) {
     return;
   }
 
-  try {
-    const response =
-      await api(
-        "validateSession"
-      );
+  els.currentUser.textContent =
+    (
+      user &&
+      (
+        user.name ||
+        user.username
+      )
+    ) ||
+    "";
+}
 
-    if (
-      !isSuccess(response) ||
-      !response.user ||
-      response.user.isAdmin !== true
-    ) {
-      clearDashboardSession();
-      return;
-    }
 
-    sessionStorage.setItem(
-      DASHBOARD_SESSION_USER_KEY,
-      response.user.username ||
-      "Admin"
-    );
-
-    sessionStorage.setItem(
-      DASHBOARD_SESSION_NAME_KEY,
-      response.user.name ||
-      response.user.username ||
-      "Admin"
-    );
-
-    resetInactivityTimer();
-
-    showDashboard();
-
-  } catch (error) {
-    clearDashboardSession();
+function clearCurrentUser() {
+  if (els.currentUser) {
+    els.currentUser.textContent =
+      "";
   }
 }
 
 
-/* =========================================================
-   LANGUAGE
-========================================================= */
-
-function setLanguage(lang) {
-  currentLang =
-    lang;
-
-  document.documentElement.lang =
-    lang;
-
-  document.documentElement.dir =
-    lang === "ar"
-      ? "rtl"
-      : "ltr";
-
-  document.title =
-    t("pageTitle");
-
-  if (els.officialLine1) {
-    els.officialLine1.textContent =
-      t("officialLine1");
-  }
-
-  if (els.officialLine2) {
-    els.officialLine2.textContent =
-      t("officialLine2");
-  }
-
-  if (els.officialLine3) {
-    els.officialLine3.textContent =
-      t("officialLine3");
-  }
-
-  if (els.pageTitle) {
-    els.pageTitle.textContent =
-      t("pageTitle");
-  }
-
-  if (els.usernameLabel) {
-    els.usernameLabel.textContent =
-      t("username");
-  }
-
-  if (els.pinLabel) {
-    els.pinLabel.textContent =
-      t("pin");
-  }
-
-  if (els.loginBtn) {
-    els.loginBtn.title =
-      t("login");
-
-    els.loginBtn.setAttribute(
-      "aria-label",
-      t("login")
-    );
-  }
-
-  if (
-    els.dashboardChangePinLoginBtn
-  ) {
-    els.dashboardChangePinLoginBtn.title =
-      t("changePin");
-
-    els.dashboardChangePinLoginBtn.setAttribute(
-      "aria-label",
-      t("changePin")
-    );
-  }
-
-  if (
-    els.dashboardLogoutBtn
-  ) {
-    els.dashboardLogoutBtn.title =
-      t("logout");
-
-    els.dashboardLogoutBtn.setAttribute(
-      "aria-label",
-      t("logout")
-    );
-  }
-
-  if (
-    els.refreshSupervisorBtn
-  ) {
-    els.refreshSupervisorBtn.title =
-      t("refresh");
-
-    els.refreshSupervisorBtn.setAttribute(
-      "aria-label",
-      t("refresh")
-    );
-  }
-
-  if (
-    els.printReportBtn
-  ) {
-    els.printReportBtn.title =
-      t("print");
-
-    els.printReportBtn.setAttribute(
-      "aria-label",
-      t("print")
-    );
-  }
-
-  if (els.totalLabel) {
-    els.totalLabel.textContent =
-      t("total");
-  }
-
-  if (els.preparedLabel) {
-    els.preparedLabel.textContent =
-      t("prepared");
-  }
-
-  if (els.pendingLabel) {
-    els.pendingLabel.textContent =
-      t("pending");
-  }
-
-  if (els.allFilterBtn) {
-    els.allFilterBtn.textContent =
-      t("all");
-  }
-
-  if (els.preparedFilterBtn) {
-    els.preparedFilterBtn.textContent =
-      t("prepared");
-  }
-
-  if (els.pendingFilterBtn) {
-    els.pendingFilterBtn.textContent =
-      t("pending");
-  }
-
-  if (els.statusFilter) {
-    els.statusFilter.setAttribute(
-      "aria-label",
-      t("filterLabel")
-    );
-  }
-
-  if (els.fileSearchBtn) {
-    els.fileSearchBtn.title =
-      t("search");
-
-    els.fileSearchBtn.setAttribute(
-      "aria-label",
-      t("search")
-    );
-  }
-
-  if (els.fileHeader) {
-    els.fileHeader.textContent =
-      t("fileNumber");
-  }
-
-  if (els.patientHeader) {
-    els.patientHeader.textContent =
-      t("patientName");
-  }
-
-  if (els.statusHeader) {
-    els.statusHeader.textContent =
-      t("status");
-  }
-
-  if (els.preparedByHeader) {
-    els.preparedByHeader.textContent =
-      t("preparedBy");
-  }
-
-  if (els.timeHeader) {
-    els.timeHeader.textContent =
-      t("time");
-  }
-
-  if (els.printOfficialLine1) {
-    els.printOfficialLine1.textContent =
-      t("officialLine1");
-  }
-
-  if (els.printOfficialLine2) {
-    els.printOfficialLine2.textContent =
-      t("officialLine2");
-  }
-
-  if (els.printOfficialLine3) {
-    els.printOfficialLine3.textContent =
-      t("officialLine3");
-  }
-
-  if (els.printTitle) {
-    els.printTitle.textContent =
-      t("printTitle");
-  }
-
-  if (els.printTotalLabel) {
-    els.printTotalLabel.textContent =
-      t("total");
-  }
-
-  if (els.printPreparedLabel) {
-    els.printPreparedLabel.textContent =
-      t("prepared");
-  }
-
-  if (els.printPendingLabel) {
-    els.printPendingLabel.textContent =
-      t("pending");
-  }
-
-  if (els.printUsersTitle) {
-    els.printUsersTitle.textContent =
-      t("usersAchievement");
-  }
-
-  if (els.printPreparedByHeader) {
-    els.printPreparedByHeader.textContent =
-      t("preparedBy");
-  }
-
-  if (els.printCountHeader) {
-    els.printCountHeader.textContent =
-      t("count");
-  }
-
-  if (els.languageToggle) {
-    els.languageToggle.textContent =
-      "🌐 ع | E";
-  }
-
-  renderDate(
-    els.reportDate
-      ? els.reportDate.textContent
-      : ""
+function clearUnifiedPortalSession() {
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
   );
 
-  renderDailyRows(
-    getFilteredRows()
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
   );
 
-  if (lastSummary) {
-    renderPrintReport(
-      lastSummary
-    );
-  }
-}
-
-
-function toggleLanguage() {
-  setLanguage(
-    currentLang === "ar"
-      ? "en"
-      : "ar"
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
   );
 }
 
 
-/* =========================================================
-   ADMIN LOGIN
-========================================================= */
-
-async function dashboardLogin(
-  event
-) {
-  event.preventDefault();
-
-  const username =
-    els.adminUsername.value.trim();
-
-  const pin =
-    els.adminPin.value.trim();
-
-  setLoginMessage(
-    t("loginLoading")
-  );
-
-  try {
-    const response =
-      await api(
-        "adminLogin",
-        {
-          username,
-          pin
-        },
-        false
-      );
-
-    if (
-      !isSuccess(response)
-    ) {
-      throw new Error(
-        response.message ||
-        t("invalidAdmin")
-      );
-    }
-
-    if (
-      !response.sessionToken
-    ) {
-      throw new Error(
-        t("serverFailed")
-      );
-    }
-
-    sessionStorage.setItem(
-      DASHBOARD_SESSION_USER_KEY,
-      response.username ||
-      username
-    );
-
-    sessionStorage.setItem(
-      DASHBOARD_SESSION_NAME_KEY,
-      response.displayName ||
-      "Admin"
-    );
-
-    sessionStorage.setItem(
-      DASHBOARD_SESSION_TOKEN_KEY,
-      response.sessionToken
-    );
-
-    resetInactivityTimer();
-
-    setLoginMessage(
-      ""
-    );
-
-    showDashboard();
-
-  } catch (error) {
-    setLoginMessage(
-      error.message,
-      "error"
-    );
-  }
-}
-
-
-/* =========================================================
-   DASHBOARD VIEW
-========================================================= */
-
-function showDashboard() {
-  els.dashboardLoginView
-    .classList
-    .add(
-      "hidden"
-    );
-
-  els.supervisorPanel
-    .classList
-    .remove(
-      "hidden"
-    );
-
-  loadSupervisorData();
-
-  if (!refreshTimer) {
-    refreshTimer =
-      setInterval(
-        loadSupervisorData,
-        30000
-      );
-  }
-}
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-function dashboardLogout() {
-  clearDashboardSession();
-
-  if (refreshTimer) {
-    clearInterval(
-      refreshTimer
-    );
-
-    refreshTimer =
-      null;
-  }
-
-  els.supervisorPanel
-    .classList
-    .add(
-      "hidden"
-    );
-
-  els.dashboardLoginView
-    .classList
-    .remove(
-      "hidden"
-    );
-
-  els.dashboardLoginForm.reset();
-
-  setLoginMessage(
-    ""
-  );
-}
-
-
-function clearDashboardSession() {
+function clearLegacyDashboardSession() {
   sessionStorage.removeItem(
     DASHBOARD_SESSION_USER_KEY
   );
@@ -756,825 +400,190 @@ function clearDashboardSession() {
     DASHBOARD_SESSION_TOKEN_KEY
   );
 
-  /*
-    إزالة التخزين القديم
-    لو كان موجوداً من النسخة السابقة.
-  */
   sessionStorage.removeItem(
     "dashboardAdminPin"
   );
 }
 
 
-/* =========================================================
-   INACTIVITY
-========================================================= */
-
-function startInactivityWatcher() {
-  [
-    "click",
-    "keydown",
-    "touchstart",
-    "mousemove"
-  ].forEach(
-    eventName => {
-      window.addEventListener(
-        eventName,
-        resetInactivityTimer,
-        {
-          passive: true
-        }
-      );
-    }
-  );
-
-  resetInactivityTimer();
-}
-
-
-function resetInactivityTimer() {
-  window.clearTimeout(
-    inactivityTimer
-  );
-
-  inactivityTimer =
-    window.setTimeout(
-      () => {
-        if (
-          hasDashboardSession()
-        ) {
-          dashboardLogout();
-        }
-      },
-      INACTIVITY_LIMIT_MS
+function stopDashboardRefresh() {
+  if (refreshTimer) {
+    clearInterval(
+      refreshTimer
     );
+
+    refreshTimer =
+      null;
+  }
 }
 
 
-function hasDashboardSession() {
-  return Boolean(
+function hideDashboardViews() {
+  stopDashboardRefresh();
+
+  if (els.supervisorPanel) {
+    els.supervisorPanel
+      .classList
+      .add(
+        "hidden"
+      );
+  }
+
+  if (els.dashboardLoginView) {
+    els.dashboardLoginView
+      .classList
+      .add(
+        "hidden"
+      );
+  }
+
+  clearCurrentUser();
+}
+
+
+async function redirectInvalidUnifiedSession() {
+  clearUnifiedPortalSession();
+  clearLegacyDashboardSession();
+  hideDashboardViews();
+
+  dailyRows = [];
+  lastSummary = null;
+
+  window.location.replace(
+    "../index.html"
+  );
+}
+
+
+async function redirectNoDashboardPermission() {
+  clearLegacyDashboardSession();
+  hideDashboardViews();
+
+  dailyRows = [];
+  lastSummary = null;
+
+  window.location.replace(
+    "index.html"
+  );
+}
+
+
+async function restoreDashboardSession() {
+  const token =
     sessionStorage.getItem(
-      DASHBOARD_SESSION_TOKEN_KEY
-    )
-  );
-}
+      "unifiedPortalSessionToken"
+    ) || "";
 
-
-/* =========================================================
-   SUCCESS
-========================================================= */
-
-function isSuccess(
-  response
-) {
-  return Boolean(
-    response &&
-    (
-      response.ok ||
-      response.success
-    )
-  );
-}
-
-
-/* =========================================================
-   CHANGE PIN
-========================================================= */
-
-async function changeLoginPin() {
-  const username =
-    els.adminUsername.value.trim() ||
-    window.prompt(
-      t("promptUsername")
-    );
-
-  if (!username) {
+  if (!token) {
+    await redirectInvalidUnifiedSession();
     return;
   }
 
-  const currentPin =
-    window.prompt(
-      t("promptCurrentPin")
+  const cachedUser =
+    getCachedUnifiedUser();
+
+  const cachedAllowed =
+    hasOpdMailIndicatorAccess(
+      cachedUser
     );
 
-  if (!currentPin) {
-    return;
+  if (cachedAllowed) {
+    setCurrentUser(
+      cachedUser
+    );
+
+    resetInactivityTimer();
+    showDashboard();
+  } else {
+    hideDashboardViews();
   }
-
-  const newPin =
-    window.prompt(
-      t("promptNewPin")
-    );
-
-  if (!newPin) {
-    return;
-  }
-
-  const confirmPin =
-    window.prompt(
-      t("promptConfirmPin")
-    );
-
-  if (
-    newPin !==
-    confirmPin
-  ) {
-    setLoginMessage(
-      t("pinMismatch"),
-      "error"
-    );
-
-    return;
-  }
-
-  setLoginMessage(
-    t("pinChanging")
-  );
 
   try {
     const response =
-      await api(
-        "changeLoginPin",
-        {
-          username,
-          currentPin,
-          newPin
-        },
-        false
-      );
+      await unifiedApi({
+        action:
+          "validateSession",
+
+        sessionToken:
+          token,
+
+        service:
+          "opdMailIndicator"
+      });
 
     if (
-      !isSuccess(response)
+      !response ||
+      !response.success
     ) {
-      throw new Error(
-        response.message ||
-        t("pinChangeFailed")
-      );
+      const code =
+        response &&
+        response.code
+          ? response.code
+          : "INVALID_SESSION";
+
+      if (
+        code ===
+          "NO_PERMISSION"
+      ) {
+        await redirectNoDashboardPermission();
+        return;
+      }
+
+      if (
+        code ===
+          "AUTH_UNAVAILABLE"
+      ) {
+        if (!cachedAllowed) {
+          hideDashboardViews();
+        }
+
+        return;
+      }
+
+      await redirectInvalidUnifiedSession();
+      return;
     }
-
-    clearDashboardSession();
-
-    setLoginMessage(
-      t("pinChanged"),
-      "success"
-    );
-
-    setTimeout(
-      () =>
-        window.location.reload(),
-      1200
-    );
-
-  } catch (error) {
-    setLoginMessage(
-      error.message,
-      "error"
-    );
-  }
-}
-
-
-/* =========================================================
-   DATE
-========================================================= */
-
-function renderDate(
-  extraText = ""
-) {
-  if (els.dateBox) {
-    els.dateBox.textContent =
-      getTodayLabel();
-  }
-
-  if (els.reportDate) {
-    els.reportDate.textContent =
-      extraText
-        ? extraText.replace(
-            /^\s*\|\s*/,
-            ""
-          )
-        : "";
-  }
-}
-
-
-function getTodayLabel() {
-  const now =
-    new Date();
-
-  const date =
-    new Intl.DateTimeFormat(
-      "en-CA",
-      {
-        timeZone:
-          "Asia/Riyadh"
-      }
-    ).format(now);
-
-  const dayName =
-    new Intl.DateTimeFormat(
-      currentLang === "ar"
-        ? "ar-SA"
-        : "en-US",
-      {
-        timeZone:
-          "Asia/Riyadh",
-        weekday:
-          "long"
-      }
-    ).format(now);
-
-  return (
-    `${dayName} - ${date}`
-  );
-}
-
-
-/* =========================================================
-   LOAD SUPERVISOR DATA
-========================================================= */
-
-async function loadSupervisorData() {
-  if (
-    isLoadingSupervisorData
-  ) {
-    return;
-  }
-
-  if (
-    !hasDashboardSession()
-  ) {
-    dashboardLogout();
-    return;
-  }
-
-  isLoadingSupervisorData =
-    true;
-
-  els.refreshSupervisorBtn.disabled =
-    true;
-
-  els.refreshSupervisorBtn
-    .classList
-    .add(
-      "is-loading"
-    );
-
-  setMessage(
-    els.supervisorMessage,
-    ""
-  );
-
-  try {
-    const response =
-      await api(
-        "getDailyStatus"
-      );
 
     if (
-      !isSuccess(response)
+      !response.user ||
+      response.user.active === false
     ) {
-      throw new Error(
-        response.message ||
-        t("loadFailed")
-      );
+      await redirectInvalidUnifiedSession();
+      return;
     }
 
-    lastSummary =
-      response.summary ||
-      {};
+    if (
+      !hasOpdMailIndicatorAccess(
+        response.user
+      )
+    ) {
+      await redirectNoDashboardPermission();
+      return;
+    }
 
-    renderSupervisorSummary(
-      lastSummary
-    );
-
-    renderPrintReport(
-      lastSummary
-    );
-
-    dailyRows =
-      response.rows ||
-      [];
-
-    renderDailyRows(
-      getFilteredRows()
-    );
-
-    renderDate(
-      t("lastUpdate") +
-      (
-        response.dateText ||
-        formatDateTime(
-          new Date()
-        )
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        response.user
       )
     );
 
-    setMessage(
-      els.supervisorMessage,
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      response.user.username ||
       ""
     );
+
+    setCurrentUser(
+      response.user
+    );
+
+    resetInactivityTimer();
+    showDashboard();
 
   } catch (error) {
-    setMessage(
-      els.supervisorMessage,
-      error.message,
-      "error"
-    );
-
-  } finally {
-    isLoadingSupervisorData =
-      false;
-
-    els.refreshSupervisorBtn.disabled =
-      false;
-
-    els.refreshSupervisorBtn
-      .classList
-      .remove(
-        "is-loading"
-      );
-  }
-}
-
-
-/* =========================================================
-   SEARCH / FILTER
-========================================================= */
-
-function applyFileSearch() {
-  renderDailyRows(
-    getFilteredRows()
-  );
-
-  els.fileSearchInput.focus();
-}
-
-
-function setStatusFilter(
-  filter
-) {
-  activeFilter =
-    filter ||
-    "all";
-
-  els.filterButtons.forEach(
-    button => {
-      button.classList.toggle(
-        "active-filter",
-        button.dataset.filter ===
-        activeFilter
-      );
-    }
-  );
-
-  els.summaryCards.forEach(
-    card => {
-      const isActive =
-        card.dataset.filter ===
-        activeFilter;
-
-      card.classList.toggle(
-        "active-filter",
-        isActive
-      );
-
-      card.setAttribute(
-        "aria-pressed",
-        isActive
-          ? "true"
-          : "false"
-      );
-    }
-  );
-
-  renderDailyRows(
-    getFilteredRows()
-  );
-}
-
-
-function getFilteredRows() {
-  const searchValue =
-    normalizeSearch(
-      els.fileSearchInput.value
-    );
-
-  return dailyRows.filter(
-    item => {
-      const matchesStatus =
-        activeFilter === "all" ||
-        item.status ===
-          activeFilter;
-
-      const matchesSearch =
-        !searchValue ||
-        normalizeSearch(
-          item.fileNumber
-        ).includes(
-          searchValue
-        );
-
-      return (
-        matchesStatus &&
-        matchesSearch
-      );
-    }
-  );
-}
-
-
-/* =========================================================
-   SUMMARY
-========================================================= */
-
-function renderSupervisorSummary(
-  summary = {}
-) {
-  els.totalCount.textContent =
-    summary.total ||
-    0;
-
-  els.preparedCount.textContent =
-    summary.prepared ||
-    0;
-
-  els.pendingCount.textContent =
-    summary.pending ||
-    0;
-}
-
-
-function renderPrintReport(
-  summary = {}
-) {
-  els.printReportDate.textContent =
-    getTodayLabel();
-
-  els.printTotalCount.textContent =
-    summary.total ||
-    0;
-
-  els.printPreparedCount.textContent =
-    summary.prepared ||
-    0;
-
-  els.printPendingCount.textContent =
-    summary.pending ||
-    0;
-
-  renderPrintUsers(
-    summary.preparedByUser ||
-    []
-  );
-}
-
-
-/* =========================================================
-   PRINT USERS
-========================================================= */
-
-function renderPrintUsers(
-  users
-) {
-  els.printUserBody.innerHTML =
-    "";
-
-  if (!users.length) {
-    const row =
-      document.createElement(
-        "tr"
-      );
-
-    row.innerHTML =
-      `<td colspan="2">${escapeHtml(t("noPrepared"))}</td>`;
-
-    els.printUserBody.appendChild(
-      row
-    );
-
-    return;
-  }
-
-  users.forEach(
-    user => {
-      const row =
-        document.createElement(
-          "tr"
-        );
-
-      row.innerHTML =
-        `
-          <td>${escapeHtml(user.name)}</td>
-          <td>${Number(user.count || 0)}</td>
-        `;
-
-      els.printUserBody.appendChild(
-        row
-      );
-    }
-  );
-}
-
-
-/* =========================================================
-   DAILY ROWS
-========================================================= */
-
-function renderDailyRows(
-  rows
-) {
-  els.dailyListBody.innerHTML =
-    "";
-
-  if (!rows.length) {
-    const row =
-      document.createElement(
-        "tr"
-      );
-
-    row.innerHTML =
-      `<td colspan="5" class="empty-cell">${escapeHtml(t("noRows"))}</td>`;
-
-    els.dailyListBody.appendChild(
-      row
-    );
-
-    return;
-  }
-
-  rows.forEach(
-    item => {
-      const row =
-        document.createElement(
-          "tr"
-        );
-
-      row.className =
-        item.status ===
-        "prepared"
-          ? "row-prepared"
-          : "row-pending";
-
-      const statusText =
-        item.status ===
-        "prepared"
-          ? t("prepared")
-          : t("pending");
-
-      const statusClass =
-        item.status ===
-        "prepared"
-          ? "prepared"
-          : "pending";
-
-      row.innerHTML =
-        `
-          <td data-label="${escapeHtml(t("fileNumber"))}">
-            ${escapeHtml(item.fileNumber)}
-          </td>
-
-          <td data-label="${escapeHtml(t("patientName"))}">
-            ${escapeHtml(item.patientName)}
-          </td>
-
-          <td data-label="${escapeHtml(t("status"))}">
-            <span class="status-pill ${statusClass}">
-              ${escapeHtml(statusText)}
-            </span>
-          </td>
-
-          <td data-label="${escapeHtml(t("preparedBy"))}">
-            ${escapeHtml(item.preparedBy || "-")}
-          </td>
-
-          <td data-label="${escapeHtml(t("time"))}">
-            ${
-              item.preparedAt
-                ? escapeHtml(
-                    formatDateTime(
-                      item.preparedAt
-                    )
-                  )
-                : "-"
-            }
-          </td>
-        `;
-
-      els.dailyListBody.appendChild(
-        row
-      );
-    }
-  );
-}
-
-
-/* =========================================================
-   FORMAT DATE
-========================================================= */
-
-function formatDateTime(
-  value
-) {
-  const date =
-    value
-      ? new Date(
-          value
-        )
-      : null;
-
-  if (
-    !date ||
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return value ||
-      "";
-  }
-
-  return date.toLocaleString(
-    currentLang === "ar"
-      ? "ar-SA"
-      : "en-US",
-    {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone:
-        "Asia/Riyadh"
-    }
-  );
-}
-
-
-/* =========================================================
-   MESSAGES
-========================================================= */
-
-function setMessage(
-  element,
-  text,
-  type = ""
-) {
-  element.textContent =
-    text;
-
-  element.className =
-    `message ${type}`.trim();
-}
-
-
-function setLoginMessage(
-  text,
-  type = ""
-) {
-  els.dashboardLoginMessage.textContent =
-    text;
-
-  els.dashboardLoginMessage.className =
-    `message ${type}`.trim();
-}
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHtml(
-  value
-) {
-  return String(
-    value ?? ""
-  )
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-}
-
-
-/* =========================================================
-   SEARCH NORMALIZE
-========================================================= */
-
-function normalizeSearch(
-  value
-) {
-  return String(
-    value ||
-    ""
-  )
-    .trim()
-    .replace(
-      /\s+/g,
-      ""
-    );
-}
-
-
-/* =========================================================
-   API
-========================================================= */
-
-async function api(
-  action,
-  payload = {},
-  includeSession = true
-) {
-  const requestData = {
-    action,
-    ...payload
-  };
-
-  if (
-    includeSession
-  ) {
-    const sessionToken =
-      sessionStorage.getItem(
-        DASHBOARD_SESSION_TOKEN_KEY
-      );
-
-    if (sessionToken) {
-      requestData.sessionToken =
-        sessionToken;
+    if (!cachedAllowed) {
+      hideDashboardViews();
     }
   }
-
-  const response =
-    await fetch(
-      API_URL,
-      {
-        method:
-          "POST",
-
-        headers: {
-          "Content-Type":
-            "text/plain;charset=utf-8"
-        },
-
-        body:
-          JSON.stringify(
-            requestData
-          )
-      }
-    );
-
-  if (!response.ok) {
-    throw new Error(
-      t("serverFailed")
-    );
-  }
-
-  const data =
-    await response.json();
-
-  if (
-    data &&
-    (
-      data.code ===
-        "INVALID_SESSION" ||
-      data.code ===
-        "MISSING_SESSION" ||
-      data.code ===
-        "NO_PERMISSION"
-    )
-  ) {
-    clearDashboardSession();
-
-    if (
-      els.supervisorPanel &&
-      !els.supervisorPanel
-        .classList
-        .contains(
-          "hidden"
-        )
-    ) {
-      dashboardLogout();
-    }
-
-    throw new Error(
-      t("sessionExpired")
-    );
-  }
-
-  return data;
 }

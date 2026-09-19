@@ -5,6 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>مؤشر وصفات البريد اليومي</title>
   <link rel="stylesheet" href="style.css?v=20260614-hide-mail-home-icon">
+  <style>
+    .employee-meta.dashboard-meta{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+      align-items:center;
+      gap:12px;
+      direction:ltr
+    }
+
+    .employee-meta.dashboard-meta .dashboard-date-stack{
+      justify-self:start
+    }
+
+    .employee-meta.dashboard-meta .language-chip{
+      justify-self:end
+    }
+
+    .employee-meta.dashboard-meta .employee-toolbar{
+      grid-column:2;
+      width:auto;
+      margin:0;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:transparent;
+      border:0
+    }
+
+    .employee-meta.dashboard-meta .user-chip{
+      display:inline-flex !important;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      direction:rtl
+    }
+
+    .employee-meta.dashboard-meta #currentUser{
+      white-space:nowrap;
+      max-width:220px;
+      overflow:hidden;
+      text-overflow:ellipsis
+    }
+
+    @media (max-width:720px){
+      .employee-meta.dashboard-meta{
+        grid-template-columns:minmax(72px,1fr) auto minmax(54px,1fr);
+        gap:6px
+      }
+
+      .employee-meta.dashboard-meta .user-chip{
+        gap:6px
+      }
+
+      .employee-meta.dashboard-meta #currentUser{
+        max-width:130px;
+        font-size:15px
+      }
+    }
+  </style>
   <script src="dashboard.js?v=20260614-report-date" defer></script>
 </head>
 <body class="prescription-dashboard-body">
@@ -24,12 +84,21 @@
         <div class="date-box" id="dateBox"></div>
         <div class="update-box" id="reportDate"></div>
       </div>
+
+      <header class="topbar employee-toolbar upload-toolbar">
+        <div class="user-chip">
+          <a class="back-button" href="index.html" title="رجوع" aria-label="رجوع">↩</a>
+          <strong id="currentUser"></strong>
+          <button id="dashboardLogoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج"><svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"></path><path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path></svg></button>
+        </div>
+      </header>
+
       <button type="button" class="language-chip" id="languageToggle">🌐 ع | E</button>
     </div>
 
     <h1 class="employee-page-title" id="pageTitle">مؤشر وصفات البريد اليومي</h1>
 
-    <section id="dashboardLoginView" class="view auth-view">
+    <section id="dashboardLoginView" class="view auth-view hidden">
       <form id="dashboardLoginForm" class="panel employee-login-card">
         <label id="usernameLabel" for="adminUsername">اسم المستخدم</label>
         <input id="adminUsername" autocomplete="username" required>
@@ -46,14 +115,6 @@
     </section>
 
     <section id="supervisorPanel" class="view supervisor-panel hidden">
-      <header class="topbar employee-toolbar upload-toolbar">
-        <div class="user-chip">
-          <button type="button" class="back-button" onclick="history.back()" title="رجوع" aria-label="رجوع">↩</button>
-          <strong>Admin</strong>
-          <button id="dashboardLogoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج"><svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"></path><path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path></svg></button>
-        </div>
-      </header>
-
       <header class="supervisor-head">
         <div class="supervisor-actions">
           <button id="refreshSupervisorBtn" class="dashboard-icon-btn" type="button" title="تحديث" aria-label="تحديث">↻</button>
