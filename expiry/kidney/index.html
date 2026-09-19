@@ -161,21 +161,21 @@ hr{
 
 .portal-grid{
   display:grid;
-  grid-template-columns:repeat(3,208px);
+  grid-template-columns:repeat(2,minmax(185px,200px));
   justify-content:center;
-  gap:14px;
-  max-width:720px;
+  gap:14px 16px;
+  max-width:430px;
   margin:0 auto
 }
 
 .portal-card{
-  width:208px;
-  height:132px;
+  width:100%;
+  height:120px;
   box-sizing:border-box;
   background:#168fb3;
   border:1px solid #168fb3;
   border-radius:8px;
-  padding:14px;
+  padding:12px;
   text-decoration:none;
   color:#fff;
   display:flex;
@@ -210,7 +210,7 @@ a.portal-card:hover,
 }
 
 .card-title{
-  font-size:15px;
+  font-size:14px;
   font-weight:bold;
   color:#fff;
   margin:0;
@@ -222,15 +222,15 @@ a.portal-card:hover,
 }
 
 .card-icon{
-  width:32px;
-  height:32px;
+  width:30px;
+  height:30px;
   border-radius:8px;
   background:rgba(255,255,255,.2);
   color:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
+  font-size:17px;
   flex:0 0 auto
 }
 
@@ -323,7 +323,7 @@ a.portal-card:hover,
 
   .portal-grid{
     grid-template-columns:1fr;
-    max-width:260px;
+    max-width:250px;
     gap:12px
   }
 
@@ -1047,8 +1047,11 @@ async function validatePageAccess(){
 
   if (!sessionToken){
 
-    window.location.href =
-      "../../index.html";
+    hideAllKidneyCards();
+
+    window.location.replace(
+      "../../index.html"
+    );
 
     return;
 
@@ -1108,9 +1111,11 @@ async function validatePageAccess(){
     ){
 
       clearPortalSession();
+      hideAllKidneyCards();
 
-      window.location.href =
-        "../../index.html";
+      window.location.replace(
+        "../../index.html"
+      );
 
       return;
 
@@ -1130,8 +1135,11 @@ async function validatePageAccess(){
 
     if (!hasKidneyAccess){
 
-      window.location.href =
-        "../../index.html";
+      hideAllKidneyCards();
+
+      window.location.replace(
+        "../../index.html"
+      );
 
     }
 
@@ -1148,6 +1156,29 @@ async function validatePageAccess(){
   }
 
 }
+
+
+window.addEventListener(
+  "pageshow",
+  function(){
+
+    const sessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (sessionToken){
+      return;
+    }
+
+    hideAllKidneyCards();
+
+    window.location.replace(
+      "../../index.html"
+    );
+
+  }
+);
 
 
 setLanguage(
