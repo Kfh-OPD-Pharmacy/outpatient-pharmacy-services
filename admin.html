@@ -571,6 +571,42 @@ tbody tr:last-child td{
   text-align:center;
   color:#64748b
 }
+
+.permission-groups{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:0 0 16px
+}
+.permission-group{
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  padding:12px;
+  background:#fff
+}
+.permission-group-title{
+  margin:0 0 10px;
+  color:#168fb3;
+  font-size:14px;
+  font-weight:bold
+}
+.permission-subgroup + .permission-subgroup{
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid #eef2f7
+}
+.permission-subtitle{
+  margin:0 0 8px;
+  color:#475569;
+  font-size:12px;
+  font-weight:bold
+}
+.permission-options{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:7px
+}
 @media (max-width:700px){
   .management-toolbar{
     align-items:stretch;
@@ -587,6 +623,10 @@ tbody tr:last-child td{
     flex:1
   }
   .user-form-panel .form-grid{
+    grid-template-columns:1fr
+  }
+
+  .permission-groups{
     grid-template-columns:1fr
   }
   .active-control{
@@ -699,32 +739,63 @@ tbody tr:last-child td{
 
     <div class="form-section-title service-section-title" id="serviceAccessTitle"></div>
 
-    <div class="permissions-row">
+    <div class="permission-groups">
 
-      <label class="simple-check">
-        <input id="medAccessInput" type="checkbox" checked>
-        <span id="medAccessLabel"></span>
-      </label>
+      <section class="permission-group">
+        <h3 class="permission-group-title" id="opdGroupTitle"></h3>
+        <div class="permission-subgroup">
+          <div class="permission-subtitle" id="opdMailGroupTitle"></div>
+          <div class="permission-options">
+            <label class="simple-check"><input id="opdMailRxAccessInput" type="checkbox"><span id="opdMailRxAccessLabel"></span></label>
+            <label class="simple-check"><input id="opdMailDailyListAccessInput" type="checkbox"><span id="opdMailDailyListAccessLabel"></span></label>
+            <label class="simple-check"><input id="opdMailIndicatorAccessInput" type="checkbox"><span id="opdMailIndicatorAccessLabel"></span></label>
+          </div>
+        </div>
+        <div class="permission-subgroup">
+          <div class="permission-subtitle" id="opdAppointmentGroupTitle"></div>
+          <div class="permission-options">
+            <label class="simple-check"><input id="opdAppointmentManageAccessInput" type="checkbox"><span id="opdAppointmentManageAccessLabel"></span></label>
+            <label class="simple-check"><input id="opdAppointmentIndicatorAccessInput" type="checkbox"><span id="opdAppointmentIndicatorAccessLabel"></span></label>
+          </div>
+        </div>
+      </section>
 
-      <label class="simple-check">
-        <input id="mailAccessInput" type="checkbox">
-        <span id="mailAccessLabel"></span>
-      </label>
+      <section class="permission-group">
+        <h3 class="permission-group-title" id="diabetesGroupTitle"></h3>
+        <div class="permission-subgroup">
+          <div class="permission-subtitle" id="diabetesMailGroupTitle"></div>
+          <div class="permission-options">
+            <label class="simple-check"><input id="diabetesMailRxAccessInput" type="checkbox"><span id="diabetesMailRxAccessLabel"></span></label>
+            <label class="simple-check"><input id="diabetesMailDailyListAccessInput" type="checkbox"><span id="diabetesMailDailyListAccessLabel"></span></label>
+            <label class="simple-check"><input id="diabetesMailIndicatorAccessInput" type="checkbox"><span id="diabetesMailIndicatorAccessLabel"></span></label>
+          </div>
+        </div>
+        <div class="permission-subgroup">
+          <div class="permission-subtitle" id="diabetesAppointmentGroupTitle"></div>
+          <div class="permission-options">
+            <label class="simple-check"><input id="diabetesAppointmentManageAccessInput" type="checkbox"><span id="diabetesAppointmentManageAccessLabel"></span></label>
+            <label class="simple-check"><input id="diabetesAppointmentIndicatorAccessInput" type="checkbox"><span id="diabetesAppointmentIndicatorAccessLabel"></span></label>
+          </div>
+        </div>
+      </section>
 
-      <label class="simple-check">
-        <input id="kidneyAccessInput" type="checkbox">
-        <span id="kidneyAccessLabel"></span>
-      </label>
+      <section class="permission-group">
+        <h3 class="permission-group-title" id="kidneyGroupTitle"></h3>
+        <div class="permission-options">
+          <label class="simple-check"><input id="kidneyExpiryRegisterAccessInput" type="checkbox"><span id="kidneyExpiryRegisterAccessLabel"></span></label>
+          <label class="simple-check"><input id="kidneyExpiryDashboardAccessInput" type="checkbox"><span id="kidneyExpiryDashboardAccessLabel"></span></label>
+          <label class="simple-check"><input id="kidneyOrderAccessInput" type="checkbox"><span id="kidneyOrderAccessLabel"></span></label>
+          <label class="simple-check"><input id="kidneyLabelsAccessInput" type="checkbox"><span id="kidneyLabelsAccessLabel"></span></label>
+        </div>
+      </section>
 
-      <label class="simple-check">
-        <input id="labelsAccessInput" type="checkbox">
-        <span id="labelsAccessLabel"></span>
-      </label>
-
-      <label class="simple-check">
-        <input id="orderAccessInput" type="checkbox">
-        <span id="orderAccessLabel"></span>
-      </label>
+      <section class="permission-group">
+        <h3 class="permission-group-title" id="controlPanelGroupTitle"></h3>
+        <div class="permission-options">
+          <label class="simple-check"><input id="userManagementAccessInput" type="checkbox"><span id="userManagementAccessLabel"></span></label>
+          <label class="simple-check"><input id="medicationManagementAccessInput" type="checkbox"><span id="medicationManagementAccessLabel"></span></label>
+        </div>
+      </section>
 
     </div>
 
@@ -788,6 +859,25 @@ let inactivityTimer = null;
 const INACTIVITY_LIMIT_MS =
   30 * 60 * 1000;
 
+const DETAILED_PERMISSIONS = [
+  ["opdMailRxAccessInput", "opdMailRxAccess", "opdMailRxAccess"],
+  ["opdMailDailyListAccessInput", "opdMailDailyListAccess", "opdMailDailyListAccess"],
+  ["opdMailIndicatorAccessInput", "opdMailIndicatorAccess", "opdMailIndicatorAccess"],
+  ["opdAppointmentManageAccessInput", "opdAppointmentManageAccess", "opdAppointmentManageAccess"],
+  ["opdAppointmentIndicatorAccessInput", "opdAppointmentIndicatorAccess", "opdAppointmentIndicatorAccess"],
+  ["diabetesMailRxAccessInput", "diabetesMailRxAccess", "diabetesMailRxAccess"],
+  ["diabetesMailDailyListAccessInput", "diabetesMailDailyListAccess", "diabetesMailDailyListAccess"],
+  ["diabetesMailIndicatorAccessInput", "diabetesMailIndicatorAccess", "diabetesMailIndicatorAccess"],
+  ["diabetesAppointmentManageAccessInput", "diabetesAppointmentManageAccess", "diabetesAppointmentManageAccess"],
+  ["diabetesAppointmentIndicatorAccessInput", "diabetesAppointmentIndicatorAccess", "diabetesAppointmentIndicatorAccess"],
+  ["kidneyExpiryRegisterAccessInput", "kidneyExpiryRegisterAccess", "kidneyExpiryRegisterAccess"],
+  ["kidneyExpiryDashboardAccessInput", "kidneyExpiryDashboardAccess", "kidneyExpiryDashboardAccess"],
+  ["kidneyOrderAccessInput", "kidneyOrderAccess", "kidneyOrderAccess"],
+  ["kidneyLabelsAccessInput", "kidneyLabelsAccess", "kidneyLabelsAccess"],
+  ["userManagementAccessInput", "userManagementAccess", "userManagementAccess"],
+  ["medicationManagementAccessInput", "medicationManagementAccess", "medicationManagementAccess"]
+];
+
 const text = {
 
   ar: {
@@ -835,6 +925,33 @@ const text = {
 
     orderAccess:
       "الطلبية",
+
+    opdGroup:"صيدلية العيادات الخارجية",
+    diabetesGroup:"صيدلية مركز السكر",
+    kidneyGroup:"صيدلية مركز الكلى",
+    controlPanelGroup:"لوحة التحكم",
+    mailGroup:"البريد الدوائي",
+    appointmentGroup:"صرف الأدوية الشهرية بموعد",
+
+    opdMailRxAccess:"وصفات البريد الدوائي",
+    opdMailDailyListAccess:"إرسال القائمة اليومية",
+    opdMailIndicatorAccess:"المؤشر اليومي",
+    opdAppointmentManageAccess:"إدارة المواعيد",
+    opdAppointmentIndicatorAccess:"مؤشر المواعيد",
+
+    diabetesMailRxAccess:"وصفات البريد",
+    diabetesMailDailyListAccess:"إرسال القائمة اليومية",
+    diabetesMailIndicatorAccess:"المؤشر اليومي",
+    diabetesAppointmentManageAccess:"إدارة المواعيد",
+    diabetesAppointmentIndicatorAccess:"مؤشر المواعيد",
+
+    kidneyExpiryRegisterAccess:"تسجيل تواريخ الانتهاء",
+    kidneyExpiryDashboardAccess:"مؤشر تواريخ الانتهاء",
+    kidneyOrderAccess:"الطلبية",
+    kidneyLabelsAccess:"طباعة الليبلات",
+
+    userManagementAccess:"إدارة المستخدمين",
+    medicationManagementAccess:"إدارة الأدوية الموحدة",
 
     searchUsers:
       "البحث بالاسم أو اسم المستخدم",
@@ -973,6 +1090,33 @@ const text = {
 
     orderAccess:
       "Kidney Order",
+
+    opdGroup:"Outpatient Pharmacy",
+    diabetesGroup:"Diabetes Center Pharmacy",
+    kidneyGroup:"Kidney Center Pharmacy",
+    controlPanelGroup:"Control Panel",
+    mailGroup:"Prescription Mail",
+    appointmentGroup:"Monthly Medication Pickup by Appointment",
+
+    opdMailRxAccess:"Mail Prescriptions",
+    opdMailDailyListAccess:"Send Daily List",
+    opdMailIndicatorAccess:"Daily Indicator",
+    opdAppointmentManageAccess:"Appointment Management",
+    opdAppointmentIndicatorAccess:"Appointment Indicator",
+
+    diabetesMailRxAccess:"Mail Prescriptions",
+    diabetesMailDailyListAccess:"Send Daily List",
+    diabetesMailIndicatorAccess:"Daily Indicator",
+    diabetesAppointmentManageAccess:"Appointment Management",
+    diabetesAppointmentIndicatorAccess:"Appointment Indicator",
+
+    kidneyExpiryRegisterAccess:"Register Expiry Dates",
+    kidneyExpiryDashboardAccess:"Expiry Dashboard",
+    kidneyOrderAccess:"Kidney Order",
+    kidneyLabelsAccess:"Labels Generator",
+
+    userManagementAccess:"User Management",
+    medicationManagementAccess:"Unified Medication Management",
 
     searchUsers:
       "Search by name or username",
@@ -1144,30 +1288,25 @@ function setLanguage(lang) {
   ).innerText =
     text[lang].name;
 
-  document.getElementById(
-    "medAccessLabel"
-  ).innerText =
-    text[lang].medAccess;
+  document.getElementById("opdGroupTitle").innerText = text[lang].opdGroup;
+  document.getElementById("opdMailGroupTitle").innerText = text[lang].mailGroup;
+  document.getElementById("opdAppointmentGroupTitle").innerText = text[lang].appointmentGroup;
 
-  document.getElementById(
-    "mailAccessLabel"
-  ).innerText =
-    text[lang].mailAccess;
+  document.getElementById("diabetesGroupTitle").innerText = text[lang].diabetesGroup;
+  document.getElementById("diabetesMailGroupTitle").innerText = text[lang].mailGroup;
+  document.getElementById("diabetesAppointmentGroupTitle").innerText = text[lang].appointmentGroup;
 
-  document.getElementById(
-    "kidneyAccessLabel"
-  ).innerText =
-    text[lang].kidneyAccess;
+  document.getElementById("kidneyGroupTitle").innerText = text[lang].kidneyGroup;
+  document.getElementById("controlPanelGroupTitle").innerText = text[lang].controlPanelGroup;
 
-  document.getElementById(
-    "labelsAccessLabel"
-  ).innerText =
-    text[lang].labelsAccess;
-
-  document.getElementById(
-    "orderAccessLabel"
-  ).innerText =
-    text[lang].orderAccess;
+  DETAILED_PERMISSIONS.forEach(function(definition) {
+    const label = document.getElementById(
+      definition[0].replace("Input", "Label")
+    );
+    if (label) {
+      label.innerText = text[lang][definition[2]];
+    }
+  });
 
   document.getElementById(
     "activeLabel"
@@ -1515,26 +1654,18 @@ function updateAdminIdentity() {
 
 
 function updateRestrictedPermissionControls() {
-
   const restricted =
     adminUsername.toLowerCase() !==
     "admin";
 
-  [
-    "labelsAccessInput",
-    "orderAccessInput"
-  ].forEach(function(id) {
-
+  DETAILED_PERMISSIONS.forEach(function(definition) {
     const input =
-      document.getElementById(id);
+      document.getElementById(definition[0]);
 
     if (input) {
-      input.disabled =
-        restricted;
+      input.disabled = restricted;
     }
-
   });
-
 }
 
 
@@ -1816,210 +1947,75 @@ async function loadUsers() {
 ================================ */
 
 async function saveUser() {
+  const username = document.getElementById("usernameInput").value.trim();
+  const pin = document.getElementById("pinInput").value.trim();
+  const name = document.getElementById("nameInput").value.trim();
+  const active = document.getElementById("activeInput").checked;
 
-  const username =
-    document.getElementById(
-      "usernameInput"
-    ).value.trim();
+  const permissionPayload = {};
 
-  const pin =
-    document.getElementById(
-      "pinInput"
-    ).value.trim();
+  DETAILED_PERMISSIONS.forEach(function(definition) {
+    const input = document.getElementById(definition[0]);
+    permissionPayload[definition[1]] = Boolean(input && input.checked);
+  });
 
-  const name =
-    document.getElementById(
-      "nameInput"
-    ).value.trim();
-
-  const medAccess =
-    document.getElementById(
-      "medAccessInput"
-    ).checked;
-
-  const mailAccess =
-    document.getElementById(
-      "mailAccessInput"
-    ).checked;
-
-  const kidneyAccess =
-    document.getElementById(
-      "kidneyAccessInput"
-    ).checked;
-
-  const labelsAccess =
-    document.getElementById(
-      "labelsAccessInput"
-    ).checked;
-
-  const orderAccess =
-    document.getElementById(
-      "orderAccessInput"
-    ).checked;
-
-  const active =
-    document.getElementById(
-      "activeInput"
-    ).checked;
-
-  if (
-    !username ||
-    !name
-  ) {
-
-    showResult(
-      "error",
-      text[currentLang].failed +
-      " (MISSING_FIELDS)"
-    );
-
+  if (!username || !name) {
+    showResult("error", text[currentLang].failed + " (MISSING_FIELDS)");
     return;
   }
 
-  if (
-    !medAccess &&
-    !mailAccess &&
-    !kidneyAccess &&
-    !labelsAccess &&
-    !orderAccess
-  ) {
+  const hasPermission = Object.keys(permissionPayload).some(function(key) {
+    return permissionPayload[key];
+  });
 
-    showResult(
-      "error",
-      text[
-        currentLang
-      ].permissionRequired
-    );
-
+  if (!hasPermission) {
+    showResult("error", text[currentLang].permissionRequired);
     return;
   }
 
-  /*
-    مستخدم جديد:
-    PIN إلزامي.
-
-    تعديل مستخدم:
-    PIN فاضي = لا يتغير.
-  */
-  if (
-    !editingUsername &&
-    !pin
-  ) {
-
-    showResult(
-      "error",
-      text[
-        currentLang
-      ].pinRequired
-    );
-
+  if (!editingUsername && !pin) {
+    showResult("error", text[currentLang].pinRequired);
     return;
   }
 
   try {
-
     let result;
 
     if (editingUsername) {
-
-      result =
-        await unifiedApi({
-          action:
-            "adminUpdateUser",
-
-          originalUsername:
-            editingUsername,
-
-          username:
-            username,
-
-          pin:
-            pin,
-
-          name:
-            name,
-
-          active:
-            active,
-
-          medAccess:
-            medAccess,
-
-          mailAccess:
-            mailAccess,
-
-          kidneyAccess:
-            kidneyAccess,
-
-          labelsAccess:
-            labelsAccess,
-
-          orderAccess:
-            orderAccess
-        });
-
+      result = await unifiedApi({
+        action:"adminUpdateUser",
+        originalUsername:editingUsername,
+        username:username,
+        pin:pin,
+        name:name,
+        active:active,
+        ...permissionPayload
+      });
     } else {
-
-      result =
-        await unifiedApi({
-          action:
-            "adminAddUser",
-
-          username:
-            username,
-
-          pin:
-            pin,
-
-          name:
-            name,
-
-          active:
-            active,
-
-          medAccess:
-            medAccess,
-
-          mailAccess:
-            mailAccess,
-
-          kidneyAccess:
-            kidneyAccess,
-
-          labelsAccess:
-            labelsAccess,
-
-          orderAccess:
-            orderAccess
-        });
+      result = await unifiedApi({
+        action:"adminAddUser",
+        username:username,
+        pin:pin,
+        name:name,
+        active:active,
+        ...permissionPayload
+      });
     }
 
     if (!result.success) {
-
       showResult(
         "error",
-        result.message ||
-        `${text[currentLang].failed} (${result.code || "ERROR"})`
+        result.message || `${text[currentLang].failed} (${result.code || "ERROR"})`
       );
-
       return;
     }
 
-    showResult(
-      "success",
-      text[currentLang].saved
-    );
-
+    showResult("success", text[currentLang].saved);
     clearForm();
-
     await loadUsers();
 
   } catch (error) {
-
-    showResult(
-      "error",
-      text[currentLang].failed
-    );
+    showResult("error", text[currentLang].failed);
   }
 }
 
@@ -2028,90 +2024,31 @@ async function saveUser() {
 ================================ */
 
 function editUser(username) {
-
-  const user =
-    users.find(
-      function(item) {
-
-        return (
-          item.username ===
-          username
-        );
-      }
-    );
+  const user = users.find(function(item) {
+    return item.username === username;
+  });
 
   if (!user) return;
 
-  editingUsername =
-    user.username;
+  editingUsername = user.username;
+  document.getElementById("usernameInput").value = user.username || "";
+  document.getElementById("pinInput").value = "";
+  document.getElementById("nameInput").value = user.name || "";
 
-  document.getElementById(
-    "usernameInput"
-  ).value =
-    user.username || "";
+  const isMainAdmin = String(user.username || "").toLowerCase() === "admin";
 
-  /*
-    لا نظهر PIN القديم في الفورم.
-    تركه فارغاً يعني:
-    لا تغير PIN.
-  */
-  document.getElementById(
-    "pinInput"
-  ).value =
-    "";
+  DETAILED_PERMISSIONS.forEach(function(definition) {
+    const input = document.getElementById(definition[0]);
+    if (!input) return;
 
-  document.getElementById(
-    "nameInput"
-  ).value =
-    user.name || "";
+    input.checked = isMainAdmin ? true : Boolean(user[definition[1]]);
+    input.disabled = isMainAdmin || adminUsername.toLowerCase() !== "admin";
+  });
 
-  document.getElementById(
-    "medAccessInput"
-  ).checked =
-    Boolean(
-      user.medAccess
-    );
+  document.getElementById("activeInput").checked =
+    isMainAdmin ? true : user.active !== false;
 
-  document.getElementById(
-    "mailAccessInput"
-  ).checked =
-    Boolean(
-      user.mailAccess
-    );
-
-  document.getElementById(
-    "kidneyAccessInput"
-  ).checked =
-    Boolean(
-      user.kidneyAccess
-    );
-
-  document.getElementById(
-    "labelsAccessInput"
-  ).checked =
-    Boolean(
-      user.labelsAccess
-    );
-
-  document.getElementById(
-    "orderAccessInput"
-  ).checked =
-    Boolean(
-      user.orderAccess
-    );
-
-  document.getElementById(
-    "activeInput"
-  ).checked =
-    user.active !== false;
-
-  document.getElementById(
-    "saveUserBtn"
-  ).innerText =
-    text[
-      currentLang
-    ].update;
-
+  document.getElementById("saveUserBtn").innerText = text[currentLang].update;
   showUserForm();
 }
 
@@ -2176,64 +2113,22 @@ async function deleteUser(
 ================================ */
 
 function clearForm() {
+  editingUsername = "";
+  document.getElementById("usernameInput").value = "";
+  document.getElementById("pinInput").value = "";
+  document.getElementById("nameInput").value = "";
 
-  editingUsername =
-    "";
+  DETAILED_PERMISSIONS.forEach(function(definition) {
+    const input = document.getElementById(definition[0]);
+    if (input) {
+      input.checked = false;
+      input.disabled = adminUsername.toLowerCase() !== "admin";
+    }
+  });
 
-  document.getElementById(
-    "usernameInput"
-  ).value =
-    "";
-
-  document.getElementById(
-    "pinInput"
-  ).value =
-    "";
-
-  document.getElementById(
-    "nameInput"
-  ).value =
-    "";
-
-  document.getElementById(
-    "medAccessInput"
-  ).checked =
-    true;
-
-  document.getElementById(
-    "mailAccessInput"
-  ).checked =
-    false;
-
-  document.getElementById(
-    "kidneyAccessInput"
-  ).checked =
-    false;
-
-  document.getElementById(
-    "labelsAccessInput"
-  ).checked =
-    false;
-
-  document.getElementById(
-    "orderAccessInput"
-  ).checked =
-    false;
-
-  document.getElementById(
-    "activeInput"
-  ).checked =
-    true;
-
-  document.getElementById(
-    "saveUserBtn"
-  ).innerText =
-    text[currentLang].save;
-
-  document.getElementById(
-    "userFormPanel"
-  ).style.display =
-    "none";
+  document.getElementById("activeInput").checked = true;
+  document.getElementById("saveUserBtn").innerText = text[currentLang].save;
+  document.getElementById("userFormPanel").style.display = "none";
 }
 
 /* ================================
@@ -2408,63 +2303,24 @@ function renderUsers() {
 }
 
 
-function renderAccessBadges(
-  user,
-  isMainAdmin
-) {
-
+function renderAccessBadges(user, isMainAdmin) {
   if (isMainAdmin) {
     return `
       <div class="access-list">
-        <span class="access-badge">
-          ${escapeHtml(
-            text[currentLang].allServices
-          )}
-        </span>
+        <span class="access-badge">${escapeHtml(text[currentLang].allServices)}</span>
       </div>
     `;
   }
 
-  const permissions = [
-    [
-      user.medAccess,
-      text[currentLang].medAccess
-    ],
-    [
-      user.mailAccess,
-      text[currentLang].mailAccess
-    ],
-    [
-      user.kidneyAccess,
-      text[currentLang].kidneyAccess
-    ],
-    [
-      user.labelsAccess,
-      text[currentLang].labelsAccess
-    ],
-    [
-      user.orderAccess,
-      text[currentLang].orderAccess
-    ]
-  ]
-    .filter(
-      function(permission) {
-        return Boolean(
-          permission[0]
-        );
-      }
-    )
-    .map(
-      function(permission) {
-        return `
-          <span class="access-badge">
-            ${escapeHtml(
-              permission[1]
-            )}
-          </span>
-        `;
-      }
-    )
+  const permissions = DETAILED_PERMISSIONS
+    .filter(function(definition) {
+      return Boolean(user[definition[1]]);
+    })
+    .map(function(definition) {
+      return `
+        <span class="access-badge">${escapeHtml(text[currentLang][definition[2]])}</span>
+      `;
+    })
     .join("");
 
   return permissions
