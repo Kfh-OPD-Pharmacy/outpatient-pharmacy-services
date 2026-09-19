@@ -240,18 +240,21 @@ body{padding:10px;background:#fff}
     <div class="date-box" id="dateBox"></div>
     <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
   </div>
+  <div style="text-align:center">
+    <a href="index.html" title="رجوع" aria-label="رجوع" style="color:#168fb3;text-decoration:none;font-size:28px;line-height:1">↩</a>
+  </div>
   <h1 class="page-title" id="pageTitle">لوحة التحكم</h1>
   <p class="subtitle" id="subtitle">اختيار صفحة الإدارة المطلوبة.</p>
 
   <div class="portal-grid" id="portalGrid">
-    <a class="portal-card" href="admin.html">
+    <a class="portal-card" href="admin.html" style="display:none">
       <div>
         <p class="card-title" id="usersTitle">إدارة المستخدمين الموحدة</p>
         <p class="card-desc" id="usersDesc">إضافة المستخدمين وتحديد صلاحيات الخدمات.</p>
       </div>
       <div class="card-icon">👤</div>
     </a>
-    <a class="portal-card" href="medications-admin.html">
+    <a class="portal-card" href="medications-admin.html" style="display:none">
       <div>
         <p class="card-title" id="medsTitle">إدارة الأدوية الموحدة</p>
         <p class="card-desc" id="medsDesc">إضافة وتعديل أسماء الأدوية للقوائم المنسدلة.</p>
@@ -305,7 +308,153 @@ function renderDate(){
   const day = new Intl.DateTimeFormat(currentLang === "ar" ? "ar-SA" : "en-US",{timeZone:"Asia/Riyadh",weekday:"long"}).format(now);
   document.getElementById("dateBox").innerText = `${day} - ${date}`;
 }
+
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
+async function unifiedApi(payload){
+  const response = await fetch(
+    UNIFIED_API_URL,
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"text/plain;charset=utf-8"
+      },
+      body:JSON.stringify(payload)
+    }
+  );
+
+  return response.json();
+}
+
+function clearPortalSession(){
+  sessionStorage.removeItem("unifiedPortalUsername");
+  sessionStorage.removeItem("unifiedPortalSessionToken");
+  sessionStorage.removeItem("unifiedPortalUser");
+}
+
+function getControlCards(){
+  return {
+    users:document.querySelector('a.portal-card[href="admin.html"]'),
+    meds:document.querySelector('a.portal-card[href="medications-admin.html"]')
+  };
+}
+
+function hideAllControlCards(){
+  const cards = getControlCards();
+
+  if (cards.users){
+    cards.users.style.display = "none";
+  }
+
+  if (cards.meds){
+    cards.meds.style.display = "none";
+  }
+}
+
+function renderAllowedControlServices(user){
+  const cards = getControlCards();
+
+  const usersAllowed = Boolean(
+    user &&
+    user.userManagementAccess
+  );
+
+  const medsAllowed = Boolean(
+    user &&
+    user.medicationManagementAccess
+  );
+
+  if (cards.users){
+    cards.users.style.display =
+      usersAllowed
+        ? "flex"
+        : "none";
+  }
+
+  if (cards.meds){
+    cards.meds.style.display =
+      medsAllowed
+        ? "flex"
+        : "none";
+  }
+
+  return usersAllowed || medsAllowed;
+}
+
+async function validatePageAccess(){
+  hideAllControlCards();
+
+  const sessionToken =
+    sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+  if (!sessionToken){
+    window.location.href = "index.html";
+    return;
+  }
+
+  let cachedUserRendered = false;
+
+  const cachedUserText =
+    sessionStorage.getItem("unifiedPortalUser") || "";
+
+  if (cachedUserText){
+    try{
+      const cachedUser =
+        JSON.parse(cachedUserText);
+
+      if (
+        cachedUser &&
+        typeof cachedUser === "object"
+      ){
+        cachedUserRendered =
+          renderAllowedControlServices(cachedUser);
+      }
+    } catch (error){
+      cachedUserRendered = false;
+    }
+  }
+
+  try{
+    const result = await unifiedApi({
+      action:"validateSession",
+      sessionToken:sessionToken,
+      service:""
+    });
+
+    if (
+      !result.success ||
+      !result.user ||
+      result.user.active === false
+    ){
+      clearPortalSession();
+      window.location.href = "index.html";
+      return;
+    }
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(result.user)
+    );
+
+    const hasControlAccess =
+      renderAllowedControlServices(result.user);
+
+    if (!hasControlAccess){
+      window.location.href = "index.html";
+    }
+
+  } catch (error){
+    if (cachedUserRendered){
+      return;
+    }
+
+    hideAllControlCards();
+  }
+}
+
 setLanguage("ar");
+validatePageAccess();
 </script>
 </body>
 </html>
