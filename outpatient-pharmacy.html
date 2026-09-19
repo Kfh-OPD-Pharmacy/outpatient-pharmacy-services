@@ -347,6 +347,7 @@ async function unifiedApi(payload) {
 function clearPortalSession() {
   sessionStorage.removeItem("unifiedPortalUsername");
   sessionStorage.removeItem("unifiedPortalSessionToken");
+  sessionStorage.removeItem("unifiedPortalUser");
 }
 
 function denyAndReturnHome() {
@@ -358,7 +359,7 @@ function denyAndReturnHome() {
   denied.style.display = "block";
 
   window.setTimeout(function() {
-    window.location.href = "home.html";
+    window.location.href = "index.html";
   }, 700);
 }
 
@@ -404,6 +405,45 @@ async function validatePageAccess() {
     return;
   }
 
+  let cachedUser = null;
+  let cachedUserRendered = false;
+
+  const cachedUserText =
+    sessionStorage.getItem("unifiedPortalUser") || "";
+
+  if (cachedUserText) {
+    try {
+      cachedUser =
+        JSON.parse(cachedUserText);
+
+      if (
+        cachedUser &&
+        typeof cachedUser === "object"
+      ) {
+        const cachedMailAllowed = Boolean(
+          cachedUser.opdMailRxAccess ||
+          cachedUser.opdMailDailyListAccess ||
+          cachedUser.opdMailIndicatorAccess
+        );
+
+        const cachedAppointmentAllowed = Boolean(
+          cachedUser.opdAppointmentManageAccess ||
+          cachedUser.opdAppointmentIndicatorAccess
+        );
+
+        if (
+          cachedMailAllowed ||
+          cachedAppointmentAllowed
+        ) {
+          renderAllowedServices(cachedUser);
+          cachedUserRendered = true;
+        }
+      }
+    } catch (error) {
+      cachedUser = null;
+    }
+  }
+
   try {
     const result = await unifiedApi({
       action: "validateSession",
@@ -421,11 +461,21 @@ async function validatePageAccess() {
       return;
     }
 
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(result.user)
+    );
+
     renderAllowedServices(result.user);
 
   } catch (error) {
-    clearPortalSession();
-    denyAndReturnHome();
+    if (cachedUserRendered) {
+      return;
+    }
+
+    const denied = document.getElementById("accessDenied");
+    denied.innerText = text[currentLang].accessDenied;
+    denied.style.display = "block";
   }
 }
 

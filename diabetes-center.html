@@ -405,21 +405,42 @@ async function validatePageAccess() {
     return;
   }
 
+  let cachedUser = null;
+  let cachedUserRendered = false;
+
   const cachedUserText =
     sessionStorage.getItem("unifiedPortalUser") || "";
 
   if (cachedUserText) {
     try {
-      const cachedUser =
+      cachedUser =
         JSON.parse(cachedUserText);
 
       if (
         cachedUser &&
         typeof cachedUser === "object"
       ) {
-        renderAllowedServices(cachedUser);
+        const cachedMailAllowed = Boolean(
+          cachedUser.diabetesMailRxAccess ||
+          cachedUser.diabetesMailDailyListAccess ||
+          cachedUser.diabetesMailIndicatorAccess
+        );
+
+        const cachedAppointmentAllowed = Boolean(
+          cachedUser.diabetesAppointmentManageAccess ||
+          cachedUser.diabetesAppointmentIndicatorAccess
+        );
+
+        if (
+          cachedMailAllowed ||
+          cachedAppointmentAllowed
+        ) {
+          renderAllowedServices(cachedUser);
+          cachedUserRendered = true;
+        }
       }
     } catch (error) {
+      cachedUser = null;
     }
   }
 
@@ -448,8 +469,13 @@ async function validatePageAccess() {
     renderAllowedServices(result.user);
 
   } catch (error) {
-    clearPortalSession();
-    denyAndReturnHome();
+    if (cachedUserRendered) {
+      return;
+    }
+
+    const denied = document.getElementById("accessDenied");
+    denied.innerText = text[currentLang].accessDenied;
+    denied.style.display = "block";
   }
 }
 
