@@ -2425,27 +2425,77 @@ async function changePassword(){
 
 async function logoutEmployee(){
 
+  const unifiedSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
   if (
-    currentSessionToken
+    unifiedSessionToken
   ){
 
     try{
 
-      await postApi(
-        "revokeSession",
-        {},
-        true
-      );
+      await unifiedApi({
+        action:"revokeSession",
+        sessionToken:unifiedSessionToken
+      });
 
     }catch(error){}
 
   }
 
-  clearStoredSession();
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_NAME_KEY
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  );
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_NAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  );
+
+  currentEmployeeName =
+    "";
+
+  currentEmployeeUsername =
+    "";
+
+  currentSessionToken =
+    "";
 
   window.clearTimeout(
     inactivityTimer
   );
+
+  inactivityTimer =
+    null;
 
   pendingMedication =
     null;
@@ -2455,7 +2505,8 @@ async function logoutEmployee(){
   ).style.display =
     "none";
 
-  showLoginView();
+  window.location.href =
+    "../../index.html";
 
 }
 
