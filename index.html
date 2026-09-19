@@ -28,6 +28,108 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
 .card-title{font-size:16px;font-weight:bold;color:#fff;margin:0;line-height:1.5}
 .card-desc{font-size:12px;color:rgba(255,255,255,.86);line-height:1.55;margin:0}
 .card-icon{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 auto}
+
+.login-card{
+  width:100%;
+  max-width:420px;
+  margin:18px auto 0;
+  padding:22px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08)
+}
+.login-card label{
+  display:block;
+  margin:0 0 6px;
+  color:#168fb3;
+  font-size:14px;
+  font-weight:bold
+}
+.login-card input{
+  width:100%;
+  height:44px;
+  margin:0 0 12px;
+  padding:8px 12px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#111827;
+  font-size:14px;
+  font-family:inherit
+}
+.login-card input:focus{
+  border-color:#168fb3;
+  box-shadow:0 0 0 2px rgba(22,143,179,.12);
+  outline:none
+}
+.login-actions{
+  display:flex;
+  justify-content:center
+}
+.primary-btn{
+  min-height:44px;
+  padding:9px 18px;
+  border:0;
+  border-radius:8px;
+  background:#168fb3;
+  color:#fff;
+  font-size:14px;
+  font-weight:bold;
+  cursor:pointer
+}
+.primary-btn:disabled{
+  background:#94a3b8;
+  cursor:not-allowed
+}
+.login-result{
+  display:none;
+  margin-top:12px;
+  padding:10px 12px;
+  border-radius:8px;
+  text-align:center;
+  font-size:13px;
+  line-height:1.5
+}
+.login-result.error{
+  display:block;
+  background:#fef2f2;
+  color:#991b1b
+}
+.portal-session{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:0 auto 18px;
+  color:#334155;
+  font-size:13px
+}
+.portal-user-name{
+  font-weight:bold;
+  color:#168fb3
+}
+.logout-btn{
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:bold;
+  padding:4px 6px
+}
+.no-access{
+  display:none;
+  max-width:620px;
+  margin:14px auto 0;
+  padding:12px;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  background:#f8fafc;
+  color:#475569;
+  text-align:center;
+  font-size:13px
+}
 @media (max-width:760px){
 body{padding:10px;background:#fff}
 .container{padding:14px;border-radius:0;box-shadow:none;min-height:100vh}
@@ -41,6 +143,7 @@ body{padding:10px;background:#fff}
 .card-title{font-size:15px}
 .card-desc{font-size:12px}
 .card-icon{width:30px;height:30px;font-size:17px}
+.login-card{max-width:320px;padding:16px}
 }
 
 
@@ -251,29 +354,74 @@ body{padding:10px;background:#fff}
   <h1 class="page-title" id="pageTitle">بوابة خدمات الرعاية الصيدلانية</h1>
   <p class="subtitle" id="subtitle">بوابة موحدة لتقديم الخدمات الصيدلانية.</p>
 
-  <div class="portal-grid">
-    <a class="portal-card" href="outpatient.html" target="_blank" rel="noopener">
-      <div class="card-icon">🏥</div>
-      <p class="card-title" id="outpatientTitle">العيادات الخارجية</p>
-      <p class="card-desc" id="outpatientDesc">خدمات العيادات الخارجية ومركز السكر.</p>
-    </a>
+  <div id="loginView" class="login-card">
+    <label id="usernameLabel" for="portalUsername">اسم المستخدم</label>
+    <input type="text" id="portalUsername" autocomplete="username">
 
-    <a class="portal-card" href="expiry/kidney/index.html" target="_blank" rel="noopener">
-      <div class="card-icon">💠</div>
-      <p class="card-title" id="kidneyTitle">صيدلية مركز الكلى</p>
-      <p class="card-desc" id="kidneyDesc">خدمات تتبع الصلاحية والطلبات.</p>
-    </a>
+    <label id="pinLabel" for="portalPin">PIN</label>
+    <input type="password" id="portalPin" inputmode="numeric" autocomplete="current-password">
 
-    <a class="portal-card" href="control-panel.html" target="_blank" rel="noopener">
-      <div class="card-icon">⚙</div>
-      <p class="card-title" id="controlTitle">لوحة التحكم</p>
-      <p class="card-desc" id="controlDesc">إدارة المستخدمين والأدوية المركزية.</p>
-    </a>
+    <div class="login-actions">
+      <button type="button" class="primary-btn" id="loginBtn" onclick="loginPortal()">تسجيل الدخول</button>
+    </div>
+
+    <div id="loginResult" class="login-result"></div>
+  </div>
+
+  <div id="portalView" style="display:none">
+    <div class="portal-session">
+      <span id="portalUserName" class="portal-user-name"></span>
+      <button type="button" class="logout-btn" id="logoutBtn" onclick="logoutPortal()">تسجيل الخروج</button>
+    </div>
+
+    <div class="portal-grid">
+      <a class="portal-card" id="outpatientCard" href="outpatient.html" style="display:none">
+        <div class="card-icon">🏥</div>
+        <p class="card-title" id="outpatientTitle">صيدلية العيادات الخارجية</p>
+        <p class="card-desc" id="outpatientDesc">خدمات صيدلية العيادات الخارجية.</p>
+      </a>
+
+      <a class="portal-card" id="diabetesCard" href="diabetes-center.html" style="display:none">
+        <div class="card-icon">🩺</div>
+        <p class="card-title" id="diabetesTitle">صيدلية مركز السكر</p>
+        <p class="card-desc" id="diabetesDesc">خدمات صيدلية مركز السكر.</p>
+      </a>
+
+      <a class="portal-card" id="kidneyCard" href="expiry/kidney/index.html" style="display:none">
+        <div class="card-icon">💠</div>
+        <p class="card-title" id="kidneyTitle">صيدلية مركز الكلى</p>
+        <p class="card-desc" id="kidneyDesc">خدمات تتبع الصلاحية والطلبات.</p>
+      </a>
+
+      <a class="portal-card" id="controlCard" href="control-panel.html" style="display:none">
+        <div class="card-icon">⚙</div>
+        <p class="card-title" id="controlTitle">لوحة التحكم</p>
+        <p class="card-desc" id="controlDesc">إدارة المستخدمين والأدوية المركزية.</p>
+      </a>
+    </div>
+
+    <div id="noAccessMessage" class="no-access"></div>
   </div>
 </div>
 
 <script>
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
 let currentLang = "ar";
+
+let portalUsername =
+  sessionStorage.getItem(
+    "unifiedPortalUsername"
+  ) || "";
+
+let portalSessionToken =
+  sessionStorage.getItem(
+    "unifiedPortalSessionToken"
+  ) || "";
+
+let currentUser = null;
+
 const text = {
   ar: {
     title: "بوابة خدمات الرعاية الصيدلانية",
@@ -281,55 +429,576 @@ const text = {
     officialLine2: "مستشفى الملك فهد بالمدينة المنورة",
     officialLine3: "إدارة الرعاية الصيدلانية",
     subtitle: "بوابة موحدة لتقديم الخدمات الصيدلانية.",
-    outpatientTitle: "العيادات الخارجية",
-    outpatientDesc: "خدمات العيادات الخارجية ومركز السكر.",
+    username: "اسم المستخدم",
+    login: "تسجيل الدخول",
+    logout: "تسجيل الخروج",
+    invalidLogin: "اسم المستخدم أو PIN غير صحيح، أو لا توجد لديك صلاحية دخول.",
+    outpatientTitle: "صيدلية العيادات الخارجية",
+    outpatientDesc: "خدمات صيدلية العيادات الخارجية.",
+    diabetesTitle: "صيدلية مركز السكر",
+    diabetesDesc: "خدمات صيدلية مركز السكر.",
     kidneyTitle: "صيدلية مركز الكلى",
     kidneyDesc: "خدمات تتبع الصلاحية والطلبات.",
     controlTitle: "لوحة التحكم",
-    controlDesc: "إدارة المستخدمين والأدوية المركزية."
+    controlDesc: "إدارة المستخدمين والأدوية المركزية.",
+    noAccess: "لا توجد خدمات متاحة لهذا المستخدم."
   },
+
   en: {
     title: "Pharmaceutical Care Services Portal",
     officialLine1: "Madinah Health Cluster",
     officialLine2: "King Fahad Hospital - Madinah",
     officialLine3: "Pharmaceutical Care Administration",
     subtitle: "A unified portal for pharmaceutical care services.",
-    outpatientTitle: "Outpatient Clinics",
-    outpatientDesc: "Outpatient pharmacy and diabetes center services.",
+    username: "Username",
+    login: "Login",
+    logout: "Logout",
+    invalidLogin: "Invalid username/PIN or no portal permission.",
+    outpatientTitle: "Outpatient Pharmacy",
+    outpatientDesc: "Outpatient pharmacy services.",
+    diabetesTitle: "Diabetes Center Pharmacy",
+    diabetesDesc: "Diabetes center pharmacy services.",
     kidneyTitle: "Kidney Center Pharmacy",
     kidneyDesc: "Expiry tracking and order services.",
     controlTitle: "Control Panel",
-    controlDesc: "Unified users and central medications management."
+    controlDesc: "Unified users and central medications management.",
+    noAccess: "No services are available for this user."
   }
 };
 
+
 function setLanguage(lang) {
   currentLang = lang;
-  document.documentElement.lang = lang;
-  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-  document.title = text[lang].title;
-  ["officialLine1","officialLine2","officialLine3","subtitle","outpatientTitle","outpatientDesc","kidneyTitle","kidneyDesc","controlTitle","controlDesc"].forEach(function(id) {
-    document.getElementById(id).innerText = text[lang][id];
-  });
-  document.getElementById("pageTitle").innerText = text[lang].title;
+
+  document.documentElement.lang =
+    lang;
+
+  document.documentElement.dir =
+    lang === "ar"
+      ? "rtl"
+      : "ltr";
+
+  document.title =
+    text[lang].title;
+
+  [
+    "officialLine1",
+    "officialLine2",
+    "officialLine3",
+    "subtitle",
+    "outpatientTitle",
+    "outpatientDesc",
+    "diabetesTitle",
+    "diabetesDesc",
+    "kidneyTitle",
+    "kidneyDesc",
+    "controlTitle",
+    "controlDesc"
+  ].forEach(
+    function(id) {
+      const element =
+        document.getElementById(id);
+
+      if (element) {
+        element.innerText =
+          text[lang][id];
+      }
+    }
+  );
+
+  document.getElementById(
+    "pageTitle"
+  ).innerText =
+    text[lang].title;
+
+  document.getElementById(
+    "usernameLabel"
+  ).innerText =
+    text[lang].username;
+
+  document.getElementById(
+    "loginBtn"
+  ).innerText =
+    text[lang].login;
+
+  document.getElementById(
+    "logoutBtn"
+  ).innerText =
+    text[lang].logout;
+
+  document.getElementById(
+    "noAccessMessage"
+  ).innerText =
+    text[lang].noAccess;
+
+  document.getElementById(
+    "languageToggle"
+  ).innerText =
+    "🌐 ع | E";
+
   renderDate();
 }
 
+
 function toggleLanguage() {
-  setLanguage(currentLang === "ar" ? "en" : "ar");
+  setLanguage(
+    currentLang === "ar"
+      ? "en"
+      : "ar"
+  );
 }
+
 
 function renderDate() {
-  const now = new Date();
-  const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Riyadh" }).format(now);
-  const dayName = new Intl.DateTimeFormat(currentLang === "ar" ? "ar-SA" : "en-US", {
-    timeZone: "Asia/Riyadh",
-    weekday: "long"
-  }).format(now);
-  document.getElementById("dateBox").innerText = `${dayName} - ${date}`;
+  const now =
+    new Date();
+
+  const date =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "Asia/Riyadh"
+      }
+    ).format(now);
+
+  const dayName =
+    new Intl.DateTimeFormat(
+      currentLang === "ar"
+        ? "ar-SA"
+        : "en-US",
+      {
+        timeZone:
+          "Asia/Riyadh",
+        weekday:
+          "long"
+      }
+    ).format(now);
+
+  document.getElementById(
+    "dateBox"
+  ).innerText =
+    `${dayName} - ${date}`;
 }
 
+
+async function unifiedApi(payload) {
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:
+          "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:
+          JSON.stringify(payload)
+      }
+    );
+
+  return response.json();
+}
+
+
+function showLoginResult(message) {
+  const result =
+    document.getElementById(
+      "loginResult"
+    );
+
+  if (!message) {
+    result.className =
+      "login-result";
+
+    result.innerText =
+      "";
+
+    return;
+  }
+
+  result.className =
+    "login-result error";
+
+  result.innerText =
+    message;
+}
+
+
+function clearPortalStorage() {
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  portalUsername = "";
+  portalSessionToken = "";
+  currentUser = null;
+}
+
+
+function showLoginView() {
+  document.getElementById(
+    "portalView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "block";
+
+  hideAllPortalCards();
+}
+
+
+function showPortalView(user) {
+  currentUser =
+    user || null;
+
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "portalView"
+  ).style.display =
+    "block";
+
+  document.getElementById(
+    "portalUserName"
+  ).innerText =
+    (
+      currentUser &&
+      (
+        currentUser.name ||
+        currentUser.username
+      )
+    ) || portalUsername;
+
+  renderPortalCards(
+    currentUser
+  );
+}
+
+
+function hideAllPortalCards() {
+  [
+    "outpatientCard",
+    "diabetesCard",
+    "kidneyCard",
+    "controlCard"
+  ].forEach(
+    function(id) {
+      document.getElementById(
+        id
+      ).style.display =
+        "none";
+    }
+  );
+
+  document.getElementById(
+    "noAccessMessage"
+  ).style.display =
+    "none";
+}
+
+
+function hasAny(user, keys) {
+  return keys.some(
+    function(key) {
+      return Boolean(
+        user &&
+        user[key]
+      );
+    }
+  );
+}
+
+
+function renderPortalCards(user) {
+  hideAllPortalCards();
+
+  const outpatientAllowed =
+    hasAny(
+      user,
+      [
+        "opdMailRxAccess",
+        "opdMailDailyListAccess",
+        "opdMailIndicatorAccess",
+        "opdAppointmentManageAccess",
+        "opdAppointmentIndicatorAccess"
+      ]
+    );
+
+  const diabetesAllowed =
+    hasAny(
+      user,
+      [
+        "diabetesMailRxAccess",
+        "diabetesMailDailyListAccess",
+        "diabetesMailIndicatorAccess",
+        "diabetesAppointmentManageAccess",
+        "diabetesAppointmentIndicatorAccess"
+      ]
+    );
+
+  const kidneyAllowed =
+    hasAny(
+      user,
+      [
+        "kidneyExpiryRegisterAccess",
+        "kidneyExpiryDashboardAccess",
+        "kidneyOrderAccess",
+        "kidneyLabelsAccess"
+      ]
+    );
+
+  const controlAllowed =
+    hasAny(
+      user,
+      [
+        "userManagementAccess",
+        "medicationManagementAccess"
+      ]
+    );
+
+  document.getElementById(
+    "outpatientCard"
+  ).style.display =
+    outpatientAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "diabetesCard"
+  ).style.display =
+    diabetesAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "kidneyCard"
+  ).style.display =
+    kidneyAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "controlCard"
+  ).style.display =
+    controlAllowed
+      ? "flex"
+      : "none";
+
+  const anyPortal =
+    outpatientAllowed ||
+    diabetesAllowed ||
+    kidneyAllowed ||
+    controlAllowed;
+
+  document.getElementById(
+    "noAccessMessage"
+  ).style.display =
+    anyPortal
+      ? "none"
+      : "block";
+}
+
+
+async function loginPortal() {
+  const username =
+    document.getElementById(
+      "portalUsername"
+    ).value.trim();
+
+  const pin =
+    document.getElementById(
+      "portalPin"
+    ).value.trim();
+
+  if (
+    !username ||
+    !pin
+  ) {
+    showLoginResult(
+      text[currentLang].invalidLogin
+    );
+
+    return;
+  }
+
+  const loginButton =
+    document.getElementById(
+      "loginBtn"
+    );
+
+  loginButton.disabled =
+    true;
+
+  showLoginResult("");
+
+  try {
+    const result =
+      await unifiedApi({
+        action:
+          "portalLogin",
+        username:
+          username,
+        pin:
+          pin
+      });
+
+    if (
+      !result.success ||
+      !result.sessionToken ||
+      !result.user
+    ) {
+      showLoginResult(
+        text[currentLang].invalidLogin
+      );
+
+      return;
+    }
+
+    portalUsername =
+      result.user.username ||
+      username;
+
+    portalSessionToken =
+      result.sessionToken;
+
+    currentUser =
+      result.user;
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      portalUsername
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalSessionToken",
+      portalSessionToken
+    );
+
+    document.getElementById(
+      "portalPin"
+    ).value =
+      "";
+
+    showPortalView(
+      currentUser
+    );
+
+  } catch (error) {
+    showLoginResult(
+      text[currentLang].invalidLogin
+    );
+
+  } finally {
+    loginButton.disabled =
+      false;
+  }
+}
+
+
+async function restorePortalSession() {
+  if (!portalSessionToken) {
+    showLoginView();
+    return;
+  }
+
+  try {
+    const result =
+      await unifiedApi({
+        action:
+          "validateSession",
+        sessionToken:
+          portalSessionToken,
+        service:
+          ""
+      });
+
+    if (
+      !result.success ||
+      !result.user ||
+      result.user.active === false
+    ) {
+      clearPortalStorage();
+      showLoginView();
+      return;
+    }
+
+    currentUser =
+      result.user;
+
+    portalUsername =
+      result.user.username ||
+      portalUsername;
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      portalUsername
+    );
+
+    showPortalView(
+      currentUser
+    );
+
+  } catch (error) {
+    clearPortalStorage();
+    showLoginView();
+  }
+}
+
+
+function logoutPortal() {
+  const tokenToRevoke =
+    portalSessionToken;
+
+  clearPortalStorage();
+
+  document.getElementById(
+    "portalPin"
+  ).value =
+    "";
+
+  showLoginResult("");
+  showLoginView();
+
+  if (tokenToRevoke) {
+    unifiedApi({
+      action:
+        "revokeSession",
+      sessionToken:
+        tokenToRevoke
+    }).catch(
+      function() {}
+    );
+  }
+}
+
+
+document.getElementById(
+  "portalPin"
+).addEventListener(
+  "keydown",
+  function(event) {
+    if (event.key === "Enter") {
+      loginPortal();
+    }
+  }
+);
+
 setLanguage("ar");
+restorePortalSession();
 </script>
 </body>
 </html>
