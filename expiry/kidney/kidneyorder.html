@@ -1036,6 +1036,115 @@ td:nth-child(2){
   }
 }
 
+
+/* Unified portal security/top-row integration */
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+
+.meta-row .date-box{
+  justify-self:start
+}
+
+.meta-row .language-chip{
+  justify-self:end
+}
+
+.meta-row .employee-toolbar{
+  grid-column:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:auto;
+  margin:0;
+  padding:0;
+  direction:rtl;
+  color:#168fb3
+}
+
+.meta-row .employee-name{
+  white-space:nowrap;
+  font-size:18px;
+  line-height:1;
+  font-weight:bold;
+  color:#168fb3
+}
+
+.meta-row .portal-back-button,
+.meta-row .logout-icon{
+  width:34px;
+  height:34px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex:0 0 auto;
+  font-family:Arial,sans-serif
+}
+
+.meta-row .portal-back-button{
+  font-size:28px;
+  line-height:1
+}
+
+.meta-row .portal-back-button:hover{
+  color:#0f7592;
+  transform:translateX(-1px)
+}
+
+.meta-row .logout-icon:hover{
+  transform:scale(1.06)
+}
+
+.meta-row .power-svg{
+  width:30px;
+  height:30px
+}
+
+@media (max-width:700px){
+  .meta-row{
+    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+    gap:6px
+  }
+
+  .meta-row .employee-toolbar{
+    gap:6px
+  }
+
+  .meta-row .employee-name{
+    max-width:130px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:15px
+  }
+
+  .meta-row .portal-back-button,
+  .meta-row .logout-icon{
+    width:30px;
+    height:30px
+  }
+
+  .meta-row .power-svg{
+    width:25px;
+    height:25px
+  }
+
+  .meta-row .date-box,
+  .meta-row .language-chip{
+    font-size:11px
+  }
+}
+
 </style>
 </head>
 
@@ -1057,6 +1166,35 @@ td:nth-child(2){
   <div class="meta-row">
     <div class="date-box" id="dateBox"></div>
 
+    <div class="employee-toolbar">
+
+      <button
+        type="button"
+        class="portal-back-button"
+        id="portalBackBtn"
+        onclick="window.location.href='index.html'"
+        title="Back"
+        aria-label="Back">
+        ↩
+      </button>
+
+      <span class="employee-name" id="employeeName"></span>
+
+      <button
+        type="button"
+        class="logout-icon"
+        id="logoutBtn"
+        onclick="logoutUser()"
+        title="Logout"
+        aria-label="Logout">
+        <svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v9"></path>
+          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        </svg>
+      </button>
+
+    </div>
+
     <button
       type="button"
       class="language-chip"
@@ -1067,21 +1205,12 @@ td:nth-child(2){
   </div>
 
   <div class="title-row">
-    <button
-      type="button"
-      class="back-button"
-      onclick="history.back()"
-      title="Back"
-      aria-label="Back">
-      ↩
-    </button>
-
     <h1 class="page-title" id="pageTitle">
       Kidney Order
     </h1>
   </div>
 
-  <div id="loginView" class="login-card">
+  <div id="loginView" class="login-card hidden">
     <div class="field-row">
       <label id="usernameLabel" for="username">Username</label>
       <input type="text" id="username" autocomplete="username">
@@ -1116,23 +1245,6 @@ td:nth-child(2){
   </div>
 
   <div id="orderView" class="hidden">
-    <div class="employee-toolbar">
-      <span class="employee-name" id="employeeName"></span>
-
-      <button
-        type="button"
-        class="logout-icon"
-        id="logoutBtn"
-        onclick="logoutUser()"
-        title="Logout"
-        aria-label="Logout">
-        <svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 3v9"></path>
-          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
-        </svg>
-      </button>
-    </div>
-
     <div class="order-panel">
       <div class="summary-strip">
         <div class="summary-item">
@@ -1245,6 +1357,9 @@ const ORDERS_API_URL =
 
 const CENTRAL_MEDICATIONS_API_URL =
   "https://script.google.com/macros/s/AKfycbxtK-J87-gmKVXExW_kbVXBuYTxArtP5pnvnp3HJh2s_BL2nPQn8vPrwMX_bDUkp4uq/exec";
+
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
 
 const ORDER_SESSION_NAME_KEY =
   "kidneyOrderEmployeeName";
@@ -1503,7 +1618,7 @@ function ordersApiReady(){
 }
 
 function showLoginView(){
-  document.getElementById("loginView").classList.remove("hidden");
+  document.getElementById("loginView").classList.add("hidden");
   document.getElementById("orderView").classList.add("hidden");
 }
 
@@ -1645,89 +1760,272 @@ async function loginUser(){
   }
 }
 
+async function unifiedApi(
+  payload
+){
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+        body:JSON.stringify(
+          payload
+        )
+      }
+    );
+
+  return response.json();
+}
+
+
+function getCachedPortalUser(){
+  const raw =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    );
+
+  if (
+    !raw
+  ){
+    return null;
+  }
+
+  try{
+    return JSON.parse(
+      raw
+    );
+  }catch(error){
+    return null;
+  }
+}
+
+
+function hasKidneyOrderPermission(
+  user
+){
+  return Boolean(
+    user &&
+    user.kidneyOrderAccess === true
+  );
+}
+
+
+function clearUnifiedPortalSession(){
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+}
+
+
+function hideProtectedOrderView(){
+  document.getElementById(
+    "loginView"
+  ).classList.add(
+    "hidden"
+  );
+
+  document.getElementById(
+    "orderView"
+  ).classList.add(
+    "hidden"
+  );
+
+  document.getElementById(
+    "printPages"
+  ).innerHTML =
+    "";
+}
+
+
+function handlePortalAuthorizationFailure(){
+  clearUnifiedPortalSession();
+  clearStoredSession();
+
+  orderItems =
+    [];
+
+  savedOrder =
+    null;
+
+  stopInactivityTimer();
+  hideProtectedOrderView();
+
+  window.location.replace(
+    "../../index.html"
+  );
+}
+
+
 async function restoreSession(){
-  currentSessionToken =
-    sessionStorage.getItem(ORDER_SESSION_TOKEN_KEY) ||
-    "";
+  const unifiedSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
 
-  currentEmployeeName =
-    sessionStorage.getItem(ORDER_SESSION_NAME_KEY) ||
-    "";
-
-  currentEmployeeUsername =
-    sessionStorage.getItem(ORDER_SESSION_USERNAME_KEY) ||
-    "";
+  if (
+    !unifiedSessionToken
+  ){
+    handlePortalAuthorizationFailure();
+    return;
+  }
 
   if (
     !ordersApiReady()
   ){
-    showLoginView();
+    hideProtectedOrderView();
     return;
   }
+
+  const cachedUser =
+    getCachedPortalUser();
+
+  const cachedAllowed =
+    hasKidneyOrderPermission(
+      cachedUser
+    );
 
   if (
-    !currentSessionToken
+    cachedAllowed
   ){
-    clearStoredSession();
-    showLoginView();
-    return;
-  }
-
-  try{
-    const result =
-      await postApi(
-        "validateSession",
-        {},
-        true
-      );
-
-    if (
-      !result.success ||
-      !result.user
-    ){
-      clearStoredSession();
-      showLoginView();
-      return;
-    }
+    currentSessionToken =
+      unifiedSessionToken;
 
     currentEmployeeUsername =
-      result.user.username ||
-      currentEmployeeUsername;
+      cachedUser.username ||
+      "";
 
     currentEmployeeName =
-      result.user.name ||
-      result.user.username ||
-      currentEmployeeName;
+      cachedUser.name ||
+      cachedUser.username ||
+      "";
 
     saveStoredSession();
     showOrderView();
     loadMedicationDatabase();
+  }
+
+  try{
+    const result =
+      await unifiedApi({
+        action:
+          "validateSession",
+        sessionToken:
+          unifiedSessionToken,
+        service:
+          "kidneyOrder"
+      });
+
+    if (
+      !result ||
+      !result.success ||
+      !result.user ||
+      result.user.active === false ||
+      !hasKidneyOrderPermission(
+        result.user
+      )
+    ){
+      handlePortalAuthorizationFailure();
+      return;
+    }
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        result.user
+      )
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      result.user.username ||
+      ""
+    );
+
+    currentSessionToken =
+      unifiedSessionToken;
+
+    currentEmployeeUsername =
+      result.user.username ||
+      "";
+
+    currentEmployeeName =
+      result.user.name ||
+      result.user.username ||
+      "";
+
+    saveStoredSession();
+    showOrderView();
+
+    if (
+      !cachedAllowed
+    ){
+      loadMedicationDatabase();
+    }
 
   }catch(error){
-    clearStoredSession();
-    showLoginView();
+    /*
+      Network failure must not destroy a valid cached portal session.
+      Without a valid cached user, protected content stays hidden.
+    */
+    if (
+      !cachedAllowed
+    ){
+      hideProtectedOrderView();
+    }
   }
 }
 
+
 async function logoutUser(){
-  if (currentSessionToken){
+  const unifiedSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (
+    unifiedSessionToken
+  ){
     try{
-      await postApi(
-        "revokeSession",
-        {},
-        true
-      );
+      await unifiedApi({
+        action:
+          "revokeSession",
+        sessionToken:
+          unifiedSessionToken
+      });
     }catch(error){}
   }
 
+  clearUnifiedPortalSession();
   clearStoredSession();
-  orderItems = [];
-  savedOrder = null;
+
+  orderItems =
+    [];
+
+  savedOrder =
+    null;
+
   renderOrderTable();
   updateSummary();
   stopInactivityTimer();
-  showLoginView();
+  hideProtectedOrderView();
+
+  window.location.replace(
+    "../../index.html"
+  );
 }
+
 
 function startInactivityTimer(){
   resetInactivityTimer();
@@ -1756,11 +2054,6 @@ function resetInactivityTimer(){
     setTimeout(
       function(){
         logoutUser();
-        showResult(
-          "loginResult",
-          "error",
-          text[currentLang].sessionExpired
-        );
       },
       INACTIVITY_LIMIT_MS
     );
@@ -2366,19 +2659,27 @@ async function postApi(
   if (
     includeSession
   ){
-    currentSessionToken =
-      sessionStorage.getItem(ORDER_SESSION_TOKEN_KEY) ||
-      currentSessionToken;
+    const unifiedSessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
 
     if (
-      currentSessionToken
+      !unifiedSessionToken
     ){
+      throw new Error(
+        "MISSING_UNIFIED_SESSION"
+      );
+    }
+
+    currentSessionToken =
+      unifiedSessionToken;
+
     requestData.sessionToken =
-      currentSessionToken;
+      unifiedSessionToken;
 
     requestData.token =
-      currentSessionToken;
-    }
+      unifiedSessionToken;
   }
 
   const response =
@@ -2408,19 +2709,14 @@ function isSessionError(result){
       "MISSING_SESSION",
       "INVALID_SESSION",
       "SESSION_EXPIRED",
-      "NO_ORDER_PERMISSION"
+      "NO_ORDER_PERMISSION",
+      "NO_PERMISSION",
+      "AUTH_UNAVAILABLE"
     ].includes(result.code);
 }
 
 function handleSessionExpired(){
-  clearStoredSession();
-  stopInactivityTimer();
-  showLoginView();
-  showResult(
-    "loginResult",
-    "error",
-    text[currentLang].sessionExpired
-  );
+  handlePortalAuthorizationFailure();
 }
 
 function showResult(id,type,message){
@@ -2490,6 +2786,31 @@ document.getElementById("password").addEventListener(
     }
   }
 );
+
+window.addEventListener(
+  "pageshow",
+  function(){
+
+    const unifiedSessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (
+      unifiedSessionToken
+    ){
+      return;
+    }
+
+    hideProtectedOrderView();
+
+    window.location.replace(
+      "../../index.html"
+    );
+
+  }
+);
+
 
 setLanguage(currentLang);
 restoreSession();
