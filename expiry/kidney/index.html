@@ -583,14 +583,13 @@ a.portal-card:hover,
 
   <div class="title-row">
 
-    <button
-      type="button"
+    <a
       class="back-button"
-      onclick="history.back()"
+      href="../../index.html"
       title="رجوع"
       aria-label="رجوع">
       ↩
-    </button>
+    </a>
 
     <h1
       class="page-title"
@@ -613,6 +612,7 @@ a.portal-card:hover,
     <a
       class="portal-card"
       id="formCard"
+      style="display:none"
       href="form.html">
 
       <div class="card-head">
@@ -645,6 +645,7 @@ a.portal-card:hover,
     <a
       class="portal-card"
       id="dashboardCard"
+      style="display:none"
       href="dashboard.html">
 
       <div class="card-head">
@@ -677,6 +678,7 @@ a.portal-card:hover,
     <a
       class="portal-card"
       id="orderCard"
+      style="display:none"
       href="kidneyorder.html">
 
       <div class="card-head">
@@ -709,6 +711,7 @@ a.portal-card:hover,
     <a
       class="portal-card"
       id="labelsCard"
+      style="display:none"
       href="shelf-labels.html">
 
       <div class="card-head">
@@ -911,9 +914,247 @@ function renderDate(){
 
 
 
+
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
+
+async function unifiedApi(payload){
+
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"text/plain;charset=utf-8"
+        },
+        body:JSON.stringify(payload)
+      }
+    );
+
+  return response.json();
+
+}
+
+
+function clearPortalSession(){
+
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+
+}
+
+
+function hideAllKidneyCards(){
+
+  [
+    "formCard",
+    "dashboardCard",
+    "orderCard",
+    "labelsCard"
+  ].forEach(function(id){
+
+    document.getElementById(id).style.display =
+      "none";
+
+  });
+
+}
+
+
+function renderAllowedKidneyServices(user){
+
+  const formAllowed =
+    Boolean(
+      user &&
+      user.kidneyExpiryRegisterAccess
+    );
+
+  const dashboardAllowed =
+    Boolean(
+      user &&
+      user.kidneyExpiryDashboardAccess
+    );
+
+  const orderAllowed =
+    Boolean(
+      user &&
+      user.kidneyOrderAccess
+    );
+
+  const labelsAllowed =
+    Boolean(
+      user &&
+      user.kidneyLabelsAccess
+    );
+
+  document.getElementById(
+    "formCard"
+  ).style.display =
+    formAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "dashboardCard"
+  ).style.display =
+    dashboardAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "orderCard"
+  ).style.display =
+    orderAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "labelsCard"
+  ).style.display =
+    labelsAllowed
+      ? "flex"
+      : "none";
+
+  return (
+    formAllowed ||
+    dashboardAllowed ||
+    orderAllowed ||
+    labelsAllowed
+  );
+
+}
+
+
+async function validatePageAccess(){
+
+  hideAllKidneyCards();
+
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (!sessionToken){
+
+    window.location.href =
+      "../../index.html";
+
+    return;
+
+  }
+
+  let cachedUserRendered =
+    false;
+
+  const cachedUserText =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
+
+  if (cachedUserText){
+
+    try{
+
+      const cachedUser =
+        JSON.parse(
+          cachedUserText
+        );
+
+      if (
+        cachedUser &&
+        typeof cachedUser === "object"
+      ){
+
+        cachedUserRendered =
+          renderAllowedKidneyServices(
+            cachedUser
+          );
+
+      }
+
+    } catch (error){
+
+      cachedUserRendered =
+        false;
+
+    }
+
+  }
+
+  try{
+
+    const result =
+      await unifiedApi({
+        action:"validateSession",
+        sessionToken:sessionToken,
+        service:""
+      });
+
+    if (
+      !result.success ||
+      !result.user ||
+      result.user.active === false
+    ){
+
+      clearPortalSession();
+
+      window.location.href =
+        "../../index.html";
+
+      return;
+
+    }
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        result.user
+      )
+    );
+
+    const hasKidneyAccess =
+      renderAllowedKidneyServices(
+        result.user
+      );
+
+    if (!hasKidneyAccess){
+
+      window.location.href =
+        "../../index.html";
+
+    }
+
+  } catch (error){
+
+    if (cachedUserRendered){
+
+      return;
+
+    }
+
+    hideAllKidneyCards();
+
+  }
+
+}
+
+
 setLanguage(
   "ar"
 );
+
+validatePageAccess();
 
 
 </script>
