@@ -1,6 +1,9 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbw0jSrbe1SM596Kyv0EpB6VTKEXT81c2Cn8Wlc2lEQ_RzbrS9b6w-k4gyrflwPBTgpKSQ/exec";
 
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
 const els = {
   uploadLoginView: document.getElementById("uploadLoginView"),
   uploadView: document.getElementById("uploadView"),
@@ -146,12 +149,9 @@ document.addEventListener(
 async function initUpload() {
   setLanguage("ar");
 
-  startInactivityWatcher();
+  clearLegacyUploadSession();
 
-  els.uploadLoginForm.addEventListener(
-    "submit",
-    handleLogin
-  );
+  startInactivityWatcher();
 
   if (els.languageToggle) {
     els.languageToggle.addEventListener(
@@ -159,11 +159,6 @@ async function initUpload() {
       toggleLanguage
     );
   }
-
-  els.changePinLoginBtn.addEventListener(
-    "click",
-    changeLoginPin
-  );
 
   els.logoutBtn.addEventListener(
     "click",
@@ -183,55 +178,278 @@ async function initUpload() {
    RESTORE SESSION
 ========================================================= */
 
-async function restoreSession() {
-  const savedUser =
-    sessionStorage.getItem(
-      UPLOAD_SESSION_USER_KEY
+async function unifiedApi(
+  payload
+) {
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:
+          "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          )
+      }
     );
 
-  const savedName =
-    sessionStorage.getItem(
-      UPLOAD_SESSION_NAME_KEY
-    ) ||
-    savedUser;
+  if (!response.ok) {
+    throw new Error(
+      t("serverFailed")
+    );
+  }
 
+  return response.json();
+}
+
+
+function getCachedUnifiedUser() {
+  const raw =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(
+      raw
+    );
+  } catch (error) {
+    return null;
+  }
+}
+
+
+function hasOpdMailDailyListAccess(
+  user
+) {
+  return Boolean(
+    user &&
+    user.opdMailDailyListAccess === true
+  );
+}
+
+
+function clearUnifiedPortalSession() {
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+}
+
+
+function clearLegacyUploadSession() {
+  sessionStorage.removeItem(
+    UPLOAD_SESSION_USER_KEY
+  );
+
+  sessionStorage.removeItem(
+    UPLOAD_SESSION_NAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    UPLOAD_SESSION_TOKEN_KEY
+  );
+}
+
+
+function hideUploadViews() {
+  if (els.uploadLoginView) {
+    els.uploadLoginView
+      .classList
+      .add(
+        "hidden"
+      );
+  }
+
+  if (els.uploadView) {
+    els.uploadView
+      .classList
+      .add(
+        "hidden"
+      );
+  }
+
+  if (els.currentUser) {
+    els.currentUser.textContent =
+      "";
+  }
+}
+
+
+function resetUploadUi() {
+  if (els.uploadForm) {
+    els.uploadForm.reset();
+  }
+
+  if (els.uploadMessage) {
+    setMessage(
+      els.uploadMessage,
+      ""
+    );
+  }
+}
+
+
+async function redirectInvalidUnifiedSession() {
+  clearUnifiedPortalSession();
+  clearLegacyUploadSession();
+  hideUploadViews();
+  resetUploadUi();
+
+  window.location.replace(
+    "../index.html"
+  );
+}
+
+
+async function redirectNoUploadPermission() {
+  clearLegacyUploadSession();
+  hideUploadViews();
+  resetUploadUi();
+
+  window.location.replace(
+    "index.html"
+  );
+}
+
+
+async function restoreSession() {
   const sessionToken =
     sessionStorage.getItem(
-      UPLOAD_SESSION_TOKEN_KEY
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (!sessionToken) {
+    await redirectInvalidUnifiedSession();
+    return;
+  }
+
+  const cachedUser =
+    getCachedUnifiedUser();
+
+  const cachedAllowed =
+    hasOpdMailDailyListAccess(
+      cachedUser
     );
 
-  if (
-    !savedUser ||
-    !sessionToken
-  ) {
-    clearAuthSession();
-    return;
+  if (cachedAllowed) {
+    resetInactivityTimer();
+
+    showUpload(
+      cachedUser.name ||
+      cachedUser.username ||
+      ""
+    );
+  } else {
+    hideUploadViews();
   }
 
   try {
     const response =
-      await api(
-        "validateSession"
-      );
+      await unifiedApi({
+        action:
+          "validateSession",
+
+        sessionToken:
+          sessionToken,
+
+        service:
+          "opdMailDailyList"
+      });
 
     if (
-      !isSuccess(response)
+      !response ||
+      !response.success
     ) {
-      clearAuthSession();
+      const code =
+        response &&
+        response.code
+          ? response.code
+          : "INVALID_SESSION";
+
+      if (
+        code ===
+          "NO_PERMISSION"
+      ) {
+        await redirectNoUploadPermission();
+        return;
+      }
+
+      if (
+        code ===
+          "AUTH_UNAVAILABLE"
+      ) {
+        if (!cachedAllowed) {
+          hideUploadViews();
+        }
+
+        return;
+      }
+
+      await redirectInvalidUnifiedSession();
       return;
     }
+
+    if (
+      !response.user ||
+      response.user.active === false
+    ) {
+      await redirectInvalidUnifiedSession();
+      return;
+    }
+
+    if (
+      !hasOpdMailDailyListAccess(
+        response.user
+      )
+    ) {
+      await redirectNoUploadPermission();
+      return;
+    }
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        response.user
+      )
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      response.user.username ||
+      ""
+    );
 
     resetInactivityTimer();
 
     showUpload(
-      response.user &&
-      response.user.name
-        ? response.user.name
-        : savedName
+      response.user.name ||
+      response.user.username ||
+      ""
     );
 
   } catch (error) {
-    clearAuthSession();
+    if (!cachedAllowed) {
+      hideUploadViews();
+    }
   }
 }
 
@@ -618,42 +836,42 @@ function showUpload(
    LOGOUT
 ========================================================= */
 
-function logout() {
-  clearAuthSession();
+async function logout() {
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
 
-  els.uploadView
-    .classList
-    .add(
-      "hidden"
-    );
+  if (sessionToken) {
+    try {
+      await unifiedApi({
+        action:
+          "revokeSession",
 
-  els.uploadLoginView
-    .classList
-    .remove(
-      "hidden"
-    );
+        sessionToken:
+          sessionToken
+      });
+    } catch (error) {}
+  }
 
-  els.uploadLoginForm.reset();
+  clearUnifiedPortalSession();
+  clearLegacyUploadSession();
 
-  setMessage(
-    els.loginMessage,
-    ""
+  window.clearTimeout(
+    inactivityTimer
+  );
+
+  hideUploadViews();
+  resetUploadUi();
+
+  window.location.replace(
+    "../index.html"
   );
 }
 
 
 function clearAuthSession() {
-  sessionStorage.removeItem(
-    UPLOAD_SESSION_USER_KEY
-  );
-
-  sessionStorage.removeItem(
-    UPLOAD_SESSION_NAME_KEY
-  );
-
-  sessionStorage.removeItem(
-    UPLOAD_SESSION_TOKEN_KEY
-  );
+  clearLegacyUploadSession();
 }
 
 
@@ -693,7 +911,7 @@ function resetInactivityTimer() {
       () => {
         if (
           sessionStorage.getItem(
-            UPLOAD_SESSION_TOKEN_KEY
+            "unifiedPortalSessionToken"
           )
         ) {
           logout();
@@ -766,16 +984,11 @@ async function uploadFile(
 
   const sessionToken =
     sessionStorage.getItem(
-      UPLOAD_SESSION_TOKEN_KEY
-    );
+      "unifiedPortalSessionToken"
+    ) || "";
 
   if (!sessionToken) {
-    setMessage(
-      els.uploadMessage,
-      t("loginFirst"),
-      "error"
-    );
-
+    await redirectInvalidUnifiedSession();
     return;
   }
 
@@ -1278,13 +1491,22 @@ async function api(
   ) {
     const sessionToken =
       sessionStorage.getItem(
-        UPLOAD_SESSION_TOKEN_KEY
-      );
+        "unifiedPortalSessionToken"
+      ) || "";
 
-    if (sessionToken) {
-      requestData.sessionToken =
-        sessionToken;
+    if (!sessionToken) {
+      await redirectInvalidUnifiedSession();
+
+      throw new Error(
+        t("sessionExpired")
+      );
     }
+
+    requestData.sessionToken =
+      sessionToken;
+
+    requestData.token =
+      sessionToken;
   }
 
   const response =
@@ -1321,28 +1543,59 @@ async function api(
       data.code ===
         "INVALID_SESSION" ||
       data.code ===
-        "MISSING_SESSION" ||
-      data.code ===
-        "NO_PERMISSION"
+        "MISSING_SESSION"
     )
   ) {
-    clearAuthSession();
-
-    if (
-      els.uploadView &&
-      !els.uploadView
-        .classList
-        .contains(
-          "hidden"
-        )
-    ) {
-      logout();
-    }
+    await redirectInvalidUnifiedSession();
 
     throw new Error(
       t("sessionExpired")
     );
   }
 
+  if (
+    data &&
+    data.code ===
+      "NO_PERMISSION"
+  ) {
+    await redirectNoUploadPermission();
+
+    throw new Error(
+      t("sessionExpired")
+    );
+  }
+
+  if (
+    data &&
+    data.code ===
+      "AUTH_UNAVAILABLE"
+  ) {
+    throw new Error(
+      t("serverFailed")
+    );
+  }
+
   return data;
 }
+
+
+window.addEventListener(
+  "pageshow",
+  function() {
+    const sessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (sessionToken) {
+      return;
+    }
+
+    hideUploadViews();
+    resetUploadUi();
+
+    window.location.replace(
+      "../index.html"
+    );
+  }
+);

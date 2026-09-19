@@ -5,6 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>إرسال قائمة وصفات البريد اليومية</title>
   <link rel="stylesheet" href="style.css?v=20260614-hide-mail-home-icon">
+  <style>
+    .employee-meta{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+      align-items:center;
+      gap:12px;
+      direction:ltr
+    }
+
+    .employee-meta .date-box{
+      justify-self:start
+    }
+
+    .employee-meta .language-chip{
+      justify-self:end
+    }
+
+    .employee-meta .employee-toolbar{
+      grid-column:2;
+      width:auto;
+      margin:0;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:transparent;
+      border:0
+    }
+
+    .employee-meta .user-chip{
+      display:inline-flex !important;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      direction:rtl
+    }
+
+    .employee-meta #currentUser{
+      white-space:nowrap;
+      max-width:220px;
+      overflow:hidden;
+      text-overflow:ellipsis
+    }
+
+    @media (max-width:720px){
+      .employee-meta{
+        grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+        gap:6px
+      }
+
+      .employee-meta .user-chip{
+        gap:6px
+      }
+
+      .employee-meta #currentUser{
+        max-width:130px;
+        font-size:15px
+      }
+    }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
   <script src="upload.js?v=20260612-login-pin" defer></script>
 </head>
@@ -22,12 +82,21 @@
 
     <div class="employee-meta">
       <div class="date-box" id="dateBox"></div>
+
+      <header class="topbar employee-toolbar upload-toolbar">
+        <div class="user-chip">
+          <a class="back-button" href="index.html" title="رجوع" aria-label="رجوع">↩</a>
+          <strong id="currentUser"></strong>
+          <button id="logoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج"><svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"></path><path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path></svg></button>
+        </div>
+      </header>
+
       <button type="button" class="language-chip" id="languageToggle">🌐 ع | E</button>
     </div>
 
     <h1 class="employee-page-title" id="pageTitle">إرسال قائمة وصفات البريد اليومية</h1>
 
-    <section id="uploadLoginView" class="view auth-view">
+    <section id="uploadLoginView" class="view auth-view hidden">
       <form id="uploadLoginForm" class="panel employee-login-card">
         <label id="usernameLabel" for="username">اسم المستخدم</label>
         <input id="username" name="username" autocomplete="username" required>
@@ -44,14 +113,6 @@
     </section>
 
     <section id="uploadView" class="view upload-page hidden">
-      <header class="topbar employee-toolbar upload-toolbar">
-        <div class="user-chip">
-          <button type="button" class="back-button" onclick="history.back()" title="رجوع" aria-label="رجوع">↩</button>
-          <strong id="currentUser"></strong>
-          <button id="logoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج"><svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"></path><path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path></svg></button>
-        </div>
-      </header>
-
       <section class="upload-box upload-standalone">
         <p class="muted upload-intro" id="uploadIntro">ارفع ملف Excel أو CSV.</p>
         <form id="uploadForm">
@@ -67,7 +128,6 @@
 </main>
 </body>
 </html>
-
 
 
 
