@@ -2128,8 +2128,9 @@ function clearUnifiedPortalSession(){
 
 function redirectToMainPortal(){
 
-  window.location.href =
-    "../../index.html";
+  window.location.replace(
+    "../../index.html"
+  );
 
 }
 
@@ -2509,6 +2510,60 @@ async function logoutEmployee(){
     "../../index.html";
 
 }
+
+
+
+window.addEventListener(
+  "pageshow",
+  function(){
+
+    const unifiedSessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (
+      unifiedSessionToken
+    ){
+
+      return;
+
+    }
+
+    const loginView =
+      document.getElementById(
+        "loginView"
+      );
+
+    const employeeView =
+      document.getElementById(
+        "employeeView"
+      );
+
+    if (
+      loginView
+    ){
+
+      loginView.style.display =
+        "none";
+
+    }
+
+    if (
+      employeeView
+    ){
+
+      employeeView.style.display =
+        "none";
+
+    }
+
+    window.location.replace(
+      "../../index.html"
+    );
+
+  }
+);
 
 
 function showLoginView(){
