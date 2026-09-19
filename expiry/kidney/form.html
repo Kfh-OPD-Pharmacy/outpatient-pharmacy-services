@@ -938,7 +938,7 @@ select{
 
   </div>
 
-  <div id="loginView" class="login-card">
+  <div id="loginView" class="login-card" style="display:none">
 
     <label id="usernameLabel" for="username">
       اسم المستخدم
@@ -1213,6 +1213,9 @@ select{
 
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
+
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
 
 const CENTRAL_MEDICATIONS_API_URL =
   "https://script.google.com/macros/s/AKfycbxtK-J87-gmKVXExW_kbVXBuYTxArtP5pnvnp3HJh2s_BL2nPQn8vPrwMX_bDUkp4uq/exec";
@@ -1989,90 +1992,233 @@ async function loginEmployee(){
    RESTORE SESSION
 ========================================================= */
 
-async function restoreSession(){
+async function unifiedApi(payload){
 
-  currentSessionToken =
-    sessionStorage.getItem(
-      KIDNEY_SESSION_TOKEN_KEY
-    ) || "";
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:"POST",
 
+        headers:{
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
 
-  currentEmployeeName =
-    sessionStorage.getItem(
-      KIDNEY_SESSION_NAME_KEY
-    ) || "";
-
-
-  currentEmployeeUsername =
-    sessionStorage.getItem(
-      KIDNEY_SESSION_USERNAME_KEY
-    ) || "";
-
+        body:
+          JSON.stringify(
+            payload
+          )
+      }
+    );
 
   if (
-    !currentSessionToken
+    !response.ok
+  ){
+
+    throw new Error(
+      "HTTP_" +
+      response.status
+    );
+
+  }
+
+  return await response.json();
+
+}
+
+
+function clearUnifiedPortalSession(){
+
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+
+}
+
+
+function redirectToMainPortal(){
+
+  window.location.href =
+    "../../index.html";
+
+}
+
+
+function allowUnifiedKidneyExpiryUser(
+  user,
+  unifiedSessionToken
+){
+
+  if (
+    !user ||
+    !user.kidneyExpiryRegisterAccess
+  ){
+
+    return false;
+
+  }
+
+  currentEmployeeUsername =
+    user.username ||
+    "";
+
+  currentEmployeeName =
+    user.name ||
+    user.username ||
+    "";
+
+  currentSessionToken =
+    unifiedSessionToken;
+
+  /*
+    Preserve the existing kidney API/session mechanism:
+    operational API calls continue using currentSessionToken
+    and the existing KIDNEY_SESSION_* keys.
+  */
+  saveStoredSession();
+
+  showEmployeeView();
+
+  return true;
+
+}
+
+
+async function restoreSession(){
+
+  const unifiedSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (
+    !unifiedSessionToken
   ){
 
     clearStoredSession();
 
-    showLoginView();
+    redirectToMainPortal();
 
-    return;
+    return false;
 
   }
 
+  let cachedUserAllowed =
+    false;
+
+  const cachedUserText =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
+
+  if (
+    cachedUserText
+  ){
+
+    try{
+
+      const cachedUser =
+        JSON.parse(
+          cachedUserText
+        );
+
+      cachedUserAllowed =
+        allowUnifiedKidneyExpiryUser(
+          cachedUser,
+          unifiedSessionToken
+        );
+
+    }catch(error){
+
+      cachedUserAllowed =
+        false;
+
+    }
+
+  }
 
   try{
 
     const result =
-      await postApi(
-        "validateSession",
-        {
-          service:"kidney"
-        },
-        true
-      );
+      await unifiedApi({
+        action:"validateSession",
+        sessionToken:unifiedSessionToken,
+        service:"kidneyExpiryRegister"
+      });
 
 
     if (
       !result.success ||
-      !result.user
+      !result.user ||
+      result.user.active === false ||
+      !result.user.kidneyExpiryRegisterAccess
     ){
+
+      clearUnifiedPortalSession();
 
       clearStoredSession();
 
-      showLoginView();
+      redirectToMainPortal();
 
-      return;
+      return false;
 
     }
 
 
-    currentEmployeeUsername =
-      result.user.username ||
-      currentEmployeeUsername;
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        result.user
+      )
+    );
 
 
-    currentEmployeeName =
-      result.user.name ||
-      result.user.username ||
-      currentEmployeeName;
+    allowUnifiedKidneyExpiryUser(
+      result.user,
+      unifiedSessionToken
+    );
 
-
-    saveStoredSession();
-
-    showEmployeeView();
+    return true;
 
   }catch(error){
 
-    clearStoredSession();
+    if (
+      cachedUserAllowed
+    ){
 
-    showLoginView();
+      return true;
+
+    }
+
+    /*
+      Network failure only:
+      do not clear the unified session,
+      and do not expose the protected employee view.
+    */
+    document.getElementById(
+      "loginView"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "employeeView"
+    ).style.display =
+      "none";
+
+    return false;
 
   }
 
 }
-
 
 /* =========================================================
    CHANGE PIN
@@ -3531,9 +3677,18 @@ async function init(){
     "en"
   );
 
-  await loadCentralMedicationList();
+  const accessAllowed =
+    await restoreSession();
 
-  await restoreSession();
+  if (
+    !accessAllowed
+  ){
+
+    return;
+
+  }
+
+  await loadCentralMedicationList();
 
 }
 
