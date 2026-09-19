@@ -234,6 +234,122 @@ body{padding:10px;background:#fff}
   }
 }
 
+
+/* Unified portal top-row session controls */
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+
+.meta-row .date-box{
+  justify-self:start
+}
+
+.meta-row .language-chip{
+  justify-self:end
+}
+
+.meta-row .employee-toolbar{
+  grid-column:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:0;
+  padding:0;
+  direction:rtl;
+  color:#168fb3
+}
+
+.meta-row .employee-name{
+  white-space:nowrap;
+  font-size:18px;
+  line-height:1;
+  font-weight:bold;
+  color:#168fb3
+}
+
+.meta-row .portal-back-button,
+.meta-row .logout-icon{
+  width:34px;
+  height:34px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex:0 0 auto;
+  font-family:Arial,sans-serif
+}
+
+.meta-row .portal-back-button{
+  font-size:28px;
+  line-height:1;
+  text-decoration:none
+}
+
+.meta-row .portal-back-button:hover{
+  color:#0f7592;
+  transform:translateX(-1px)
+}
+
+.meta-row .logout-icon:hover{
+  color:#0f7592;
+  transform:scale(1.06)
+}
+
+.meta-row .power-svg{
+  width:30px;
+  height:30px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+@media (max-width:700px){
+  .meta-row{
+    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+    gap:6px
+  }
+
+  .meta-row .employee-toolbar{
+    gap:6px
+  }
+
+  .meta-row .employee-name{
+    max-width:130px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:15px
+  }
+
+  .meta-row .portal-back-button,
+  .meta-row .logout-icon{
+    width:30px;
+    height:30px
+  }
+
+  .meta-row .power-svg{
+    width:25px;
+    height:25px
+  }
+
+  .meta-row .date-box,
+  .meta-row .language-chip{
+    font-size:11px
+  }
+}
+
 </style>
 </head>
 <body>
@@ -249,10 +365,38 @@ body{padding:10px;background:#fff}
   <hr>
   <div class="meta-row">
     <div class="date-box" id="dateBox"></div>
+
+    <div class="employee-toolbar">
+      <a
+        class="portal-back-button"
+        href="index.html"
+        title="رجوع"
+        aria-label="رجوع">↩</a>
+
+      <span
+        class="employee-name"
+        id="employeeName"></span>
+
+      <button
+        type="button"
+        class="logout-icon"
+        id="logoutBtn"
+        onclick="logoutPortal()"
+        title="خروج"
+        aria-label="خروج">
+        <svg
+          class="power-svg"
+          viewBox="0 0 24 24"
+          aria-hidden="true">
+          <path d="M12 3v9"></path>
+          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        </svg>
+      </button>
+    </div>
+
     <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
   </div>
   <div class="title-row">
-    <a class="back-button" href="index.html" title="رجوع" aria-label="رجوع">↩</a>
     <h1 class="page-title" id="pageTitle">صيدلية العيادات الخارجية</h1>
   </div>
   <div class="portal-grid">
@@ -350,17 +494,58 @@ function clearPortalSession() {
   sessionStorage.removeItem("unifiedPortalUser");
 }
 
-function denyAndReturnHome() {
+function hideAllOutpatientCards() {
   document.getElementById("mailCard").style.display = "none";
   document.getElementById("appointmentCard").style.display = "none";
 
   const denied = document.getElementById("accessDenied");
-  denied.innerText = text[currentLang].accessDenied;
-  denied.style.display = "block";
+  if (denied) {
+    denied.style.display = "none";
+  }
+}
 
-  window.setTimeout(function() {
-    window.location.href = "index.html";
-  }, 700);
+function setEmployeeName(user) {
+  const employeeName = document.getElementById("employeeName");
+  if (!employeeName) {
+    return;
+  }
+
+  employeeName.innerText =
+    (user && (user.name || user.username)) || "";
+}
+
+function clearEmployeeName() {
+  const employeeName = document.getElementById("employeeName");
+  if (employeeName) {
+    employeeName.innerText = "";
+  }
+}
+
+async function logoutPortal() {
+  const sessionToken =
+    sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+  if (sessionToken) {
+    try {
+      await unifiedApi({
+        action: "revokeSession",
+        sessionToken: sessionToken
+      });
+    } catch (error) {}
+  }
+
+  clearPortalSession();
+  hideAllOutpatientCards();
+  clearEmployeeName();
+
+  window.location.replace("index.html");
+}
+
+function denyAndReturnHome() {
+  hideAllOutpatientCards();
+  clearEmployeeName();
+
+  window.location.replace("index.html");
 }
 
 function renderAllowedServices(user) {
@@ -401,7 +586,10 @@ async function validatePageAccess() {
 
   if (!sessionToken) {
     clearPortalSession();
-    denyAndReturnHome();
+    hideAllOutpatientCards();
+    clearEmployeeName();
+
+    window.location.replace("index.html");
     return;
   }
 
@@ -435,6 +623,7 @@ async function validatePageAccess() {
           cachedMailAllowed ||
           cachedAppointmentAllowed
         ) {
+          setEmployeeName(cachedUser);
           renderAllowedServices(cachedUser);
           cachedUserRendered = true;
         }
@@ -457,7 +646,10 @@ async function validatePageAccess() {
       result.user.active === false
     ) {
       clearPortalSession();
-      denyAndReturnHome();
+      hideAllOutpatientCards();
+      clearEmployeeName();
+
+      window.location.replace("index.html");
       return;
     }
 
@@ -466,6 +658,12 @@ async function validatePageAccess() {
       JSON.stringify(result.user)
     );
 
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      result.user.username || ""
+    );
+
+    setEmployeeName(result.user);
     renderAllowedServices(result.user);
 
   } catch (error) {
@@ -473,11 +671,32 @@ async function validatePageAccess() {
       return;
     }
 
-    const denied = document.getElementById("accessDenied");
-    denied.innerText = text[currentLang].accessDenied;
-    denied.style.display = "block";
+    hideAllOutpatientCards();
+    clearEmployeeName();
   }
 }
+
+window.addEventListener(
+  "pageshow",
+  function() {
+    const sessionToken =
+      sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+    if (sessionToken) {
+      return;
+    }
+
+    hideAllOutpatientCards();
+    clearEmployeeName();
+
+    const denied = document.getElementById("accessDenied");
+    if (denied) {
+      denied.style.display = "none";
+    }
+
+    window.location.replace("index.html");
+  }
+);
 
 setLanguage("ar");
 validatePageAccess();
