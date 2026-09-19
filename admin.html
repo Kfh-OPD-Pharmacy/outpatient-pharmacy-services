@@ -1869,24 +1869,26 @@ function resetInactivityTimer() {
    LOAD USERS
 ================================ */
 
-async function loadUsers() {
+async function loadUsers(silent = false) {
 
-  clearResult();
-
-  document.getElementById(
-    "emptyBox"
-  ).style.display =
-    "block";
-
-  document.getElementById(
-    "emptyBox"
-  ).innerText =
-    text[currentLang].loading;
-
-  document.getElementById(
-    "usersTable"
-  ).style.display =
-    "none";
+  if (!silent) {
+    clearResult();
+  
+    document.getElementById(
+      "emptyBox"
+    ).style.display =
+      "block";
+  
+    document.getElementById(
+      "emptyBox"
+    ).innerText =
+      text[currentLang].loading;
+  
+    document.getElementById(
+      "usersTable"
+    ).style.display =
+      "none";
+  }
 
   try {
 
@@ -2012,7 +2014,7 @@ async function saveUser() {
 
     showResult("success", text[currentLang].saved);
     clearForm();
-    await loadUsers();
+    await loadUsers(true);
 
   } catch (error) {
     showResult("error", text[currentLang].failed);
