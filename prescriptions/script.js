@@ -1,6 +1,9 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbw0jSrbe1SM596Kyv0EpB6VTKEXT81c2Cn8Wlc2lEQ_RzbrS9b6w-k4gyrflwPBTgpKSQ/exec";
 
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
 const els = {
   loginView: document.getElementById("loginView"),
   prepView: document.getElementById("prepView"),
@@ -168,12 +171,9 @@ document.addEventListener(
 async function init() {
   setLanguage("ar");
 
-  startInactivityWatcher();
+  clearLegacyPrepSession();
 
-  els.loginForm.addEventListener(
-    "submit",
-    handleLogin
-  );
+  startInactivityWatcher();
 
   if (els.languageToggle) {
     els.languageToggle.addEventListener(
@@ -181,11 +181,6 @@ async function init() {
       toggleLanguage
     );
   }
-
-  els.changePinLoginBtn.addEventListener(
-    "click",
-    changeLoginPin
-  );
 
   els.logoutBtn.addEventListener(
     "click",
@@ -215,55 +210,277 @@ async function init() {
    RESTORE SESSION
 ========================================================= */
 
-async function restoreSession() {
-  const savedUser =
-    sessionStorage.getItem(
-      PREP_SESSION_USER_KEY
+async function unifiedApi(
+  payload
+) {
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:
+          "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          )
+      }
     );
 
-  const savedName =
-    sessionStorage.getItem(
-      PREP_SESSION_NAME_KEY
-    ) ||
-    savedUser;
+  if (!response.ok) {
+    throw new Error(
+      t("serverFailed")
+    );
+  }
 
+  return response.json();
+}
+
+
+function getCachedUnifiedUser() {
+  const raw =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(
+      raw
+    );
+  } catch (error) {
+    return null;
+  }
+}
+
+
+function hasOpdMailRxAccess(
+  user
+) {
+  return Boolean(
+    user &&
+    user.opdMailRxAccess === true
+  );
+}
+
+
+function clearUnifiedPortalSession() {
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+}
+
+
+function clearLegacyPrepSession() {
+  sessionStorage.removeItem(
+    PREP_SESSION_USER_KEY
+  );
+
+  sessionStorage.removeItem(
+    PREP_SESSION_NAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    PREP_SESSION_TOKEN_KEY
+  );
+}
+
+
+function hidePrepViews() {
+  if (els.loginView) {
+    els.loginView
+      .classList
+      .add(
+        "hidden"
+      );
+  }
+
+  if (els.prepView) {
+    els.prepView
+      .classList
+      .add(
+        "hidden"
+      );
+  }
+
+  if (els.currentUser) {
+    els.currentUser.textContent =
+      "";
+  }
+}
+
+
+async function stopAndClearPrep() {
+  try {
+    await stopCamera();
+  } catch (error) {}
+
+  selectedPrescription =
+    null;
+
+  clearResult();
+  hidePrepViews();
+}
+
+
+async function redirectInvalidUnifiedSession() {
+  clearUnifiedPortalSession();
+  clearLegacyPrepSession();
+
+  await stopAndClearPrep();
+
+  window.location.replace(
+    "../index.html"
+  );
+}
+
+
+async function redirectNoPrepPermission() {
+  clearLegacyPrepSession();
+
+  await stopAndClearPrep();
+
+  window.location.replace(
+    "index.html"
+  );
+}
+
+
+async function restoreSession() {
   const sessionToken =
     sessionStorage.getItem(
-      PREP_SESSION_TOKEN_KEY
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (!sessionToken) {
+    await redirectInvalidUnifiedSession();
+    return;
+  }
+
+  const cachedUser =
+    getCachedUnifiedUser();
+
+  const cachedAllowed =
+    hasOpdMailRxAccess(
+      cachedUser
     );
 
-  if (
-    !savedUser ||
-    !sessionToken
-  ) {
-    clearAuthSession();
-    return;
+  if (cachedAllowed) {
+    resetInactivityTimer();
+
+    showPrep(
+      cachedUser.name ||
+      cachedUser.username ||
+      ""
+    );
+  } else {
+    hidePrepViews();
   }
 
   try {
     const response =
-      await api(
-        "validateSession"
-      );
+      await unifiedApi({
+        action:
+          "validateSession",
+
+        sessionToken:
+          sessionToken,
+
+        service:
+          "opdMailRx"
+      });
 
     if (
-      !isSuccess(response)
+      !response ||
+      !response.success
     ) {
-      clearAuthSession();
+      const code =
+        response &&
+        response.code
+          ? response.code
+          : "INVALID_SESSION";
+
+      if (
+        code ===
+          "NO_PERMISSION"
+      ) {
+        await redirectNoPrepPermission();
+        return;
+      }
+
+      if (
+        code ===
+          "AUTH_UNAVAILABLE"
+      ) {
+        if (!cachedAllowed) {
+          hidePrepViews();
+        }
+
+        return;
+      }
+
+      await redirectInvalidUnifiedSession();
       return;
     }
+
+    if (
+      !response.user ||
+      response.user.active === false
+    ) {
+      await redirectInvalidUnifiedSession();
+      return;
+    }
+
+    if (
+      !hasOpdMailRxAccess(
+        response.user
+      )
+    ) {
+      await redirectNoPrepPermission();
+      return;
+    }
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        response.user
+      )
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      response.user.username ||
+      ""
+    );
 
     resetInactivityTimer();
 
     showPrep(
-      response.user &&
-      response.user.name
-        ? response.user.name
-        : savedName
+      response.user.name ||
+      response.user.username ||
+      ""
     );
 
   } catch (error) {
-    clearAuthSession();
+    if (!cachedAllowed) {
+      hidePrepViews();
+    }
   }
 }
 
@@ -714,44 +931,41 @@ function showPrep(
    LOGOUT
 ========================================================= */
 
-function logout() {
-  clearAuthSession();
+async function logout() {
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
 
-  stopCamera();
+  if (sessionToken) {
+    try {
+      await unifiedApi({
+        action:
+          "revokeSession",
 
-  selectedPrescription =
-    null;
+        sessionToken:
+          sessionToken
+      });
+    } catch (error) {}
+  }
 
-  els.prepView
-    .classList
-    .add(
-      "hidden"
-    );
+  clearUnifiedPortalSession();
+  clearLegacyPrepSession();
 
-  els.loginView
-    .classList
-    .remove(
-      "hidden"
-    );
+  window.clearTimeout(
+    inactivityTimer
+  );
 
-  els.loginForm.reset();
+  await stopAndClearPrep();
 
-  clearResult();
+  window.location.replace(
+    "../index.html"
+  );
 }
 
 
 function clearAuthSession() {
-  sessionStorage.removeItem(
-    PREP_SESSION_USER_KEY
-  );
-
-  sessionStorage.removeItem(
-    PREP_SESSION_NAME_KEY
-  );
-
-  sessionStorage.removeItem(
-    PREP_SESSION_TOKEN_KEY
-  );
+  clearLegacyPrepSession();
 }
 
 
@@ -792,7 +1006,7 @@ function resetInactivityTimer() {
       () => {
         if (
           sessionStorage.getItem(
-            PREP_SESSION_TOKEN_KEY
+            "unifiedPortalSessionToken"
           )
         ) {
           logout();
@@ -1378,13 +1592,22 @@ async function api(
   ) {
     const sessionToken =
       sessionStorage.getItem(
-        PREP_SESSION_TOKEN_KEY
-      );
+        "unifiedPortalSessionToken"
+      ) || "";
 
-    if (sessionToken) {
-      requestData.sessionToken =
-        sessionToken;
+    if (!sessionToken) {
+      await redirectInvalidUnifiedSession();
+
+      throw new Error(
+        t("sessionExpired")
+      );
     }
+
+    requestData.sessionToken =
+      sessionToken;
+
+    requestData.token =
+      sessionToken;
   }
 
   const response =
@@ -1421,26 +1644,61 @@ async function api(
       data.code ===
         "INVALID_SESSION" ||
       data.code ===
-        "MISSING_SESSION" ||
-      data.code ===
-        "NO_PERMISSION"
+        "MISSING_SESSION"
     )
   ) {
-    clearAuthSession();
-
-    if (
-      els.prepView &&
-      !els.prepView.classList.contains(
-        "hidden"
-      )
-    ) {
-      logout();
-    }
+    await redirectInvalidUnifiedSession();
 
     throw new Error(
       t("sessionExpired")
     );
   }
 
+  if (
+    data &&
+    data.code ===
+      "NO_PERMISSION"
+  ) {
+    await redirectNoPrepPermission();
+
+    throw new Error(
+      t("sessionExpired")
+    );
+  }
+
+  if (
+    data &&
+    data.code ===
+      "AUTH_UNAVAILABLE"
+  ) {
+    throw new Error(
+      t("serverFailed")
+    );
+  }
+
   return data;
 }
+
+
+window.addEventListener(
+  "pageshow",
+  function() {
+    const sessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (sessionToken) {
+      return;
+    }
+
+    stopAndClearPrep()
+      .finally(
+        function() {
+          window.location.replace(
+            "../index.html"
+          );
+        }
+      );
+  }
+);
