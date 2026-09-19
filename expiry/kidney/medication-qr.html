@@ -250,8 +250,6 @@ hr{
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
 
-const CENTRAL_MEDICATIONS_API_URL =
-  "https://script.google.com/macros/s/AKfycbxtK-J87-gmKVXExW_kbVXBuYTxArtP5pnvnp3HJh2s_BL2nPQn8vPrwMX_bDUkp4uq/exec";
 
 function getMedId(){
   return new URLSearchParams(window.location.search).get("medId") || "";
@@ -276,120 +274,65 @@ async function loadMedication(){
     getMedId();
 
   if (!medId){
-    renderError("Medication not found");
+    renderError(
+      "Medication not found"
+    );
     return;
   }
 
   try{
-    const centralData =
+    const data =
       await fetchJson(
-        CENTRAL_MEDICATIONS_API_URL +
-        "?action=listMedications&service=kidney&t=" + Date.now()
+        KIDNEY_API_URL +
+        "?action=medicationExpiry&medId=" +
+        encodeURIComponent(
+          medId
+        ) +
+        "&t=" +
+        Date.now()
       );
 
-    const medication =
-      (centralData.medications || []).find(
-        function(item){
-          return String(item.id || "") === medId;
-        }
+    if (
+      !data ||
+      !data.success ||
+      !data.medicationId ||
+      !data.medicationName
+    ){
+      renderError(
+        "Medication not found"
       );
-
-    if (!medication){
-      renderError("Medication not found");
       return;
     }
 
-    const dashboardData =
-      await fetchJson(
-        KIDNEY_API_URL +
-        "?action=dashboard&t=" + Date.now()
-      );
-
     const dates =
-      getExpiryDatesForMedication(
-        medId,
-        medication.name,
-        dashboardData.items || dashboardData.medications || []
-      );
+      Array.isArray(
+        data.expiryDates
+      )
+        ? data.expiryDates
+            .map(
+              normalizeDate
+            )
+            .filter(Boolean)
+            .filter(
+              function(date, index, list){
+                return list.indexOf(date) === index;
+              }
+            )
+            .sort()
+        : [];
 
     renderMedication(
-      medication.name,
+      data.medicationName,
       dates
     );
+
   }catch(error){
-    renderError("Medication not found");
+    renderError(
+      "Medication not found"
+    );
   }
 }
 
-function getExpiryDatesForMedication(medicationId, name, items){
-  const key =
-    normalizeExactMedicationName(name);
-
-  return items
-    .filter(function(item){
-      const itemMedicationId =
-        String(
-          item.medicationId ||
-          item.medId ||
-          ""
-        ).trim();
-
-      if (itemMedicationId){
-        return itemMedicationId === medicationId;
-      }
-
-      const itemName =
-        item.medicationName ||
-        item.name ||
-        item.medication ||
-        "";
-
-      return normalizeExactMedicationName(itemName) === key;
-    })
-    .map(function(item){
-      return normalizeDate(
-        item.expiry ||
-        item.expiryDate ||
-        ""
-      );
-    })
-    .filter(Boolean)
-    .filter(function(date, index, list){
-      return list.indexOf(date) === index;
-    })
-    .sort();
-}
-
-function normalizeExactMedicationName(value){
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
-}
-
-function normalizeMedicationKey(value){
-  return String(value || "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .replace(/\s*([%/.,()+-])\s*/g, "$1")
-    .replace(/(\d)\s+(mg|mcg|g|ml|l|iu|unit|units|%)/g, "$1$2")
-    .replace(/\b(tablet|tablets|tab|tabs)\b/g, "tab")
-    .replace(/\b(capsule|capsules|cap|caps)\b/g, "cap")
-    .replace(/\b(injection|injections|inj)\b/g, "inj")
-    .replace(/\b(syrup|syp)\b/g, "syp")
-    .replace(/\b(solution|sol)\b/g, "sol")
-    .replace(/\b(suspension|susp)\b/g, "susp")
-    .replace(/\b(ointment|oint)\b/g, "oint")
-    .replace(/\b(cream|cr)\b/g, "cr")
-    .replace(/\b(inhaler|inh)\b/g, "inh")
-    .replace(/\b(ampoule|ampoules|amp)\b/g, "amp")
-    .replace(/\b(vial|vials)\b/g, "vial")
-    .replace(/\b(drop|drops)\b/g, "drops")
-    .replace(/\b(suppository|suppositories|supp)\b/g, "supp")
-    .replace(/\b(powder|pwd)\b/g, "pwd")
-    .replace(/\b(spray|spr)\b/g, "spr")
-    .trim();
-}
 
 function normalizeDate(value){
   if (!value){

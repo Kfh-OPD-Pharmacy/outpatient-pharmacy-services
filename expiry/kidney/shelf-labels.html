@@ -1105,6 +1105,99 @@ input[type="number"]{
     font-size:20px;
   }
 }
+
+/* Unified portal security/top-row integration */
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+
+.meta-row .date-box{
+  justify-self:start
+}
+
+.meta-row .language-chip{
+  justify-self:end
+}
+
+.meta-row .employee-strip{
+  grid-column:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:0;
+  color:var(--main);
+  font-size:18px;
+  font-weight:bold;
+  direction:rtl
+}
+
+.meta-row .portal-back-button,
+.meta-row .power-btn{
+  width:34px;
+  height:34px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--main);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex:0 0 auto;
+  font-family:Arial,sans-serif
+}
+
+.meta-row .portal-back-button{
+  font-size:28px;
+  line-height:1;
+  text-decoration:none
+}
+
+.meta-row .portal-back-button:hover,
+.meta-row .power-btn:hover{
+  color:var(--main-dark)
+}
+
+#loginView{
+  display:none !important
+}
+
+@media (max-width:700px){
+  .meta-row{
+    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+    gap:6px
+  }
+
+  .meta-row .employee-strip{
+    gap:6px;
+    font-size:15px
+  }
+
+  .meta-row #employeeName{
+    max-width:130px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap
+  }
+
+  .meta-row .portal-back-button,
+  .meta-row .power-btn{
+    width:30px;
+    height:30px
+  }
+
+  .meta-row .date-box,
+  .meta-row .language-chip{
+    font-size:11px
+  }
+}
+
 </style>
 </head>
 
@@ -1123,15 +1216,32 @@ input[type="number"]{
 
   <div class="meta-row">
     <div class="date-box" id="dateBox"></div>
+
+    <div class="employee-strip">
+      <a
+        class="portal-back-button"
+        href="index.html"
+        title="Back"
+        aria-label="Back">↩</a>
+
+      <span id="employeeName"></span>
+
+      <button
+        class="power-btn"
+        type="button"
+        onclick="logoutEmployee()"
+        title="Logout"
+        aria-label="Logout">⏻</button>
+    </div>
+
     <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
   </div>
 
   <div class="title-row">
-    <a class="back-button" href="index.html" title="Back" aria-label="Back">↩</a>
     <h1 class="page-title" id="pageTitle">Labels Generator</h1>
   </div>
 
-  <div id="loginView" class="login-card">
+  <div id="loginView" class="login-card" style="display:none">
     <label id="usernameLabel" for="username">Username</label>
     <input id="username" type="text" autocomplete="username">
 
@@ -1143,11 +1253,6 @@ input[type="number"]{
   </div>
 
   <div id="appView" class="app-layout">
-    <div class="employee-strip">
-      <button class="power-btn" type="button" onclick="logoutEmployee()" title="Logout" aria-label="Logout">⏻</button>
-      <span id="employeeName"></span>
-    </div>
-
     <div class="size-row panel">
       <div>
         <label id="labelSizeLabel" for="labelSize">Label Size</label>
@@ -1197,8 +1302,11 @@ input[type="number"]{
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
 
-const UNIFIED_AUTH_API_URL =
+const UNIFIED_API_URL =
   "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
+const UNIFIED_AUTH_API_URL =
+  UNIFIED_API_URL;
 
 const CENTRAL_MEDICATIONS_API_URL =
   "https://script.google.com/macros/s/AKfycbxtK-J87-gmKVXExW_kbVXBuYTxArtP5pnvnp3HJh2s_BL2nPQn8vPrwMX_bDUkp4uq/exec";
@@ -1576,15 +1684,21 @@ async function postApi(action, payload = {}, includeSession = true){
 
   if (includeSession){
     currentSessionToken =
-      sessionStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) ||
-      sessionStorage.getItem("unifiedAdminSessionToken") ||
-      sessionStorage.getItem("medSessionToken") ||
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (!currentSessionToken){
+      throw new Error(
+        "MISSING_UNIFIED_SESSION"
+      );
+    }
+
+    requestData.sessionToken =
       currentSessionToken;
 
-    if (currentSessionToken){
-      requestData.sessionToken = currentSessionToken;
-      requestData.token = currentSessionToken;
-    }
+    requestData.token =
+      currentSessionToken;
   }
 
   const response =
@@ -1614,15 +1728,21 @@ async function postAuthApi(action, payload = {}, includeSession = true){
 
   if (includeSession){
     currentSessionToken =
-      sessionStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) ||
-      sessionStorage.getItem("unifiedAdminSessionToken") ||
-      sessionStorage.getItem("medSessionToken") ||
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (!currentSessionToken){
+      throw new Error(
+        "MISSING_UNIFIED_SESSION"
+      );
+    }
+
+    requestData.sessionToken =
       currentSessionToken;
 
-    if (currentSessionToken){
-      requestData.sessionToken = currentSessionToken;
-      requestData.token = currentSessionToken;
-    }
+    requestData.token =
+      currentSessionToken;
   }
 
   const response =
@@ -1693,21 +1813,123 @@ async function loginEmployee(){
   }
 }
 
-async function restoreSession(){
-  currentSessionToken =
-    sessionStorage.getItem(KIDNEY_SESSION_TOKEN_KEY) ||
-    sessionStorage.getItem("unifiedAdminSessionToken") ||
-    sessionStorage.getItem("medSessionToken") ||
-    "";
-  currentEmployeeName =
-    sessionStorage.getItem(KIDNEY_SESSION_NAME_KEY) || "";
-  currentEmployeeUsername =
-    sessionStorage.getItem(KIDNEY_SESSION_USERNAME_KEY) || "";
+function getCachedPortalUser(){
+  const raw =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    );
 
-  if (!currentSessionToken){
-    clearStoredSession();
-    showLoginView();
+  if (!raw){
+    return null;
+  }
+
+  try{
+    return JSON.parse(raw);
+  }catch(error){
+    return null;
+  }
+}
+
+function hasKidneyLabelsPermission(user){
+  return Boolean(
+    user &&
+    user.kidneyLabelsAccess === true
+  );
+}
+
+function clearUnifiedPortalSession(){
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+}
+
+function hideProtectedLabelsView(){
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "appView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "labelsSheet"
+  ).innerHTML =
+    "";
+}
+
+function stopInactivityWatcher(){
+  if (inactivityTimer){
+    clearTimeout(
+      inactivityTimer
+    );
+    inactivityTimer =
+      null;
+  }
+}
+
+function handleLabelsAuthorizationFailure(){
+  clearUnifiedPortalSession();
+  clearStoredSession();
+
+  selectedLabels =
+    [];
+  centralMedicationList =
+    [];
+  expiryRecords =
+    [];
+
+  stopInactivityWatcher();
+  hideProtectedLabelsView();
+
+  window.location.replace(
+    "../../index.html"
+  );
+}
+
+async function restoreSession(){
+  const unifiedSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (!unifiedSessionToken){
+    handleLabelsAuthorizationFailure();
     return;
+  }
+
+  const cachedUser =
+    getCachedPortalUser();
+
+  const cachedAllowed =
+    hasKidneyLabelsPermission(
+      cachedUser
+    );
+
+  if (cachedAllowed){
+    currentSessionToken =
+      unifiedSessionToken;
+
+    currentEmployeeUsername =
+      cachedUser.username ||
+      "";
+
+    currentEmployeeName =
+      cachedUser.name ||
+      cachedUser.username ||
+      "";
+
+    saveStoredSession();
+    showEmployeeView();
+    await loadPageData();
   }
 
   try{
@@ -1715,63 +1937,127 @@ async function restoreSession(){
       await postAuthApi(
         "validateSession",
         {
-          service:"labels"
+          service:
+            "kidneyLabels"
         },
         true
       );
 
-    if (!result.success || !result.user){
-      clearStoredSession();
-      showLoginView();
+    if (
+      !result ||
+      !result.success ||
+      !result.user ||
+      result.user.active === false ||
+      !hasKidneyLabelsPermission(
+        result.user
+      )
+    ){
+      handleLabelsAuthorizationFailure();
       return;
     }
 
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        result.user
+      )
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      result.user.username ||
+      ""
+    );
+
+    currentSessionToken =
+      unifiedSessionToken;
+
     currentEmployeeUsername =
       result.user.username ||
-      currentEmployeeUsername;
+      "";
+
     currentEmployeeName =
       result.user.name ||
       result.user.username ||
-      currentEmployeeName;
+      "";
 
     saveStoredSession();
     showEmployeeView();
-    await loadPageData();
+
+    if (!cachedAllowed){
+      await loadPageData();
+    }
+
   }catch(error){
-    clearStoredSession();
-    showLoginView();
+    /*
+      Network errors must not destroy a valid cached unified session.
+      Without a valid cached user, protected content stays hidden.
+    */
+    if (!cachedAllowed){
+      hideProtectedLabelsView();
+    }
   }
 }
 
 function showLoginView(){
-  document.getElementById("loginView").style.display = "block";
-  document.getElementById("appView").style.display = "none";
+  hideProtectedLabelsView();
 }
 
 function showEmployeeView(){
-  document.getElementById("loginView").style.display = "none";
-  document.getElementById("appView").style.display = "block";
-  document.getElementById("employeeName").innerText =
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "appView"
+  ).style.display =
+    "block";
+
+  document.getElementById(
+    "employeeName"
+  ).innerText =
     currentEmployeeName ||
     currentEmployeeUsername ||
     "";
+
   startInactivityWatcher();
 }
 
 async function logoutEmployee(){
-  if (currentSessionToken){
+  const unifiedSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (unifiedSessionToken){
     try{
-      await postAuthApi("revokeSession", {}, true);
+      await postAuthApi(
+        "revokeSession",
+        {},
+        true
+      );
     }catch(error){}
   }
 
+  clearUnifiedPortalSession();
   clearStoredSession();
-  selectedLabels = [];
-  centralMedicationList = [];
-  expiryRecords = [];
+
+  selectedLabels =
+    [];
+  centralMedicationList =
+    [];
+  expiryRecords =
+    [];
+
   renderBatchList();
   renderPreview();
-  showLoginView();
+  stopInactivityWatcher();
+  hideProtectedLabelsView();
+
+  window.location.replace(
+    "../../index.html"
+  );
 }
 
 function showLoginResult(message, type){
@@ -1818,9 +2104,7 @@ function resetInactivityTimer(){
   inactivityTimer =
     setTimeout(
       function(){
-        clearStoredSession();
-        showLoginView();
-        showLoginResult(text[currentLang].sessionExpired, "error");
+        logoutEmployee();
       },
       INACTIVITY_LIMIT_MS
     );
@@ -1882,18 +2166,40 @@ async function loadCentralMedicationList(){
 }
 
 async function loadExpiryRecords(){
-  const response =
-    await fetch(
-      KIDNEY_API_URL +
-      "?action=dashboard"
-    );
   const data =
-    await response.json();
+    await postApi(
+      "labelsExpiryData",
+      {},
+      true
+    );
+
+  if (
+    !data ||
+    !data.success
+  ){
+    if (
+      data &&
+      [
+        "MISSING_SESSION",
+        "INVALID_SESSION",
+        "NO_PERMISSION",
+        "AUTH_UNAVAILABLE"
+      ].includes(
+        data.code
+      )
+    ){
+      handleLabelsAuthorizationFailure();
+      return;
+    }
+
+    throw new Error(
+      "LOAD_EXPIRY_FAILED"
+    );
+  }
 
   expiryRecords =
     (
       data.items ||
-      data.medications ||
       []
     ).map(function(item){
       return {
@@ -2909,12 +3215,23 @@ document.addEventListener(
   }
 );
 
-document.getElementById("password").addEventListener(
-  "keydown",
-  function(event){
-    if (event.key === "Enter"){
-      loginEmployee();
+window.addEventListener(
+  "pageshow",
+  function(){
+    const unifiedSessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (unifiedSessionToken){
+      return;
     }
+
+    hideProtectedLabelsView();
+
+    window.location.replace(
+      "../../index.html"
+    );
   }
 );
 
@@ -2925,7 +3242,6 @@ restoreSession();
 </script>
 </body>
 </html>
-
 
 
 
