@@ -885,6 +885,87 @@ select{
   }
 }
 
+
+/* Surgical layout only: language right, user controls centered, date left */
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+
+.meta-row .date-box{
+  justify-self:start
+}
+
+.meta-row .language-chip{
+  justify-self:end
+}
+
+.meta-row .employee-toolbar{
+  grid-column:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:auto;
+  margin:0;
+  padding:0;
+  direction:rtl
+}
+
+.meta-row .employee-name{
+  grid-column:auto;
+  white-space:nowrap;
+  font-size:18px
+}
+
+.meta-row .logout-icon{
+  grid-column:auto;
+  grid-row:auto;
+  flex:0 0 auto
+}
+
+.meta-row #loginBackButton{
+  display:inline-flex!important;
+  flex:0 0 auto
+}
+
+@media (max-width:700px){
+  .meta-row{
+    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+    gap:6px
+  }
+
+  .meta-row .employee-toolbar{
+    gap:6px
+  }
+
+  .meta-row .employee-name{
+    max-width:130px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:15px
+  }
+
+  .meta-row .back-button,
+  .meta-row .logout-icon{
+    width:30px;
+    height:30px
+  }
+
+  .meta-row .power-svg{
+    width:25px;
+    height:25px
+  }
+
+  .meta-row .date-box,
+  .meta-row .language-chip{
+    font-size:11px
+  }
+}
+
 </style>
 </head>
 
@@ -906,37 +987,68 @@ select{
 
   <hr>
 
-  <div class="meta-row">
+  <div id="employeeView" style="display:none">
 
-    <div class="date-box" id="dateBox"></div>
+    <div class="meta-row">
 
-    <button
-      type="button"
-      class="language-chip"
-      id="languageToggle"
-      onclick="toggleLanguage()">
-      🌐 ع | E
-    </button>
+      <div class="date-box" id="dateBox"></div>
 
-  </div>
+      <div class="employee-toolbar">
 
-  <div class="title-row">
+        <button
+          type="button"
+          class="back-button"
+          id="loginBackButton"
+          onclick="history.back()"
+          title="رجوع"
+          aria-label="رجوع">
+          ↩
+        </button>
 
-    <button
-      type="button"
-      class="back-button"
-      id="loginBackButton"
-      onclick="history.back()"
-      title="رجوع"
-      aria-label="رجوع">
-      ↩
-    </button>
+        <span
+          class="employee-name"
+          id="employeeName">
+        </span>
 
-    <h1 class="page-title" id="pageTitle">
-      Monthly Inspection
-    </h1>
+        <button
+          type="button"
+          class="logout-icon"
+          id="logoutBtn"
+          onclick="logoutEmployee()"
+          title="تسجيل الخروج"
+          aria-label="تسجيل الخروج">
 
-  </div>
+          <svg
+            class="power-svg"
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path d="M12 3v9"></path>
+            <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+
+          </svg>
+
+        </button>
+
+      </div>
+
+      <button
+        type="button"
+        class="language-chip"
+        id="languageToggle"
+        onclick="toggleLanguage()">
+        🌐 ع | E
+      </button>
+
+    </div>
+
+    <div class="title-row">
+
+      <h1 class="page-title" id="pageTitle">
+        Monthly Inspection
+      </h1>
+
+    </div>
 
   <div id="loginView" class="login-card" style="display:none">
 
@@ -1044,37 +1156,6 @@ select{
     <div id="loginResult"></div>
 
   </div>
-
-  <div id="employeeView" style="display:none">
-
-    <div class="employee-toolbar">
-
-      <span
-        class="employee-name"
-        id="employeeName">
-      </span>
-
-      <button
-        type="button"
-        class="logout-icon"
-        id="logoutBtn"
-        onclick="logoutEmployee()"
-        title="تسجيل الخروج"
-        aria-label="تسجيل الخروج">
-
-        <svg
-          class="power-svg"
-          viewBox="0 0 24 24"
-          aria-hidden="true">
-
-          <path d="M12 3v9"></path>
-          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
-
-        </svg>
-
-      </button>
-
-    </div>
 
     <div
       class="conflict-box"
