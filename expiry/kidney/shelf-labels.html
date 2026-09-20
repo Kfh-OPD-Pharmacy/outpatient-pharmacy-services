@@ -562,7 +562,8 @@ input[type="number"]{
   align-items:center;
   justify-content:center;
   background:#fff;
-  overflow:hidden
+  overflow:visible;
+  position:relative
 }
 
 .label-qr{
@@ -572,6 +573,24 @@ input[type="number"]{
   display:block;
   object-fit:contain;
   image-rendering:auto
+}
+
+.label-exp-caption{
+  position:absolute;
+  left:50%;
+  bottom:-1.5mm;
+  transform:translateX(-50%);
+  color:inherit;
+  font-size:7pt;
+  line-height:1;
+  font-weight:700;
+  white-space:nowrap;
+  text-align:center;
+  background:transparent;
+  border:0;
+  pointer-events:none;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
 }
 
 .label-logo-wrap{
@@ -2852,7 +2871,8 @@ function createLabelElement(item){
     "</div>" +
     "<div class=\"label-exp\">" +
       (qrImageUrl
-        ? "<img class=\"label-qr\" src=\"" + escapeHtml(qrImageUrl) + "\" alt=\"Medication QR\">"
+        ? "<img class=\"label-qr\" src=\"" + escapeHtml(qrImageUrl) + "\" alt=\"Medication QR\">" +
+          "<span class=\"label-exp-caption\">EXP.</span>"
         : "") +
     "</div>" +
     "<div class=\"label-logo-wrap\">" +
