@@ -514,22 +514,72 @@ hr{
 }
 
 </style>
+
+<style>
+.meta-row.unified-meta{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+.meta-row.unified-meta .date-box{justify-self:start}
+.meta-row.unified-meta .language-chip{justify-self:end}
+.unified-user-tools{
+  grid-column:2;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  direction:rtl;
+  color:#168fb3
+}
+.unified-user-tools .logout-icon{
+  width:34px;
+  height:34px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center
+}
+.unified-user-tools .power-svg{
+  width:28px;
+  height:28px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.unified-user-tools .back-button{
+  margin:0;
+  text-decoration:none
+}
+#portalEmployeeName{
+  font-weight:bold;
+  white-space:nowrap;
+  max-width:220px;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.portal-card[hidden]{display:none!important}
+@media (max-width:700px){
+  .meta-row.unified-meta{grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);gap:6px}
+  .unified-user-tools{gap:6px}
+  #portalEmployeeName{max-width:120px;font-size:13px}
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
-
-  <button
-    type="button"
-    class="back-button"
-    onclick="history.back()"
-    title="رجوع"
-    aria-label="رجوع">
-    ‹
-  </button>
-
-  <div class="top-bar">
+<div class="top-bar">
 
     <img
       class="logo"
@@ -556,11 +606,22 @@ hr{
 
   <hr>
 
-  <div class="meta-row">
+  <div class="meta-row unified-meta">
 
     <div
       class="date-box"
       id="dateBox">
+    </div>
+
+    <div class="unified-user-tools">
+      <a class="back-button" href="../outpatient-pharmacy.html" title="رجوع" aria-label="رجوع">‹</a>
+      <strong id="portalEmployeeName"></strong>
+      <button id="portalLogoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج">
+        <svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v9"></path>
+          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        </svg>
+      </button>
     </div>
 
     <div class="language-chip">
@@ -577,7 +638,9 @@ hr{
 
     <a
       class="portal-card"
-      href="employee.html">
+      id="manageCard"
+      href="employee.html"
+      hidden>
 
       <div class="card-text">
 
@@ -599,7 +662,9 @@ hr{
 
     <a
       class="portal-card"
-      href="dashboard.html">
+      id="indicatorCard"
+      href="dashboard.html"
+      hidden>
 
       <div class="card-text">
 
@@ -624,21 +689,17 @@ hr{
 </div>
 
 <script>
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
 
 function renderDate(){
-
-  const now =
-    new Date();
+  const now = new Date();
 
   const date =
     new Intl.DateTimeFormat(
       "en-CA",
-      {
-        timeZone:"Asia/Riyadh"
-      }
-    ).format(
-      now
-    );
+      {timeZone:"Asia/Riyadh"}
+    ).format(now);
 
   const dayName =
     new Intl.DateTimeFormat(
@@ -647,19 +708,195 @@ function renderDate(){
         timeZone:"Asia/Riyadh",
         weekday:"long"
       }
-    ).format(
-      now
-    );
+    ).format(now);
 
-  document.getElementById(
-    "dateBox"
-  ).innerText =
+  document.getElementById("dateBox").innerText =
     `${dayName} - ${date}`;
-
 }
 
-renderDate();
+function getCachedUnifiedUser(){
+  const raw =
+    sessionStorage.getItem("unifiedPortalUser") || "";
 
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return null;
+  }
+}
+
+function hasManageAccess(user){
+  return Boolean(
+    user &&
+    (
+      user.opdAppointmentManageAccess === true ||
+      (
+        user.permissions &&
+        user.permissions.opdAppointmentManage === true
+      )
+    )
+  );
+}
+
+function hasIndicatorAccess(user){
+  return Boolean(
+    user &&
+    (
+      user.opdAppointmentIndicatorAccess === true ||
+      (
+        user.permissions &&
+        user.permissions.opdAppointmentIndicator === true
+      )
+    )
+  );
+}
+
+function renderPortalAccess(user){
+  const manage = hasManageAccess(user);
+  const indicator = hasIndicatorAccess(user);
+
+  const manageCard = document.getElementById("manageCard");
+  const indicatorCard = document.getElementById("indicatorCard");
+
+  manageCard.hidden = !manage;
+  indicatorCard.hidden = !indicator;
+
+  document.getElementById("portalEmployeeName").textContent =
+    user
+      ? (user.name || user.username || "")
+      : "";
+
+  return manage || indicator;
+}
+
+function hidePortalCards(){
+  document.getElementById("manageCard").hidden = true;
+  document.getElementById("indicatorCard").hidden = true;
+  document.getElementById("portalEmployeeName").textContent = "";
+}
+
+function clearUnifiedSession(){
+  sessionStorage.removeItem("unifiedPortalUsername");
+  sessionStorage.removeItem("unifiedPortalSessionToken");
+  sessionStorage.removeItem("unifiedPortalUser");
+}
+
+async function unifiedRequest(payload){
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"text/plain;charset=utf-8"
+        },
+        body:JSON.stringify(payload)
+      }
+    );
+
+  if (!response.ok) {
+    throw new Error("NETWORK_ERROR");
+  }
+
+  return response.json();
+}
+
+async function validatePortalSession(){
+  const token =
+    sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+  if (!token) {
+    clearUnifiedSession();
+    hidePortalCards();
+    window.location.replace("../index.html");
+    return;
+  }
+
+  const cachedUser = getCachedUnifiedUser();
+  const cachedAllowed = renderPortalAccess(cachedUser);
+
+  try {
+    const result =
+      await unifiedRequest({
+        action:"validateSession",
+        sessionToken:token,
+        service:""
+      });
+
+    if (!result || result.success !== true || !result.user || result.user.active === false) {
+      const code = result && result.code ? result.code : "INVALID_SESSION";
+
+      if (code === "NO_PERMISSION") {
+        hidePortalCards();
+        window.location.replace("../outpatient-pharmacy.html");
+        return;
+      }
+
+      clearUnifiedSession();
+      hidePortalCards();
+      window.location.replace("../index.html");
+      return;
+    }
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(result.user)
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      result.user.username || ""
+    );
+
+    if (!renderPortalAccess(result.user)) {
+      window.location.replace("../outpatient-pharmacy.html");
+    }
+
+  } catch (error) {
+    if (!cachedAllowed) {
+      hidePortalCards();
+    }
+  }
+}
+
+async function logoutUnified(){
+  const token =
+    sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+  if (token) {
+    try {
+      await unifiedRequest({
+        action:"revokeSession",
+        sessionToken:token
+      });
+    } catch (error) {}
+  }
+
+  clearUnifiedSession();
+  hidePortalCards();
+  window.location.replace("../index.html");
+}
+
+document.getElementById("portalLogoutBtn")
+  .addEventListener("click", logoutUnified);
+
+window.addEventListener(
+  "pageshow",
+  function(){
+    const token =
+      sessionStorage.getItem("unifiedPortalSessionToken") || "";
+
+    if (!token) {
+      hidePortalCards();
+      window.location.replace("../index.html");
+    }
+  }
+);
+
+renderDate();
+validatePortalSession();
 </script>
 
 </body>

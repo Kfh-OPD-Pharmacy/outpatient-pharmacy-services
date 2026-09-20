@@ -452,22 +452,71 @@ th{
 }
 
 </style>
+
+<style>
+.meta-row.unified-meta{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+.meta-row.unified-meta .date-box{justify-self:start}
+.meta-row.unified-meta .language-btn{justify-self:end}
+.dashboard-user-tools{
+  grid-column:2;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  direction:rtl;
+  color:#168fb3
+}
+.dashboard-user-tools .logout-icon{
+  width:34px;
+  height:34px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center
+}
+.dashboard-user-tools .power-svg{
+  width:28px;
+  height:28px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.dashboard-user-tools .back-button{
+  margin:0;
+  text-decoration:none
+}
+#dashboardEmployeeName{
+  font-weight:bold;
+  white-space:nowrap;
+  max-width:220px;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+@media (max-width:600px){
+  .meta-row.unified-meta{grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);gap:6px}
+  .dashboard-user-tools{gap:6px}
+  #dashboardEmployeeName{max-width:120px;font-size:13px}
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
-
-  <button
-    type="button"
-    class="back-button"
-    onclick="history.back()"
-    title="رجوع"
-    aria-label="رجوع">
-    ‹
-  </button>
-
-  <div class="top-bar">
+<div class="top-bar">
 
     <div class="official-header">
       <h2 id="officialLine1"></h2>
@@ -484,11 +533,22 @@ th{
 
   <hr>
 
-  <div class="meta-row">
+  <div class="meta-row unified-meta">
 
     <div
       class="date-box"
       id="dateBox">
+    </div>
+
+    <div class="dashboard-user-tools">
+      <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">‹</a>
+      <strong id="dashboardEmployeeName"></strong>
+      <button id="dashboardLogoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج">
+        <svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v9"></path>
+          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        </svg>
+      </button>
     </div>
 
     <button
@@ -579,11 +639,15 @@ th{
 
 <script>
 
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec?action=dashboard";
+const API_BASE_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
 
 let currentLang = "en";
 let dashboardData = null;
+let dashboardRefreshTimer = null;
 
 const text = {
 
@@ -636,198 +700,299 @@ const text = {
 };
 
 
-/* =========================================================
-   LANGUAGE
-========================================================= */
-
 function setLanguage(lang){
 
-  currentLang =
-    lang;
+  currentLang = lang;
 
-  document.documentElement.lang =
-    lang;
-
+  document.documentElement.lang = lang;
   document.documentElement.dir =
-    lang === "ar"
-      ? "rtl"
-      : "ltr";
+    lang === "ar" ? "rtl" : "ltr";
 
-  document.getElementById(
-    "officialLine1"
-  ).innerText =
+  document.getElementById("officialLine1").innerText =
     text[lang].officialLine1;
-
-  document.getElementById(
-    "officialLine2"
-  ).innerText =
+  document.getElementById("officialLine2").innerText =
     text[lang].officialLine2;
-
-  document.getElementById(
-    "officialLine3"
-  ).innerText =
+  document.getElementById("officialLine3").innerText =
     text[lang].officialLine3;
-
-  document.getElementById(
-    "pageTitle"
-  ).innerText =
+  document.getElementById("pageTitle").innerText =
     text[lang].pageTitle;
-
-  document.getElementById(
-    "pageSubtitle"
-  ).innerText =
+  document.getElementById("pageSubtitle").innerText =
     text[lang].pageSubtitle;
-
-  document.getElementById(
-    "totalBookingsLabel"
-  ).innerText =
+  document.getElementById("totalBookingsLabel").innerText =
     text[lang].totalBookings;
-
-  document.getElementById(
-    "remainingTodayLabel"
-  ).innerText =
+  document.getElementById("remainingTodayLabel").innerText =
     text[lang].remainingToday;
-
-  document.getElementById(
-    "occupancyRateLabel"
-  ).innerText =
+  document.getElementById("occupancyRateLabel").innerText =
     text[lang].occupancyRate;
-
-  document.getElementById(
-    "statusLabel"
-  ).innerText =
+  document.getElementById("statusLabel").innerText =
     text[lang].dailyStatus;
-
-  document.getElementById(
-    "busiestSlotLabel"
-  ).innerText =
+  document.getElementById("busiestSlotLabel").innerText =
     text[lang].busiestSlot;
-
-  document.getElementById(
-    "leastBusySlotLabel"
-  ).innerText =
+  document.getElementById("leastBusySlotLabel").innerText =
     text[lang].leastBusySlot;
-
-  document.getElementById(
-    "timeHeader"
-  ).innerText =
+  document.getElementById("timeHeader").innerText =
     text[lang].timeSlot;
-
-  document.getElementById(
-    "bookedHeader"
-  ).innerText =
+  document.getElementById("bookedHeader").innerText =
     text[lang].booked;
-
-  document.getElementById(
-    "remainingHeader"
-  ).innerText =
+  document.getElementById("remainingHeader").innerText =
     text[lang].remaining;
-
-  document.getElementById(
-    "slotOccupancyHeader"
-  ).innerText =
+  document.getElementById("slotOccupancyHeader").innerText =
     text[lang].occupancy;
-
-  document.getElementById(
-    "languageToggle"
-  ).innerText =
+  document.getElementById("languageToggle").innerText =
     "🌐 ع | E";
 
-  if (
-    dashboardData
-  ){
-
+  if (dashboardData){
     renderDashboard();
-
   }else{
-
-    document.getElementById(
-      "loading"
-    ).innerText =
+    document.getElementById("loading").innerText =
       text[lang].loading;
-
   }
-
 }
 
 
 function toggleLanguage(){
-
   setLanguage(
     currentLang === "ar"
       ? "en"
       : "ar"
   );
-
 }
 
 
-/* =========================================================
-   STATUS
-========================================================= */
-
 function statusLabel(status){
-
-  if (
-    status === "HIGH"
-  ){
-
+  if (status === "HIGH"){
     return text[currentLang].high;
-
   }
 
-  if (
-    status === "MEDIUM"
-  ){
-
+  if (status === "MEDIUM"){
     return text[currentLang].medium;
-
   }
 
   return text[currentLang].low;
-
 }
 
 
-/* =========================================================
-   LOAD DASHBOARD
-========================================================= */
+function getCachedUnifiedUser(){
+  const raw =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
 
-async function loadDashboard(){
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return null;
+  }
+}
+
+
+function hasIndicatorAccess(user){
+  return Boolean(
+    user &&
+    (
+      user.opdAppointmentIndicatorAccess === true ||
+      (
+        user.permissions &&
+        user.permissions.opdAppointmentIndicator === true
+      )
+    )
+  );
+}
+
+
+function clearUnifiedSession(){
+  sessionStorage.removeItem("unifiedPortalUsername");
+  sessionStorage.removeItem("unifiedPortalSessionToken");
+  sessionStorage.removeItem("unifiedPortalUser");
+}
+
+
+function hideDashboardData(){
+  stopDashboardRefresh();
+  dashboardData = null;
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("dashboardEmployeeName").textContent = "";
+}
+
+
+async function requestApi(payload){
+  const response =
+    await fetch(
+      API_BASE_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+        body:JSON.stringify(payload),
+        cache:"no-store"
+      }
+    );
+
+  if (!response.ok){
+    throw new Error(
+      "HTTP_" +
+      response.status
+    );
+  }
+
+  return response.json();
+}
+
+
+async function validateDashboardSession(){
+  const token =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (!token){
+    clearUnifiedSession();
+    hideDashboardData();
+    window.location.replace("../index.html");
+    return false;
+  }
+
+  const cachedUser =
+    getCachedUnifiedUser();
+
+  const cachedAllowed =
+    hasIndicatorAccess(
+      cachedUser
+    );
+
+  if (cachedAllowed){
+    document.getElementById(
+      "dashboardEmployeeName"
+    ).textContent =
+      cachedUser.name ||
+      cachedUser.username ||
+      "";
+  }
 
   try{
-
-    const response =
-      await fetch(
-        API_URL,
-        {
-          cache:"no-store"
-        }
-      );
+    const result =
+      await requestApi({
+        action:"validateSession",
+        sessionToken:token,
+        service:"opdAppointmentIndicator"
+      });
 
     if (
-      !response.ok
+      !result ||
+      result.success !== true ||
+      !result.user ||
+      result.user.active === false
     ){
+      const code =
+        result &&
+        result.code
+          ? result.code
+          : "INVALID_SESSION";
 
-      throw new Error(
-        "HTTP_" +
-        response.status
-      );
+      if (code === "NO_PERMISSION"){
+        hideDashboardData();
+        window.location.replace("portal.html");
+        return false;
+      }
 
+      clearUnifiedSession();
+      hideDashboardData();
+      window.location.replace("../index.html");
+      return false;
     }
 
+    if (!hasIndicatorAccess(result.user)){
+      hideDashboardData();
+      window.location.replace("portal.html");
+      return false;
+    }
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(result.user)
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      result.user.username || ""
+    );
+
+    document.getElementById(
+      "dashboardEmployeeName"
+    ).textContent =
+      result.user.name ||
+      result.user.username ||
+      "";
+
+    return true;
+
+  }catch(error){
+    if (cachedAllowed){
+      return true;
+    }
+
+    hideDashboardData();
+    window.location.replace("portal.html");
+    return false;
+  }
+}
+
+
+async function loadDashboard(){
+  const token =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (!token){
+    clearUnifiedSession();
+    hideDashboardData();
+    window.location.replace("../index.html");
+    return;
+  }
+
+  try{
     const data =
-      await response.json();
+      await requestApi({
+        action:"dashboard",
+        sessionToken:token,
+        token:token
+      });
 
     if (
+      data &&
+      (
+        data.code === "INVALID_SESSION" ||
+        data.code === "MISSING_SESSION"
+      )
+    ){
+      clearUnifiedSession();
+      hideDashboardData();
+      window.location.replace("../index.html");
+      return;
+    }
+
+    if (
+      data &&
+      data.code === "NO_PERMISSION"
+    ){
+      hideDashboardData();
+      window.location.replace("portal.html");
+      return;
+    }
+
+    if (
+      !data ||
       !data.success ||
       !data.dashboard
     ){
-
       throw new Error(
         "INVALID_DASHBOARD_RESPONSE"
       );
-
     }
 
     dashboardData =
@@ -846,196 +1011,106 @@ async function loadDashboard(){
     renderDashboard();
 
   }catch(error){
+    document.getElementById(
+      "loading"
+    ).style.display =
+      "block";
 
     document.getElementById(
       "loading"
     ).innerText =
       text[currentLang].failed;
-
   }
-
 }
 
 
-/* =========================================================
-   RENDER
-========================================================= */
-
 function renderDashboard(){
+  const d = dashboardData;
 
-  const d =
-    dashboardData;
-
-  if (
-    !d
-  ){
-
-    return;
-
-  }
+  if (!d) return;
 
   const busiestSlot =
     d.busiestSlot ||
-    {
-      time:"-",
-      booked:0
-    };
+    {time:"-",booked:0};
 
   const leastBusySlot =
     d.leastBusySlot ||
-    {
-      time:"-",
-      booked:0
-    };
+    {time:"-",booked:0};
 
-  document.getElementById(
-    "dateBox"
-  ).innerText =
+  document.getElementById("dateBox").innerText =
     `${getDisplayDayName(d)} - ${d.date}`;
 
-  document.getElementById(
-    "totalBookings"
-  ).innerText =
-    Number(
-      d.totalBookings ||
-      0
-    );
+  document.getElementById("totalBookings").innerText =
+    Number(d.totalBookings || 0);
 
-  document.getElementById(
-    "remainingToday"
-  ).innerText =
-    Number(
-      d.remainingToday ||
-      0
-    );
+  document.getElementById("remainingToday").innerText =
+    Number(d.remainingToday || 0);
 
-  document.getElementById(
-    "occupancyRate"
-  ).innerText =
+  document.getElementById("occupancyRate").innerText =
     `${Number(d.occupancyRate || 0)}%`;
 
-  document.getElementById(
-    "statusText"
-  ).innerText =
-    statusLabel(
-      d.status
-    );
+  document.getElementById("statusText").innerText =
+    statusLabel(d.status);
 
-  document.getElementById(
-    "busiestSlot"
-  ).innerText =
+  document.getElementById("busiestSlot").innerText =
     `${busiestSlot.time || "-"} (${Number(busiestSlot.booked || 0)})`;
 
-  document.getElementById(
-    "leastBusySlot"
-  ).innerText =
+  document.getElementById("leastBusySlot").innerText =
     `${leastBusySlot.time || "-"} (${Number(leastBusySlot.booked || 0)})`;
 
   const slots =
-    Array.isArray(
-      d.slots
-    )
+    Array.isArray(d.slots)
       ? d.slots
       : [];
 
   const tbody =
-    document.getElementById(
-      "slotsTable"
-    );
+    document.getElementById("slotsTable");
 
-  tbody.innerHTML =
-    "";
+  tbody.innerHTML = "";
 
   slots.forEach(
     function(slot){
-
       const tr =
-        document.createElement(
-          "tr"
-        );
+        document.createElement("tr");
 
       const tdTime =
-        document.createElement(
-          "td"
-        );
-
+        document.createElement("td");
       tdTime.textContent =
-        slot.time ||
-        "";
+        slot.time || "";
 
       const tdBooked =
-        document.createElement(
-          "td"
-        );
-
+        document.createElement("td");
       tdBooked.textContent =
-        Number(
-          slot.booked ||
-          0
-        );
+        Number(slot.booked || 0);
 
       const tdRemaining =
-        document.createElement(
-          "td"
-        );
-
+        document.createElement("td");
       tdRemaining.textContent =
-        Number(
-          slot.remaining ||
-          0
-        );
+        Number(slot.remaining || 0);
 
       const tdOccupancy =
-        document.createElement(
-          "td"
-        );
-
+        document.createElement("td");
       tdOccupancy.textContent =
         `${Number(slot.occupancy || 0)}%`;
 
-      tr.appendChild(
-        tdTime
-      );
-
-      tr.appendChild(
-        tdBooked
-      );
-
-      tr.appendChild(
-        tdRemaining
-      );
-
-      tr.appendChild(
-        tdOccupancy
-      );
-
-      tbody.appendChild(
-        tr
-      );
-
+      tr.appendChild(tdTime);
+      tr.appendChild(tdBooked);
+      tr.appendChild(tdRemaining);
+      tr.appendChild(tdOccupancy);
+      tbody.appendChild(tr);
     }
   );
-
 }
 
 
-/* =========================================================
-   DAY NAME
-========================================================= */
-
 function getDisplayDayName(data){
-
   const apiDayName =
     currentLang === "ar"
       ? data.dayNameAr
       : data.dayNameEn;
 
-  if (
-    apiDayName
-  ){
-
+  if (apiDayName){
     return apiDayName;
-
   }
 
   const dayNames =
@@ -1067,24 +1142,97 @@ function getDisplayDayName(data){
   return dayNames[
     parsedDate.getDay()
   ] || "";
-
 }
 
 
-/* =========================================================
-   START
-========================================================= */
+function startDashboardRefresh(){
+  stopDashboardRefresh();
 
-setLanguage(
-  "en"
+  dashboardRefreshTimer =
+    setInterval(
+      loadDashboard,
+      10000
+    );
+}
+
+
+function stopDashboardRefresh(){
+  if (dashboardRefreshTimer){
+    clearInterval(
+      dashboardRefreshTimer
+    );
+
+    dashboardRefreshTimer = null;
+  }
+}
+
+
+async function dashboardLogout(){
+  const token =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (token){
+    try{
+      await requestApi({
+        action:"revokeSession",
+        sessionToken:token
+      });
+    }catch(error){}
+  }
+
+  clearUnifiedSession();
+  hideDashboardData();
+
+  window.location.replace(
+    "../index.html"
+  );
+}
+
+
+async function initDashboard(){
+  setLanguage("en");
+
+  const allowed =
+    await validateDashboardSession();
+
+  if (!allowed){
+    return;
+  }
+
+  await loadDashboard();
+  startDashboardRefresh();
+}
+
+
+document.getElementById(
+  "dashboardLogoutBtn"
+).addEventListener(
+  "click",
+  dashboardLogout
 );
 
-loadDashboard();
 
-setInterval(
-  loadDashboard,
-  10000
+window.addEventListener(
+  "pageshow",
+  function(){
+    const token =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (!token){
+      hideDashboardData();
+      window.location.replace(
+        "../index.html"
+      );
+    }
+  }
 );
+
+
+initDashboard();
 
 </script>
 

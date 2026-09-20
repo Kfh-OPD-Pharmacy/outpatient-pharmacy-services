@@ -479,7 +479,7 @@ th,td{padding:5px 4px;font-size:11px}
 <body>
 
 <div class="container">
-  <button type="button" class="back-button" onclick="history.back()" title="رجوع" aria-label="رجوع">‹</button>
+  <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">‹</a>
 
 <div class="top-bar">
 
@@ -510,7 +510,7 @@ th,td{padding:5px 4px;font-size:11px}
 
 <div class="page-title" id="pageTitle"></div>
 
-<div id="loginView" class="login-card">
+<div id="loginView" class="login-card" style="display:none">
 
   <label id="usernameLabel" for="username"></label>
   <input type="text" id="username" autocomplete="username">
@@ -636,6 +636,9 @@ th,td{padding:5px 4px;font-size:11px}
 <script>
 
 const API_BASE_URL =
+  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
+
+const UNIFIED_API_URL =
   "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
 
 const SESSION_TOKEN_KEY = "medSessionToken";
@@ -985,34 +988,10 @@ function renderPharmacyFilter() {
 ========================================================= */
 
 function saveSession() {
-
-  localStorage.removeItem(
-    SESSION_TOKEN_KEY
-  );
-
-  localStorage.removeItem(
-    SESSION_NAME_KEY
-  );
-
-  localStorage.removeItem(
-    SESSION_USERNAME_KEY
-  );
-
-  sessionStorage.setItem(
-    SESSION_TOKEN_KEY,
-    currentSessionToken
-  );
-
-  sessionStorage.setItem(
-    SESSION_NAME_KEY,
-    currentEmployee
-  );
-
-  sessionStorage.setItem(
-    SESSION_USERNAME_KEY,
-    currentUsername
-  );
-
+  /*
+    Legacy medication session is intentionally not created.
+    Unified Portal Session is the only active authentication source.
+  */
 }
 
 
@@ -1068,19 +1047,19 @@ async function postApi(
 
     currentSessionToken =
       sessionStorage.getItem(
-        SESSION_TOKEN_KEY
-      ) ||
-      currentSessionToken;
+        "unifiedPortalSessionToken"
+      ) || "";
 
-    if (
-      currentSessionToken
-    ) {
-
-      requestData.sessionToken =
-        currentSessionToken;
-
+    if (!currentSessionToken) {
+      await handleInvalidUnifiedSession();
+      throw new Error("MISSING_SESSION");
     }
 
+    requestData.sessionToken =
+      currentSessionToken;
+
+    requestData.token =
+      currentSessionToken;
   }
 
   const response =
@@ -1099,19 +1078,36 @@ async function postApi(
       }
     );
 
-  if (
-    !response.ok
-  ) {
-
+  if (!response.ok) {
     throw new Error(
       "HTTP_" +
       response.status
     );
-
   }
 
-  return await response.json();
+  const data =
+    await response.json();
 
+  if (
+    data &&
+    (
+      data.code === "INVALID_SESSION" ||
+      data.code === "MISSING_SESSION"
+    )
+  ) {
+    await handleInvalidUnifiedSession();
+    throw new Error(data.code);
+  }
+
+  if (
+    data &&
+    data.code === "NO_PERMISSION"
+  ) {
+    handleNoManagePermission();
+    throw new Error("NO_PERMISSION");
+  }
+
+  return data;
 }
 
 
@@ -1188,80 +1184,244 @@ async function loginEmployee() {
 }
 
 
+function getCachedUnifiedUser() {
+  const raw =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return null;
+  }
+}
+
+
+function hasManageAccess(user) {
+  return Boolean(
+    user &&
+    (
+      user.opdAppointmentManageAccess === true ||
+      (
+        user.permissions &&
+        user.permissions.opdAppointmentManage === true
+      )
+    )
+  );
+}
+
+
+async function unifiedRequest(payload) {
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+        body:
+          JSON.stringify(
+            payload
+          )
+      }
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      "NETWORK_ERROR"
+    );
+  }
+
+  return response.json();
+}
+
+
+function clearUnifiedSession() {
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+}
+
+
+function hideEmployeeView() {
+  stopAutoRefresh();
+  stopEmployeeInactivityWatcher();
+
+  document.getElementById(
+    "employeeView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+}
+
+
+async function handleInvalidUnifiedSession() {
+  clearUnifiedSession();
+  clearStoredSession();
+  hideEmployeeView();
+  bookings = [];
+
+  window.location.replace(
+    "../index.html"
+  );
+}
+
+
+function handleNoManagePermission() {
+  clearStoredSession();
+  hideEmployeeView();
+  bookings = [];
+
+  window.location.replace(
+    "portal.html"
+  );
+}
+
+
 /* =========================================================
    RESTORE SESSION
 ========================================================= */
 
 async function restoreSession() {
 
+  clearStoredSession();
+
   currentSessionToken =
     sessionStorage.getItem(
-      SESSION_TOKEN_KEY
+      "unifiedPortalSessionToken"
     ) || "";
 
-  currentEmployee =
-    sessionStorage.getItem(
-      SESSION_NAME_KEY
-    ) || "";
-
-  currentUsername =
-    sessionStorage.getItem(
-      SESSION_USERNAME_KEY
-    ) || "";
-
-  if (
-    !currentSessionToken
-  ) {
-
-    showLoginView();
-
+  if (!currentSessionToken) {
+    await handleInvalidUnifiedSession();
     return;
+  }
 
+  const cachedUser =
+    getCachedUnifiedUser();
+
+  const cachedAllowed =
+    hasManageAccess(
+      cachedUser
+    );
+
+  if (cachedAllowed) {
+    currentUsername =
+      cachedUser.username ||
+      "";
+
+    currentEmployee =
+      cachedUser.name ||
+      cachedUser.username ||
+      "";
+
+    showEmployeeView();
+  } else {
+    hideEmployeeView();
   }
 
   try {
 
     const result =
-      await postApi(
-        "validateSession",
-        {
-          service:"med"
-        },
-        true
-      );
+      await unifiedRequest({
+        action:"validateSession",
+        sessionToken:
+          currentSessionToken,
+        service:
+          "opdAppointmentManage"
+      });
 
     if (
-      !result.success ||
-      !result.user
+      !result ||
+      result.success !== true ||
+      !result.user ||
+      result.user.active === false
     ) {
+      const code =
+        result &&
+        result.code
+          ? result.code
+          : "INVALID_SESSION";
 
-      clearStoredSession();
+      if (code === "NO_PERMISSION") {
+        handleNoManagePermission();
+        return;
+      }
 
-      showLoginView();
-
+      await handleInvalidUnifiedSession();
       return;
+    }
 
+    if (
+      !hasManageAccess(
+        result.user
+      )
+    ) {
+      handleNoManagePermission();
+      return;
     }
 
     currentUsername =
       result.user.username ||
-      currentUsername;
+      "";
 
     currentEmployee =
       result.user.name ||
       result.user.username ||
-      currentEmployee;
+      "";
 
-    saveSession();
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        result.user
+      )
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      result.user.username ||
+      ""
+    );
 
     showEmployeeView();
 
   } catch(error) {
 
-    clearStoredSession();
+    if (cachedAllowed) {
+      currentUsername =
+        cachedUser.username ||
+        "";
 
-    showLoginView();
+      currentEmployee =
+        cachedUser.name ||
+        cachedUser.username ||
+        "";
 
+      showEmployeeView();
+      return;
+    }
+
+    hideEmployeeView();
+
+    window.location.replace(
+      "portal.html"
+    );
   }
 
 }
@@ -1375,34 +1535,32 @@ async function changePassword() {
 
 async function logoutEmployee() {
 
-  if (
-    currentSessionToken
-  ) {
+  const token =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
 
+  if (token) {
     try {
-
-      await postApi(
-        "revokeSession",
-        {},
-        true
-      );
-
+      await unifiedRequest({
+        action:"revokeSession",
+        sessionToken:token
+      });
     } catch(error) {}
-
   }
 
+  clearUnifiedSession();
   clearStoredSession();
 
   stopAutoRefresh();
-
   stopEmployeeInactivityWatcher();
 
   bookings = [];
+  hideEmployeeView();
 
-  renderBookings();
-
-  showLoginView();
-
+  window.location.replace(
+    "../index.html"
+  );
 }
 
 
@@ -1420,7 +1578,7 @@ function showLoginView() {
   document.getElementById(
     "loginView"
   ).style.display =
-    "block";
+    "none";
 
 }
 
@@ -1511,7 +1669,7 @@ function resetEmployeeInactivityTimer() {
 
         if (
           sessionStorage.getItem(
-            SESSION_TOKEN_KEY
+            "unifiedPortalSessionToken"
           )
         ) {
 
@@ -1668,20 +1826,7 @@ function isSessionError(
 
 function handleSessionExpired() {
 
-  clearStoredSession();
-
-  stopAutoRefresh();
-
-  stopEmployeeInactivityWatcher();
-
-  bookings = [];
-
-  showLoginView();
-
-  showLoginResult(
-    "error",
-    text[currentLang].sessionExpired
-  );
+  handleInvalidUnifiedSession();
 
 }
 
@@ -2327,6 +2472,28 @@ async function init() {
 document.addEventListener(
   "DOMContentLoaded",
   init
+);
+
+window.addEventListener(
+  "pageshow",
+  function() {
+
+    const token =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (!token) {
+      hideEmployeeView();
+      clearStoredSession();
+      bookings = [];
+
+      window.location.replace(
+        "../index.html"
+      );
+    }
+
+  }
 );
 
 </script>
