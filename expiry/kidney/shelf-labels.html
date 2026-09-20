@@ -456,9 +456,13 @@ input[type="number"]{
   break-inside:avoid;
   page-break-inside:avoid;
   overflow:visible;
-  color:#111827;
+  color:#168fb3;
   -webkit-print-color-adjust:exact;
   print-color-adjust:exact
+}
+
+.shelf-label.high-alert-label{
+  color:#b91c1c
 }
 
 .label-main{
@@ -533,9 +537,10 @@ input[type="number"]{
   flex:0 0 auto;
   max-width:100%;
   padding:1mm 2mm;
+  border:1px solid #b91c1c;
   border-radius:2mm;
-  background:#b91c1c;
-  color:#fff;
+  background:#fff;
+  color:#b91c1c;
   font-size:7pt;
   line-height:1;
   font-weight:800;
@@ -2312,13 +2317,21 @@ function buildMedicationQrUrl(medicationId){
   return pageUrl.href;
 }
 
-function buildMedicationQrImageUrl(medicationId){
+function buildMedicationQrImageUrl(medicationId, highAlert){
   if (!medicationId){
     return "";
   }
 
+  const foreground =
+    highAlert
+      ? "185-28-28"
+      : "22-143-179";
+
   return QR_IMAGE_API +
-    "?size=180x180&margin=8&data=" +
+    "?size=180x180&margin=8" +
+    "&color=" + foreground +
+    "&bgcolor=255-255-255" +
+    "&data=" +
     encodeURIComponent(
       buildMedicationQrUrl(medicationId)
     );
@@ -2802,14 +2815,21 @@ function createLabelElement(item){
   const nameParts =
     splitMedicationDisplayName(name);
 
-  const qrImageUrl =
-    buildMedicationQrImageUrl(
-      item.medicationId
-    );
   const highAlert =
     isHighAlertMedication(
       item.originalMedicationName || item.sourceName
     );
+  const qrImageUrl =
+    buildMedicationQrImageUrl(
+      item.medicationId,
+      highAlert
+    );
+
+  if (highAlert){
+    label.classList.add(
+      "high-alert-label"
+    );
+  }
 
   label.innerHTML =
     "<div class=\"label-main\">" +
