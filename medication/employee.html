@@ -492,8 +492,22 @@ th,td{padding:5px 4px;font-size:11px}
   color:#168fb3
 }
 .employee-meta-tools .back-button{
+  width:34px;
+  height:34px;
   margin:0;
-  text-decoration:none
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  cursor:pointer
+}
+.employee-meta-tools .back-button:hover{
+  background:transparent;
+  color:#0f7592
 }
 .employee-meta-tools .employee-name{
   font-size:15px;
@@ -532,6 +546,20 @@ th,td{padding:5px 4px;font-size:11px}
   }
 }
 
+
+.back-button .back-svg{
+  width:29px;
+  height:29px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.back-button:hover .back-svg{
+  transform:translateX(-1px)
+}
 </style>
 </head>
 
@@ -557,7 +585,11 @@ th,td{padding:5px 4px;font-size:11px}
   <div class="date-box" id="dateBox"></div>
 
   <div class="employee-meta-tools">
-    <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">‹</a>
+    <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">
+        <svg class="back-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"></path>
+        </svg>
+      </a>
     <span class="employee-name" id="employeeName"></span>
     <button
       type="button"

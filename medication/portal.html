@@ -249,7 +249,6 @@ hr{
   border:0;
   background:transparent;
   color:#168fb3;
-  font-size:31px;
   line-height:1;
   display:flex;
   align-items:center;
@@ -271,7 +270,7 @@ hr{
     width:34px;
     height:34px;
     margin-bottom:6px;
-    font-size:28px
+    font-size:inherit
   }
 
   body{
@@ -594,6 +593,20 @@ hr{
     padding-left:2px
   }
 }
+
+.back-button .back-svg{
+  width:29px;
+  height:29px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.back-button:hover .back-svg{
+  transform:translateX(-1px)
+}
 </style>
 </head>
 
@@ -635,7 +648,11 @@ hr{
     </div>
 
     <div class="unified-user-tools">
-      <a class="back-button" href="../outpatient-pharmacy.html" title="رجوع" aria-label="رجوع">‹</a>
+      <a class="back-button" href="../outpatient-pharmacy.html" title="رجوع" aria-label="رجوع">
+        <svg class="back-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"></path>
+        </svg>
+      </a>
       <strong id="portalEmployeeName"></strong>
       <button id="portalLogoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج">
         <svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">

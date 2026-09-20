@@ -499,8 +499,22 @@ th{
   stroke-linejoin:round
 }
 .dashboard-user-tools .back-button{
+  width:34px;
+  height:34px;
   margin:0;
-  text-decoration:none
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  cursor:pointer
+}
+.dashboard-user-tools .back-button:hover{
+  background:transparent;
+  color:#0f7592
 }
 #dashboardEmployeeName{
   font-weight:bold;
@@ -513,6 +527,20 @@ th{
   .meta-row.unified-meta{grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);gap:6px}
   .dashboard-user-tools{gap:6px}
   #dashboardEmployeeName{max-width:120px;font-size:13px}
+}
+
+.back-button .back-svg{
+  width:29px;
+  height:29px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.back-button:hover .back-svg{
+  transform:translateX(-1px)
 }
 </style>
 </head>
@@ -545,7 +573,11 @@ th{
     </div>
 
     <div class="dashboard-user-tools">
-      <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">‹</a>
+      <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">
+        <svg class="back-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"></path>
+        </svg>
+      </a>
       <strong id="dashboardEmployeeName"></strong>
       <button id="dashboardLogoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج">
         <svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
