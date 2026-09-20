@@ -340,7 +340,13 @@ function hasOpdMailIndicatorAccess(
 ) {
   return Boolean(
     user &&
-    user.opdMailIndicatorAccess === true
+    (
+      user.opdMailIndicatorAccess === true ||
+      (
+        user.permissions &&
+        user.permissions.opdMailIndicator === true
+      )
+    )
   );
 }
 
@@ -465,10 +471,7 @@ async function redirectNoDashboardPermission() {
   window.location.replace(
     "index.html"
   );
-}
-
-
-async function restoreDashboardSession() {
+}async function restoreDashboardSession() {
   const token =
     sessionStorage.getItem(
       "unifiedPortalSessionToken"
@@ -582,8 +585,1289 @@ async function restoreDashboardSession() {
     showDashboard();
 
   } catch (error) {
-    if (!cachedAllowed) {
-      hideDashboardViews();
+    if (cachedAllowed) {
+      setCurrentUser(
+        cachedUser
+      );
+
+      resetInactivityTimer();
+      showDashboard();
+      return;
     }
+
+    hideDashboardViews();
+
+    window.location.replace(
+      "index.html"
+    );
   }
 }
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+function setLanguage(lang) {
+  currentLang =
+    lang;
+
+  document.documentElement.lang =
+    lang;
+
+  document.documentElement.dir =
+    lang === "ar"
+      ? "rtl"
+      : "ltr";
+
+  document.title =
+    t("pageTitle");
+
+  if (els.officialLine1) {
+    els.officialLine1.textContent =
+      t("officialLine1");
+  }
+
+  if (els.officialLine2) {
+    els.officialLine2.textContent =
+      t("officialLine2");
+  }
+
+  if (els.officialLine3) {
+    els.officialLine3.textContent =
+      t("officialLine3");
+  }
+
+  if (els.pageTitle) {
+    els.pageTitle.textContent =
+      t("pageTitle");
+  }
+
+  if (els.usernameLabel) {
+    els.usernameLabel.textContent =
+      t("username");
+  }
+
+  if (els.pinLabel) {
+    els.pinLabel.textContent =
+      t("pin");
+  }
+
+  if (els.loginBtn) {
+    els.loginBtn.title =
+      t("login");
+
+    els.loginBtn.setAttribute(
+      "aria-label",
+      t("login")
+    );
+  }
+
+  if (
+    els.dashboardChangePinLoginBtn
+  ) {
+    els.dashboardChangePinLoginBtn.title =
+      t("changePin");
+
+    els.dashboardChangePinLoginBtn.setAttribute(
+      "aria-label",
+      t("changePin")
+    );
+  }
+
+  if (
+    els.dashboardLogoutBtn
+  ) {
+    els.dashboardLogoutBtn.title =
+      t("logout");
+
+    els.dashboardLogoutBtn.setAttribute(
+      "aria-label",
+      t("logout")
+    );
+  }
+
+  if (
+    els.refreshSupervisorBtn
+  ) {
+    els.refreshSupervisorBtn.title =
+      t("refresh");
+
+    els.refreshSupervisorBtn.setAttribute(
+      "aria-label",
+      t("refresh")
+    );
+  }
+
+  if (
+    els.printReportBtn
+  ) {
+    els.printReportBtn.title =
+      t("print");
+
+    els.printReportBtn.setAttribute(
+      "aria-label",
+      t("print")
+    );
+  }
+
+  if (els.totalLabel) {
+    els.totalLabel.textContent =
+      t("total");
+  }
+
+  if (els.preparedLabel) {
+    els.preparedLabel.textContent =
+      t("prepared");
+  }
+
+  if (els.pendingLabel) {
+    els.pendingLabel.textContent =
+      t("pending");
+  }
+
+  if (els.allFilterBtn) {
+    els.allFilterBtn.textContent =
+      t("all");
+  }
+
+  if (els.preparedFilterBtn) {
+    els.preparedFilterBtn.textContent =
+      t("prepared");
+  }
+
+  if (els.pendingFilterBtn) {
+    els.pendingFilterBtn.textContent =
+      t("pending");
+  }
+
+  if (els.statusFilter) {
+    els.statusFilter.setAttribute(
+      "aria-label",
+      t("filterLabel")
+    );
+  }
+
+  if (els.fileSearchBtn) {
+    els.fileSearchBtn.title =
+      t("search");
+
+    els.fileSearchBtn.setAttribute(
+      "aria-label",
+      t("search")
+    );
+  }
+
+  if (els.fileHeader) {
+    els.fileHeader.textContent =
+      t("fileNumber");
+  }
+
+  if (els.patientHeader) {
+    els.patientHeader.textContent =
+      t("patientName");
+  }
+
+  if (els.statusHeader) {
+    els.statusHeader.textContent =
+      t("status");
+  }
+
+  if (els.preparedByHeader) {
+    els.preparedByHeader.textContent =
+      t("preparedBy");
+  }
+
+  if (els.timeHeader) {
+    els.timeHeader.textContent =
+      t("time");
+  }
+
+  if (els.printOfficialLine1) {
+    els.printOfficialLine1.textContent =
+      t("officialLine1");
+  }
+
+  if (els.printOfficialLine2) {
+    els.printOfficialLine2.textContent =
+      t("officialLine2");
+  }
+
+  if (els.printOfficialLine3) {
+    els.printOfficialLine3.textContent =
+      t("officialLine3");
+  }
+
+  if (els.printTitle) {
+    els.printTitle.textContent =
+      t("printTitle");
+  }
+
+  if (els.printTotalLabel) {
+    els.printTotalLabel.textContent =
+      t("total");
+  }
+
+  if (els.printPreparedLabel) {
+    els.printPreparedLabel.textContent =
+      t("prepared");
+  }
+
+  if (els.printPendingLabel) {
+    els.printPendingLabel.textContent =
+      t("pending");
+  }
+
+  if (els.printUsersTitle) {
+    els.printUsersTitle.textContent =
+      t("usersAchievement");
+  }
+
+  if (els.printPreparedByHeader) {
+    els.printPreparedByHeader.textContent =
+      t("preparedBy");
+  }
+
+  if (els.printCountHeader) {
+    els.printCountHeader.textContent =
+      t("count");
+  }
+
+  if (els.languageToggle) {
+    els.languageToggle.textContent =
+      "🌐 ع | E";
+  }
+
+  renderDate(
+    els.reportDate
+      ? els.reportDate.textContent
+      : ""
+  );
+
+  renderDailyRows(
+    getFilteredRows()
+  );
+
+  if (lastSummary) {
+    renderPrintReport(
+      lastSummary
+    );
+  }
+}
+
+
+function toggleLanguage() {
+  setLanguage(
+    currentLang === "ar"
+      ? "en"
+      : "ar"
+  );
+}
+
+
+/* =========================================================
+   ADMIN LOGIN
+========================================================= */
+
+async function dashboardLogin(
+  event
+) {
+  event.preventDefault();
+
+  const username =
+    els.adminUsername.value.trim();
+
+  const pin =
+    els.adminPin.value.trim();
+
+  setLoginMessage(
+    t("loginLoading")
+  );
+
+  try {
+    const response =
+      await api(
+        "adminLogin",
+        {
+          username,
+          pin
+        },
+        false
+      );
+
+    if (
+      !isSuccess(response)
+    ) {
+      throw new Error(
+        response.message ||
+        t("invalidAdmin")
+      );
+    }
+
+    if (
+      !response.sessionToken
+    ) {
+      throw new Error(
+        t("serverFailed")
+      );
+    }
+
+    sessionStorage.setItem(
+      DASHBOARD_SESSION_USER_KEY,
+      response.username ||
+      username
+    );
+
+    sessionStorage.setItem(
+      DASHBOARD_SESSION_NAME_KEY,
+      response.displayName ||
+      "Admin"
+    );
+
+    sessionStorage.setItem(
+      DASHBOARD_SESSION_TOKEN_KEY,
+      response.sessionToken
+    );
+
+    resetInactivityTimer();
+
+    setLoginMessage(
+      ""
+    );
+
+    showDashboard();
+
+  } catch (error) {
+    setLoginMessage(
+      error.message,
+      "error"
+    );
+  }
+}/* =========================================================
+   DASHBOARD VIEW
+========================================================= */
+
+function showDashboard() {
+  els.dashboardLoginView
+    .classList
+    .add(
+      "hidden"
+    );
+
+  els.supervisorPanel
+    .classList
+    .remove(
+      "hidden"
+    );
+
+  loadSupervisorData();
+
+  if (!refreshTimer) {
+    refreshTimer =
+      setInterval(
+        loadSupervisorData,
+        30000
+      );
+  }
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function dashboardLogout() {
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (sessionToken) {
+    try {
+      await unifiedApi({
+        action:
+          "revokeSession",
+
+        sessionToken:
+          sessionToken
+      });
+    } catch (error) {}
+  }
+
+  clearUnifiedPortalSession();
+  clearLegacyDashboardSession();
+
+  stopDashboardRefresh();
+
+  window.clearTimeout(
+    inactivityTimer
+  );
+
+  hideDashboardViews();
+
+  dailyRows = [];
+  lastSummary = null;
+
+  window.location.replace(
+    "../index.html"
+  );
+}
+
+
+function clearDashboardSession() {
+  clearLegacyDashboardSession();
+}
+
+
+/* =========================================================
+   INACTIVITY
+========================================================= */
+
+function startInactivityWatcher() {
+  [
+    "click",
+    "keydown",
+    "touchstart",
+    "mousemove"
+  ].forEach(
+    eventName => {
+      window.addEventListener(
+        eventName,
+        resetInactivityTimer,
+        {
+          passive: true
+        }
+      );
+    }
+  );
+
+  resetInactivityTimer();
+}
+
+
+function resetInactivityTimer() {
+  window.clearTimeout(
+    inactivityTimer
+  );
+
+  inactivityTimer =
+    window.setTimeout(
+      () => {
+        if (
+          hasDashboardSession()
+        ) {
+          dashboardLogout();
+        }
+      },
+      INACTIVITY_LIMIT_MS
+    );
+}
+
+
+function hasDashboardSession() {
+  return Boolean(
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    )
+  );
+}
+
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+function isSuccess(
+  response
+) {
+  return Boolean(
+    response &&
+    (
+      response.ok ||
+      response.success
+    )
+  );
+}
+
+
+/* =========================================================
+   CHANGE PIN
+========================================================= */
+
+async function changeLoginPin() {
+  const username =
+    els.adminUsername.value.trim() ||
+    window.prompt(
+      t("promptUsername")
+    );
+
+  if (!username) {
+    return;
+  }
+
+  const currentPin =
+    window.prompt(
+      t("promptCurrentPin")
+    );
+
+  if (!currentPin) {
+    return;
+  }
+
+  const newPin =
+    window.prompt(
+      t("promptNewPin")
+    );
+
+  if (!newPin) {
+    return;
+  }
+
+  const confirmPin =
+    window.prompt(
+      t("promptConfirmPin")
+    );
+
+  if (
+    newPin !==
+    confirmPin
+  ) {
+    setLoginMessage(
+      t("pinMismatch"),
+      "error"
+    );
+
+    return;
+  }
+
+  setLoginMessage(
+    t("pinChanging")
+  );
+
+  try {
+    const response =
+      await api(
+        "changeLoginPin",
+        {
+          username,
+          currentPin,
+          newPin
+        },
+        false
+      );
+
+    if (
+      !isSuccess(response)
+    ) {
+      throw new Error(
+        response.message ||
+        t("pinChangeFailed")
+      );
+    }
+
+    clearDashboardSession();
+
+    setLoginMessage(
+      t("pinChanged"),
+      "success"
+    );
+
+    setTimeout(
+      () =>
+        window.location.reload(),
+      1200
+    );
+
+  } catch (error) {
+    setLoginMessage(
+      error.message,
+      "error"
+    );
+  }
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+function renderDate(
+  extraText = ""
+) {
+  if (els.dateBox) {
+    els.dateBox.textContent =
+      getTodayLabel();
+  }
+
+  if (els.reportDate) {
+    els.reportDate.textContent =
+      extraText
+        ? extraText.replace(
+            /^\s*\|\s*/,
+            ""
+          )
+        : "";
+  }
+}
+
+
+function getTodayLabel() {
+  const now =
+    new Date();
+
+  const date =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "Asia/Riyadh"
+      }
+    ).format(now);
+
+  const dayName =
+    new Intl.DateTimeFormat(
+      currentLang === "ar"
+        ? "ar-SA"
+        : "en-US",
+      {
+        timeZone:
+          "Asia/Riyadh",
+        weekday:
+          "long"
+      }
+    ).format(now);
+
+  return (
+    `${dayName} - ${date}`
+  );
+}
+
+
+/* =========================================================
+   LOAD SUPERVISOR DATA
+========================================================= */
+
+async function loadSupervisorData() {
+  if (
+    isLoadingSupervisorData
+  ) {
+    return;
+  }
+
+  if (
+    !hasDashboardSession()
+  ) {
+    await redirectInvalidUnifiedSession();
+    return;
+  }
+
+  isLoadingSupervisorData =
+    true;
+
+  els.refreshSupervisorBtn.disabled =
+    true;
+
+  els.refreshSupervisorBtn
+    .classList
+    .add(
+      "is-loading"
+    );
+
+  setMessage(
+    els.supervisorMessage,
+    ""
+  );
+
+  try {
+    const response =
+      await api(
+        "getDailyStatus"
+      );
+
+    if (
+      !isSuccess(response)
+    ) {
+      throw new Error(
+        response.message ||
+        t("loadFailed")
+      );
+    }
+
+    lastSummary =
+      response.summary ||
+      {};
+
+    renderSupervisorSummary(
+      lastSummary
+    );
+
+    renderPrintReport(
+      lastSummary
+    );
+
+    dailyRows =
+      response.rows ||
+      [];
+
+    renderDailyRows(
+      getFilteredRows()
+    );
+
+    renderDate(
+      t("lastUpdate") +
+      (
+        response.dateText ||
+        formatDateTime(
+          new Date()
+        )
+      )
+    );
+
+    setMessage(
+      els.supervisorMessage,
+      ""
+    );
+
+  } catch (error) {
+    setMessage(
+      els.supervisorMessage,
+      error.message,
+      "error"
+    );
+
+  } finally {
+    isLoadingSupervisorData =
+      false;
+
+    els.refreshSupervisorBtn.disabled =
+      false;
+
+    els.refreshSupervisorBtn
+      .classList
+      .remove(
+        "is-loading"
+      );
+  }
+}
+
+
+/* =========================================================
+   SEARCH / FILTER
+========================================================= */
+
+function applyFileSearch() {
+  renderDailyRows(
+    getFilteredRows()
+  );
+
+  els.fileSearchInput.focus();
+}
+
+
+function setStatusFilter(
+  filter
+) {
+  activeFilter =
+    filter ||
+    "all";
+
+  els.filterButtons.forEach(
+    button => {
+      button.classList.toggle(
+        "active-filter",
+        button.dataset.filter ===
+        activeFilter
+      );
+    }
+  );
+
+  els.summaryCards.forEach(
+    card => {
+      const isActive =
+        card.dataset.filter ===
+        activeFilter;
+
+      card.classList.toggle(
+        "active-filter",
+        isActive
+      );
+
+      card.setAttribute(
+        "aria-pressed",
+        isActive
+          ? "true"
+          : "false"
+      );
+    }
+  );
+
+  renderDailyRows(
+    getFilteredRows()
+  );
+}function getFilteredRows() {
+  const searchValue =
+    normalizeSearch(
+      els.fileSearchInput.value
+    );
+
+  return dailyRows.filter(
+    item => {
+      const matchesStatus =
+        activeFilter === "all" ||
+        item.status ===
+          activeFilter;
+
+      const matchesSearch =
+        !searchValue ||
+        normalizeSearch(
+          item.fileNumber
+        ).includes(
+          searchValue
+        );
+
+      return (
+        matchesStatus &&
+        matchesSearch
+      );
+    }
+  );
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+function renderSupervisorSummary(
+  summary = {}
+) {
+  els.totalCount.textContent =
+    summary.total ||
+    0;
+
+  els.preparedCount.textContent =
+    summary.prepared ||
+    0;
+
+  els.pendingCount.textContent =
+    summary.pending ||
+    0;
+}
+
+
+function renderPrintReport(
+  summary = {}
+) {
+  els.printReportDate.textContent =
+    getTodayLabel();
+
+  els.printTotalCount.textContent =
+    summary.total ||
+    0;
+
+  els.printPreparedCount.textContent =
+    summary.prepared ||
+    0;
+
+  els.printPendingCount.textContent =
+    summary.pending ||
+    0;
+
+  renderPrintUsers(
+    summary.preparedByUser ||
+    []
+  );
+}
+
+
+/* =========================================================
+   PRINT USERS
+========================================================= */
+
+function renderPrintUsers(
+  users
+) {
+  els.printUserBody.innerHTML =
+    "";
+
+  if (!users.length) {
+    const row =
+      document.createElement(
+        "tr"
+      );
+
+    row.innerHTML =
+      `<td colspan="2">${escapeHtml(t("noPrepared"))}</td>`;
+
+    els.printUserBody.appendChild(
+      row
+    );
+
+    return;
+  }
+
+  users.forEach(
+    user => {
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+      row.innerHTML =
+        `
+          <td>${escapeHtml(user.name)}</td>
+          <td>${Number(user.count || 0)}</td>
+        `;
+
+      els.printUserBody.appendChild(
+        row
+      );
+    }
+  );
+}
+
+
+/* =========================================================
+   DAILY ROWS
+========================================================= */
+
+function renderDailyRows(
+  rows
+) {
+  els.dailyListBody.innerHTML =
+    "";
+
+  if (!rows.length) {
+    const row =
+      document.createElement(
+        "tr"
+      );
+
+    row.innerHTML =
+      `<td colspan="5" class="empty-cell">${escapeHtml(t("noRows"))}</td>`;
+
+    els.dailyListBody.appendChild(
+      row
+    );
+
+    return;
+  }
+
+  rows.forEach(
+    item => {
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+      row.className =
+        item.status ===
+        "prepared"
+          ? "row-prepared"
+          : "row-pending";
+
+      const statusText =
+        item.status ===
+        "prepared"
+          ? t("prepared")
+          : t("pending");
+
+      const statusClass =
+        item.status ===
+        "prepared"
+          ? "prepared"
+          : "pending";
+
+      row.innerHTML =
+        `
+          <td data-label="${escapeHtml(t("fileNumber"))}">
+            ${escapeHtml(item.fileNumber)}
+          </td>
+
+          <td data-label="${escapeHtml(t("patientName"))}">
+            ${escapeHtml(item.patientName)}
+          </td>
+
+          <td data-label="${escapeHtml(t("status"))}">
+            <span class="status-pill ${statusClass}">
+              ${escapeHtml(statusText)}
+            </span>
+          </td>
+
+          <td data-label="${escapeHtml(t("preparedBy"))}">
+            ${escapeHtml(item.preparedBy || "-")}
+          </td>
+
+          <td data-label="${escapeHtml(t("time"))}">
+            ${
+              item.preparedAt
+                ? escapeHtml(
+                    formatDateTime(
+                      item.preparedAt
+                    )
+                  )
+                : "-"
+            }
+          </td>
+        `;
+
+      els.dailyListBody.appendChild(
+        row
+      );
+    }
+  );
+}
+
+
+/* =========================================================
+   FORMAT DATE
+========================================================= */
+
+function formatDateTime(
+  value
+) {
+  const date =
+    value
+      ? new Date(
+          value
+        )
+      : null;
+
+  if (
+    !date ||
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return value ||
+      "";
+  }
+
+  return date.toLocaleString(
+    currentLang === "ar"
+      ? "ar-SA"
+      : "en-US",
+    {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone:
+        "Asia/Riyadh"
+    }
+  );
+}
+
+
+/* =========================================================
+   MESSAGES
+========================================================= */
+
+function setMessage(
+  element,
+  text,
+  type = ""
+) {
+  element.textContent =
+    text;
+
+  element.className =
+    `message ${type}`.trim();
+}
+
+
+function setLoginMessage(
+  text,
+  type = ""
+) {
+  els.dashboardLoginMessage.textContent =
+    text;
+
+  els.dashboardLoginMessage.className =
+    `message ${type}`.trim();
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(
+  value
+) {
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+}
+
+
+/* =========================================================
+   SEARCH NORMALIZE
+========================================================= */
+
+function normalizeSearch(
+  value
+) {
+  return String(
+    value ||
+    ""
+  )
+    .trim()
+    .replace(
+      /\s+/g,
+      ""
+    );
+}
+
+
+/* =========================================================
+   API
+========================================================= */
+
+async function api(
+  action,
+  payload = {},
+  includeSession = true
+) {
+  const requestData = {
+    action,
+    ...payload
+  };
+
+  if (
+    includeSession
+  ) {
+    const sessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (!sessionToken) {
+      await redirectInvalidUnifiedSession();
+
+      throw new Error(
+        t("sessionExpired")
+      );
+    }
+
+    requestData.sessionToken =
+      sessionToken;
+
+    requestData.token =
+      sessionToken;
+  }
+
+  const response =
+    await fetch(
+      API_URL,
+      {
+        method:
+          "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:
+          JSON.stringify(
+            requestData
+          )
+      }
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      t("serverFailed")
+    );
+  }
+
+  const data =
+    await response.json();
+
+  if (
+    data &&
+    (
+      data.code ===
+        "INVALID_SESSION" ||
+      data.code ===
+        "MISSING_SESSION"
+    )
+  ) {
+    await redirectInvalidUnifiedSession();
+
+    throw new Error(
+      t("sessionExpired")
+    );
+  }
+
+  if (
+    data &&
+    data.code ===
+      "NO_PERMISSION"
+  ) {
+    await redirectNoDashboardPermission();
+
+    throw new Error(
+      t("sessionExpired")
+    );
+  }
+
+  if (
+    data &&
+    data.code ===
+      "AUTH_UNAVAILABLE"
+  ) {
+    throw new Error(
+      t("serverFailed")
+    );
+  }
+
+  return data;
+}
+
+
+window.addEventListener(
+  "pageshow",
+  function() {
+    const sessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (sessionToken) {
+      return;
+    }
+
+    stopDashboardRefresh();
+    hideDashboardViews();
+
+    dailyRows = [];
+    lastSummary = null;
+
+    window.location.replace(
+      "../index.html"
+    );
+  }
+);
