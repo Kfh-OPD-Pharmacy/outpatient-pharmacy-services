@@ -473,14 +473,71 @@ th,td{padding:5px 4px;font-size:11px}
   }
 }
 
+.meta-row.unified-meta{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+.meta-row.unified-meta .date-box{justify-self:start}
+.meta-row.unified-meta .language-btn{justify-self:end}
+.employee-meta-tools{
+  grid-column:2;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  direction:rtl;
+  color:#168fb3
+}
+.employee-meta-tools .back-button{
+  margin:0;
+  text-decoration:none
+}
+.employee-meta-tools .employee-name{
+  font-size:15px;
+  line-height:1.2;
+  white-space:nowrap;
+  max-width:220px;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.employee-meta-tools .logout-icon{
+  width:34px;
+  height:34px;
+  padding:0;
+  margin:0;
+  border:none;
+  background:transparent;
+  color:#168fb3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer
+}
+.employee-meta-tools .power-svg{
+  width:28px;
+  height:28px
+}
+@media (max-width:600px){
+  .meta-row.unified-meta{
+    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+    gap:6px
+  }
+  .employee-meta-tools{gap:6px}
+  .employee-meta-tools .employee-name{
+    max-width:120px;
+    font-size:13px
+  }
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">‹</a>
-
 <div class="top-bar">
 
   <div class="official-header">
@@ -495,9 +552,26 @@ th,td{padding:5px 4px;font-size:11px}
 
 <hr>
 
-<div class="meta-row">
+<div class="meta-row unified-meta">
 
   <div class="date-box" id="dateBox"></div>
+
+  <div class="employee-meta-tools">
+    <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">‹</a>
+    <span class="employee-name" id="employeeName"></span>
+    <button
+      type="button"
+      class="logout-icon"
+      id="logoutBtn"
+      onclick="logoutEmployee()"
+      title="خروج"
+      aria-label="خروج">
+      <svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3v9"></path>
+        <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+      </svg>
+    </button>
+  </div>
 
   <button
     type="button"
@@ -575,20 +649,6 @@ th,td{padding:5px 4px;font-size:11px}
 
     </div>
 
-    <div class="employee-tools">
-
-      <div class="employee-line">
-        <span class="employee-name" id="employeeName"></span>
-      </div>
-
-      <button
-        type="button"
-        class="logout-icon"
-        id="logoutBtn"
-        onclick="logoutEmployee()">
-      </button>
-
-    </div>
 
   </div>
 
