@@ -1229,7 +1229,7 @@ tr:has(.date-ok) td{
 
 <body>
 
-<div class="container" id="dashboardContainer" style="display:none">
+<div class="container" id="dashboardContainer">
 
   <div class="top-bar">
 
@@ -1267,29 +1267,6 @@ tr:has(.date-ok) td{
         ↩
       </button>
 
-      <span
-        class="employee-name"
-        id="employeeName">
-      </span>
-
-      <button
-        type="button"
-        class="logout-icon"
-        id="logoutBtn"
-        onclick="logoutPortal()"
-        title="Logout"
-        aria-label="Logout">
-
-        <svg
-          class="power-svg"
-          viewBox="0 0 24 24"
-          aria-hidden="true">
-          <path d="M12 3v9"></path>
-          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
-        </svg>
-
-      </button>
-
     </div>
 
     <button
@@ -1318,10 +1295,6 @@ tr:has(.date-ok) td{
 
       <option value="inspection">
         Inspection Report
-      </option>
-
-      <option value="removal">
-        Expiry Removal Report
       </option>
 
     </select>
@@ -1422,16 +1395,6 @@ tr:has(.date-ok) td{
       🖨️
     </button>
 
-    <button
-      type="button"
-      class="action-btn remove-btn"
-      id="removeBtn"
-      onclick="removeSelectedMonth()"
-      title="Remove"
-      aria-label="Remove">
-      🗑️
-    </button>
-
     </div>
 
     <div class="combo-wrap">
@@ -1476,7 +1439,6 @@ tr:has(.date-ok) td{
           <th id="colName">Medication Name</th>
           <th id="colExpiry">Expiry Date</th>
           <th id="colStatus">Status</th>
-          <th id="colEmployee">Employee Name</th>
         </tr>
       </thead>
 
@@ -1507,20 +1469,9 @@ tr:has(.date-ok) td{
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
 
-const UNIFIED_API_URL =
-  "https://script.google.com/macros/s/AKfycbw9JM87uiSHihWDP0N1gn4IskEG_8O-fWleathLZW9Wwbs915UQz8Gq5k2dIwAGImCF/exec";
-
-const KIDNEY_SESSION_KEYS = [
-  "kidneyEmployeeName",
-  "kidneyEmployeeUsername",
-  "kidneySessionToken"
-];
-
 let dashboardRefreshTimer =
   null;
 
-let currentPortalUser =
-  null;
 
 
 
@@ -1706,7 +1657,6 @@ const text = {
   ar:{
     title:"مؤشر صلاحية الأدوية",
     inspectionReport:"تقرير التفتيش",
-    removalReport:"تقرير الاستبعاد",
     officialLine1:"تجمع المدينة المنورة الصحي",
     officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
     officialLine3:"إدارة الرعاية الصيدلانية",
@@ -1718,14 +1668,7 @@ const text = {
     colName:"اسم الدواء",
     colExpiry:"تاريخ الانتهاء",
     colStatus:"الحالة",
-    colEmployee:"اسم الموظف",
     printBtnText:"طباعة",
-    removeBtnText:"حذف",
-    removeAdminPinPrompt:"أدخل PIN الأدمن الرئيسي للبوابة:",
-    removeConfirm:"سيتم حذف أدوية الشهر المختار من القائمة. هل تريد المتابعة؟",
-    removeSuccess:"تم حذف السجلات بنجاح.",
-    removeFailed:"تعذر حذف السجلات.",
-    removeAdminRequired:"هذه العملية تتطلب صلاحية إدارية.",
     refreshBtnText:"تحديث",
     refreshNote:"يتحدث تلقائياً كل 10 ثواني",
     emptyNote:"لا توجد بيانات لعرضها حالياً.",
@@ -1737,7 +1680,6 @@ const text = {
   en:{
     title:"Inspection Indicator",
     inspectionReport:"Inspection Report",
-    removalReport:"Expiry Removal Report",
     officialLine1:"Madinah Health Cluster",
     officialLine2:"King Fahad Hospital - Madinah",
     officialLine3:"Pharmaceutical Care Administration",
@@ -1749,14 +1691,7 @@ const text = {
     colName:"Medication Name",
     colExpiry:"Expiry Date",
     colStatus:"Status",
-    colEmployee:"Employee Name",
     printBtnText:"Print",
-    removeBtnText:"Remove",
-    removeAdminPinPrompt:"Enter main portal admin PIN:",
-    removeConfirm:"Medications for the selected month will be removed from the list. Continue?",
-    removeSuccess:"Records removed successfully.",
-    removeFailed:"Could not remove records.",
-    removeAdminRequired:"This action requires administrator permission.",
     refreshBtnText:"Refresh",
     refreshNote:"Auto-refreshes every 10 seconds",
     emptyNote:"No data to display yet.",
@@ -1814,11 +1749,7 @@ function setLanguage(lang){
 
   document.getElementById("colStatus").innerText =
     text[lang].colStatus;
-
-  document.getElementById("colEmployee").innerText =
-    text[lang].colEmployee;
-
-  document.getElementById("refreshNote").innerText =
+document.getElementById("refreshNote").innerText =
     text[lang].refreshNote;
 
   document.getElementById("medicineSearch").placeholder =
@@ -1826,27 +1757,14 @@ function setLanguage(lang){
 
   document.getElementById("reportType").options[0].textContent =
     text[lang].inspectionReport;
-
-  document.getElementById("reportType").options[1].textContent =
-    text[lang].removalReport;
-
-  document.getElementById("printBtn").title =
+document.getElementById("printBtn").title =
     text[lang].printBtnText;
 
   document.getElementById("printBtn").setAttribute(
     "aria-label",
     text[lang].printBtnText
   );
-
-  document.getElementById("removeBtn").title =
-    text[lang].removeBtnText;
-
-  document.getElementById("removeBtn").setAttribute(
-    "aria-label",
-    text[lang].removeBtnText
-  );
-
-  document.getElementById("refreshBtn").title =
+document.getElementById("refreshBtn").title =
     text[lang].refreshBtnText;
 
   document.getElementById("refreshBtn").setAttribute(
@@ -2060,19 +1978,7 @@ function getReportMonth(){
 
 
 function getReportType(){
-
-  const select =
-    document.getElementById(
-      "reportType"
-    );
-
-  return (
-    select &&
-    select.value
-  )
-    ? select.value
-    : "inspection";
-
+  return "inspection";
 }
 
 
@@ -2096,9 +2002,7 @@ function getReportMonthLabel(){
 function updateReportTitle(){
 
   const title =
-    getReportType() === "removal"
-      ? text[currentLang].removalReport
-      : text[currentLang].inspectionReport;
+    text[currentLang].inspectionReport;
 
   document.getElementById(
     "pageTitle"
@@ -2129,21 +2033,7 @@ function refreshReportView(){
 
 
 function updateRemoveButton(){
-
-  const removeBtn =
-    document.getElementById(
-      "removeBtn"
-    );
-
-  if (!removeBtn) {
-    return;
-  }
-
-  removeBtn.classList.toggle(
-    "visible",
-    getReportType() === "removal"
-  );
-
+  /* Public dashboard is read-only; no delete control. */
 }
 
 
@@ -2684,14 +2574,7 @@ function renderTable(){
             m.daysLeft
           )
         ) +
-        "</span></td>" +
-
-        "<td>" +
-        escapeHtml(
-          m.registeredBy ||
-          "-"
-        ) +
-        "</td>";
+        "</span></td>";
 
       tbody.appendChild(
         tr
@@ -2984,12 +2867,6 @@ function createPrintPage(
         ) +
         "</th>" +
 
-        "<th>" +
-        escapeHtml(
-          text[currentLang].colEmployee
-        ) +
-        "</th>" +
-
       "</tr>" +
     "</thead>" +
     "<tbody></tbody>";
@@ -3011,7 +2888,7 @@ function createPrintPage(
       );
 
     tr.innerHTML =
-      '<td colspan="4">' +
+      '<td colspan="3">' +
       escapeHtml(
         text[currentLang].emptyNote
       ) +
@@ -3058,13 +2935,6 @@ function createPrintPage(
             statusLabel(
               item.daysLeft
             )
-          ) +
-          "</td>" +
-
-          "<td>" +
-          escapeHtml(
-            item.registeredBy ||
-            "-"
           ) +
           "</td>";
 
@@ -3143,63 +3013,26 @@ function refreshData(){
 
 async function loadData(){
 
-  const sessionToken =
-    sessionStorage.getItem(
-      "unifiedPortalSessionToken"
-    ) || "";
-
-
-  if (
-    !sessionToken
-  ){
-    handlePortalAuthorizationFailure();
-    return;
-  }
-
-
   try{
 
     const response =
       await fetch(
-        API_URL,
+        API_URL +
+        "?action=dashboard&t=" +
+        Date.now(),
         {
-          method:"POST",
-          headers:{
-            "Content-Type":
-              "text/plain;charset=utf-8"
-          },
-          body:JSON.stringify({
-            action:"dashboard",
-            sessionToken:
-              sessionToken,
-            token:
-              sessionToken
-          })
+          method:"GET",
+          cache:"no-store"
         }
       );
 
-
     const data =
       await response.json();
-
 
     if (
       !data ||
       !data.success
     ){
-
-      if (
-        data &&
-        (
-          data.code === "MISSING_SESSION" ||
-          data.code === "INVALID_SESSION" ||
-          data.code === "NO_PERMISSION"
-        )
-      ){
-        handlePortalAuthorizationFailure();
-        return;
-      }
-
 
       document.getElementById(
         "emptyNote"
@@ -3214,13 +3047,11 @@ async function loadData(){
       return;
     }
 
-
     renderRows(
       data.items ||
       data.medications ||
       []
     );
-
 
   }catch(error){
 
@@ -3233,132 +3064,6 @@ async function loadData(){
       "emptyNote"
     ).innerText =
       text[currentLang].loadError;
-
-  }
-
-}
-
-
-async function removeSelectedMonth(){
-
-  if (
-    getReportType() !== "removal"
-  ){
-    return;
-  }
-
-
-  if (
-    !window.confirm(
-      text[currentLang].removeConfirm
-    )
-  ){
-    return;
-  }
-
-
-  const sessionToken =
-    sessionStorage.getItem(
-      "unifiedPortalSessionToken"
-    ) || "";
-
-
-  if (
-    !sessionToken
-  ){
-    handlePortalAuthorizationFailure();
-    return;
-  }
-
-
-  const removeBtn =
-    document.getElementById(
-      "removeBtn"
-    );
-
-  removeBtn.disabled =
-    true;
-
-
-  try{
-
-    const response =
-      await fetch(
-        API_URL,
-        {
-          method:"POST",
-          headers:{
-            "Content-Type":
-              "text/plain;charset=utf-8"
-          },
-          body:JSON.stringify({
-            action:
-              "removeExpiredMonth",
-            reportMonth:
-              getReportMonth(),
-            month:
-              getReportMonth(),
-            sessionToken:
-              sessionToken,
-            token:
-              sessionToken
-          })
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if (
-      !result ||
-      !result.success
-    ){
-
-      if (
-        result &&
-        (
-          result.code === "MISSING_SESSION" ||
-          result.code === "INVALID_SESSION" ||
-          result.code === "NO_PERMISSION"
-        )
-      ){
-        handlePortalAuthorizationFailure();
-        return;
-      }
-
-
-      window.alert(
-        result &&
-        result.code ===
-          "NO_ADMIN_PERMISSION"
-          ? text[currentLang].removeAdminRequired
-          : text[currentLang].removeFailed
-      );
-
-      return;
-    }
-
-
-    window.alert(
-      text[currentLang].removeSuccess
-    );
-
-    loadData();
-
-
-  }catch(error){
-
-    window.alert(
-      text[currentLang].removeFailed
-    );
-
-
-  }finally{
-
-    removeBtn.disabled =
-      false;
 
   }
 
@@ -3402,184 +3107,8 @@ function escapeHtml(value){
 
 
 /* =========================================================
-   UNIFIED PORTAL AUTH
+   PUBLIC DASHBOARD REFRESH
 ========================================================= */
-
-async function unifiedApi(
-  payload
-){
-
-  const response =
-    await fetch(
-      UNIFIED_API_URL,
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":
-            "text/plain;charset=utf-8"
-        },
-        body:JSON.stringify(
-          payload
-        )
-      }
-    );
-
-  return response.json();
-
-}
-
-
-function getCachedPortalUser(){
-
-  const raw =
-    sessionStorage.getItem(
-      "unifiedPortalUser"
-    );
-
-
-  if (
-    !raw
-  ){
-    return null;
-  }
-
-
-  try{
-    return JSON.parse(
-      raw
-    );
-  }catch(error){
-    return null;
-  }
-
-}
-
-
-function hasDashboardPermission(
-  user
-){
-
-  return Boolean(
-    user &&
-    user.kidneyExpiryDashboardAccess === true
-  );
-
-}
-
-
-function clearKidneyLegacySessions(){
-
-  KIDNEY_SESSION_KEYS.forEach(
-    function(key){
-
-      sessionStorage.removeItem(
-        key
-      );
-
-      localStorage.removeItem(
-        key
-      );
-
-    }
-  );
-
-}
-
-
-function clearUnifiedPortalSession(){
-
-  sessionStorage.removeItem(
-    "unifiedPortalUsername"
-  );
-
-  sessionStorage.removeItem(
-    "unifiedPortalSessionToken"
-  );
-
-  sessionStorage.removeItem(
-    "unifiedPortalUser"
-  );
-
-  clearKidneyLegacySessions();
-
-  currentPortalUser =
-    null;
-
-}
-
-
-function hideProtectedDashboard(){
-
-  const container =
-    document.getElementById(
-      "dashboardContainer"
-    );
-
-  if (
-    container
-  ){
-    container.style.display =
-      "none";
-  }
-
-
-  const printPages =
-    document.getElementById(
-      "printPages"
-    );
-
-  if (
-    printPages
-  ){
-    printPages.innerHTML =
-      "";
-  }
-
-}
-
-
-function showProtectedDashboard(
-  user
-){
-
-  currentPortalUser =
-    user || null;
-
-
-  const employeeName =
-    document.getElementById(
-      "employeeName"
-    );
-
-  if (
-    employeeName
-  ){
-    employeeName.innerText =
-      (
-        user &&
-        (
-          user.name ||
-          user.username
-        )
-      ) ||
-      "";
-  }
-
-
-  const container =
-    document.getElementById(
-      "dashboardContainer"
-    );
-
-  if (
-    container
-  ){
-    container.style.display =
-      "block";
-  }
-
-}
-
 
 function stopDashboardRefresh(){
 
@@ -3607,7 +3136,6 @@ function startDashboardRefresh(){
     return;
   }
 
-
   dashboardRefreshTimer =
     window.setInterval(
       loadData,
@@ -3615,203 +3143,6 @@ function startDashboardRefresh(){
     );
 
 }
-
-
-function handlePortalAuthorizationFailure(){
-
-  stopDashboardRefresh();
-
-  hideProtectedDashboard();
-
-  clearUnifiedPortalSession();
-
-  window.location.replace(
-    "../../index.html"
-  );
-
-}
-
-
-async function restoreDashboardSession(){
-
-  const sessionToken =
-    sessionStorage.getItem(
-      "unifiedPortalSessionToken"
-    ) || "";
-
-
-  if (
-    !sessionToken
-  ){
-    handlePortalAuthorizationFailure();
-    return;
-  }
-
-
-  const cachedUser =
-    getCachedPortalUser();
-
-  const cachedAllowed =
-    hasDashboardPermission(
-      cachedUser
-    );
-
-
-  if (
-    cachedAllowed
-  ){
-
-    showProtectedDashboard(
-      cachedUser
-    );
-
-    loadData();
-
-    startDashboardRefresh();
-
-  }
-
-
-  try{
-
-    const result =
-      await unifiedApi({
-        action:
-          "validateSession",
-        sessionToken:
-          sessionToken,
-        service:
-          "kidneyExpiryDashboard"
-      });
-
-
-    if (
-      !result ||
-      !result.success ||
-      !result.user ||
-      result.user.active === false ||
-      !hasDashboardPermission(
-        result.user
-      )
-    ){
-      handlePortalAuthorizationFailure();
-      return;
-    }
-
-
-    sessionStorage.setItem(
-      "unifiedPortalUser",
-      JSON.stringify(
-        result.user
-      )
-    );
-
-
-    sessionStorage.setItem(
-      "unifiedPortalUsername",
-      result.user.username ||
-      ""
-    );
-
-
-    showProtectedDashboard(
-      result.user
-    );
-
-
-    if (
-      !cachedAllowed
-    ){
-      loadData();
-    }
-
-
-    startDashboardRefresh();
-
-
-  }catch(error){
-
-    /*
-      Network errors do not destroy a valid cached portal session.
-      If there is no authorized cached user, protected content stays hidden.
-    */
-    if (
-      !cachedAllowed
-    ){
-      hideProtectedDashboard();
-    }
-
-  }
-
-}
-
-
-async function logoutPortal(){
-
-  const sessionToken =
-    sessionStorage.getItem(
-      "unifiedPortalSessionToken"
-    ) || "";
-
-
-  if (
-    sessionToken
-  ){
-
-    try{
-
-      await unifiedApi({
-        action:
-          "revokeSession",
-        sessionToken:
-          sessionToken
-      });
-
-    }catch(error){}
-
-  }
-
-
-  stopDashboardRefresh();
-
-  hideProtectedDashboard();
-
-  clearUnifiedPortalSession();
-
-  window.location.replace(
-    "../../index.html"
-  );
-
-}
-
-
-window.addEventListener(
-  "pageshow",
-  function(){
-
-    const sessionToken =
-      sessionStorage.getItem(
-        "unifiedPortalSessionToken"
-      ) || "";
-
-
-    if (
-      sessionToken
-    ){
-      return;
-    }
-
-
-    stopDashboardRefresh();
-
-    hideProtectedDashboard();
-
-    window.location.replace(
-      "../../index.html"
-    );
-
-  }
-);
 
 
 /* =========================================================
@@ -3886,7 +3217,8 @@ function init(){
     "en"
   );
 
-  restoreDashboardSession();
+  loadData();
+  startDashboardRefresh();
 
 }
 
