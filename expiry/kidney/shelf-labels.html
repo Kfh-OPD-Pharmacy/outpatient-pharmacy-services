@@ -1604,7 +1604,7 @@ const text = {
     add:"Add",
     alreadyAdded:"Already selected",
     noMatches:"No matching medication.",
-    noExpiry:"No expiry dates found",
+    noExpiry:"N/A",
     loading:"Loading data...",
     loaded:"Ready.",
     loadFailed:"Could not load medication data.",
@@ -1642,7 +1642,7 @@ const text = {
     add:"إضافة",
     alreadyAdded:"تم اختياره",
     noMatches:"لا يوجد دواء مطابق.",
-    noExpiry:"No expiry dates found",
+    noExpiry:"N/A",
     loading:"جاري تحميل البيانات...",
     loaded:"جاهز.",
     loadFailed:"تعذر تحميل بيانات الأدوية.",
@@ -3036,18 +3036,6 @@ function printAll(){
     return;
   }
 
-  const missingExpiry =
-    selectedLabels.some(
-      function(item){
-        return !item.selectedExpiry;
-      }
-    );
-
-  if (missingExpiry){
-    setStatus(text[currentLang].needExpiry, "error");
-    return;
-  }
-
   setStatus("", "");
   fitAllLabelNames();
   window.print();
@@ -3242,7 +3230,6 @@ restoreSession();
 </script>
 </body>
 </html>
-
 
 
 
