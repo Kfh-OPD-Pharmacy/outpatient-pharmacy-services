@@ -263,8 +263,20 @@ hr{
     <div class="official-header">
       <h2>Madinah Health Cluster</h2>
       <h3>King Fahad Hospital - Madinah</h3>
-      <h3>Pharmaceutical Care Adm
+      <h3>Pharmaceutical Care Administration</h3>
+    </div>
+  </div>
 
+  <hr>
+
+  <h1 class="page-title">Medication Live Expiry</h1>
+
+  <main class="card" id="contentCard">
+    <p class="message" id="messageBox">Loading medication data...</p>
+  </main>
+</div>
+
+<script>
 const HIGH_ALERT_MEDICATION_NAMES = [
   "Apixaban 2.5mg Tablet",
   "Enoxaparin 6000 IU (60mg) inj",
@@ -334,20 +346,8 @@ function isHighAlertMedication(name){
   return HIGH_ALERT_MEDICATIONS.has(
     normalizeMedicationKey(name)
   );
-}inistration</h3>
-    </div>
-  </div>
+}
 
-  <hr>
-
-  <h1 class="page-title">Medication Live Expiry</h1>
-
-  <main class="card" id="contentCard">
-    <p class="message" id="messageBox">Loading medication data...</p>
-  </main>
-</div>
-
-<script>
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
 
