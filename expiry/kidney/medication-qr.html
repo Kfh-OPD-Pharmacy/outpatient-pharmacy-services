@@ -95,12 +95,42 @@ hr{
 
 .med-name{
   margin:0;
-  color:var(--text);
+  color:#168fb3;
   font-size:26px;
   line-height:1.25;
   font-weight:bold;
   text-align:center;
 }
+
+.med-name.high-alert{
+  color:#b91c1c
+}
+
+.high-alert-badge{
+  display:table;
+  margin:0 auto 14px;
+  padding:5px 12px;
+  border-radius:8px;
+  background:#b91c1c;
+  color:#fff;
+  font-size:12px;
+  line-height:1;
+  font-weight:800;
+  text-align:center
+}
+
+.expiry-date.expired{
+  color:var(--expired)
+}
+
+.expiry-date.soon{
+  color:var(--soon)
+}
+
+.expiry-date.ok{
+  color:var(--ok)
+}
+
 
 .section-title{
   margin:22px 0 12px;
@@ -233,7 +263,78 @@ hr{
     <div class="official-header">
       <h2>Madinah Health Cluster</h2>
       <h3>King Fahad Hospital - Madinah</h3>
-      <h3>Pharmaceutical Care Administration</h3>
+      <h3>Pharmaceutical Care Adm
+
+const HIGH_ALERT_MEDICATION_NAMES = [
+  "Apixaban 2.5mg Tablet",
+  "Enoxaparin 6000 IU (60mg) inj",
+  "Promethazine inj",
+  "Labetalol 100mg inj",
+  "Noradrenaline vial",
+  "Adrenaline vial",
+  "Adenosine vial",
+  "Procainamide vial",
+  "Dobutamine vial",
+  "Warfarine 5mg Tab",
+  "Magnisium Sulphate vial",
+  "Lidocaine 1% vial",
+  "Amiodarone inj",
+  "Warfarine 2mg Tab",
+  "Potassium Chloride 15% amp",
+  "Lidocaine 2% syrinje",
+  "Calcium Gluconate 10% amp",
+  "Warfarine 1mg Tab",
+  "Heparin Sodium 25,000 IU/5ml in 5ml vial",
+  "Lidocaine 2% vial",
+  "Reteplase inj 18mg",
+  "Enoxaparin 2000 IU (20mg) inj",
+  "Enoxaparin 4000 IU (40mg) inj",
+  "Metoprolol inj",
+  "Digoxin 250mcg inj",
+  "Apixaban 5mg Tablet",
+  "Enoxaparin 8000 IU (80mg) inj",
+  "Vasopressin inj",
+  "Calcium chloride inj 10%"
+];
+
+const HIGH_ALERT_MEDICATIONS =
+  new Set(
+    HIGH_ALERT_MEDICATION_NAMES.map(
+      function(name){
+        return normalizeMedicationKey(name);
+      }
+    )
+  );
+
+function normalizeMedicationKey(value){
+  return String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/\s*([%/.,()+-])\s*/g, "$1")
+    .replace(/(\d)\s+(mg|mcg|g|ml|l|iu|unit|units|%)/g, "$1$2")
+    .replace(/\b(tablet|tablets|tab|tabs)\b/g, "tab")
+    .replace(/\b(capsule|capsules|cap|caps)\b/g, "cap")
+    .replace(/\b(injection|injections|inj)\b/g, "inj")
+    .replace(/\b(syrup|syp)\b/g, "syp")
+    .replace(/\b(solution|sol)\b/g, "sol")
+    .replace(/\b(suspension|susp)\b/g, "susp")
+    .replace(/\b(ointment|oint)\b/g, "oint")
+    .replace(/\b(cream|cr)\b/g, "cr")
+    .replace(/\b(inhaler|inh)\b/g, "inh")
+    .replace(/\b(ampoule|ampoules|amp)\b/g, "amp")
+    .replace(/\b(vial|vials)\b/g, "vial")
+    .replace(/\b(drop|drops)\b/g, "drops")
+    .replace(/\b(suppository|suppositories|supp)\b/g, "supp")
+    .replace(/\b(powder|pwd)\b/g, "pwd")
+    .replace(/\b(spray|spr)\b/g, "spr")
+    .trim();
+}
+
+function isHighAlertMedication(name){
+  return HIGH_ALERT_MEDICATIONS.has(
+    normalizeMedicationKey(name)
+  );
+}inistration</h3>
     </div>
   </div>
 
@@ -421,9 +522,14 @@ function statusLabel(bucket){
 function renderMedication(name, dates){
   const card =
     document.getElementById("contentCard");
+  const highAlert =
+    isHighAlertMedication(name);
 
   let html =
-    "<h2 class=\"med-name\">" + escapeHtml(name) + "</h2>" +
+    (highAlert
+      ? "<div class=\"high-alert-badge\">HIGH ALERT</div>"
+      : "") +
+    "<h2 class=\"med-name" + (highAlert ? " high-alert" : "") + "\">" + escapeHtml(name) + "</h2>" +
     "<h3 class=\"section-title\">Expiry Dates</h3>";
 
   if (!dates.length){
@@ -437,7 +543,7 @@ function renderMedication(name, dates){
           getBucket(date);
 
         return "<li class=\"expiry-row\">" +
-          "<span class=\"expiry-date\">" + escapeHtml(date) + "</span>" +
+          "<span class=\"expiry-date " + bucket + "\">" + escapeHtml(date) + "</span>" +
           "<span class=\"status-pill " + bucket + "\">" + statusLabel(bucket) + "</span>" +
         "</li>";
       }).join("") +
