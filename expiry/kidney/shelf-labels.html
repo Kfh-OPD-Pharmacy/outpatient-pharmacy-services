@@ -447,6 +447,7 @@ input[type="number"]{
   border:1px solid #dbe3e8;
   border-radius:2.5mm;
   padding:3mm;
+  position:relative;
   display:grid;
   grid-template-columns:auto minmax(0, 1fr) auto;
   grid-template-rows:1fr;
@@ -534,6 +535,10 @@ input[type="number"]{
 }
 
 .high-alert-badge{
+  position:absolute;
+  top:1.5mm;
+  left:50%;
+  transform:translateX(-50%);
   flex:0 0 auto;
   max-width:100%;
   padding:1mm 2mm;
