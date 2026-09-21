@@ -537,10 +537,9 @@ input[type="number"]{
   flex:0 0 auto;
   max-width:100%;
   padding:1mm 2mm;
-  border:1px solid #b91c1c;
   border-radius:2mm;
-  background:#fff;
-  color:#b91c1c;
+  background:#b91c1c;
+  color:#fff;
   font-size:7pt;
   line-height:1;
   font-weight:800;
@@ -2882,6 +2881,9 @@ function createLabelElement(item){
 
   label.innerHTML =
     "<div class=\"label-main\">" +
+      (highAlert
+        ? "<div class=\"high-alert-badge\">HIGH ALERT</div>"
+        : "") +
       "<div class=\"label-name\">" +
         "<span class=\"medication-primary\">" +
           formatTallManNameHtml(
@@ -2895,9 +2897,6 @@ function createLabelElement(item){
             "</span>"
           : "") +
       "</div>" +
-      (highAlert
-        ? "<div class=\"high-alert-badge\">HIGH ALERT</div>"
-        : "") +
     "</div>" +
     "<div class=\"label-exp\">" +
       (qrImageUrl
