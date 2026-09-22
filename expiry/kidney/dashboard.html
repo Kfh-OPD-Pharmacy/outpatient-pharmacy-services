@@ -1257,6 +1257,10 @@ tr:has(.date-ok) td{
 
     <div class="employee-toolbar">
 
+      <span
+        class="employee-name"
+        id="employeeName"></span>
+
       <button
         type="button"
         class="portal-back-button"
@@ -3011,6 +3015,48 @@ function refreshData(){
 }
 
 
+function restorePortalIdentity(){
+
+  const employeeName =
+    document.getElementById(
+      "employeeName"
+    );
+
+  if (!employeeName){
+    return;
+  }
+
+  let portalUser =
+    null;
+
+  try{
+    portalUser =
+      JSON.parse(
+        sessionStorage.getItem(
+          "unifiedPortalUser"
+        ) || "null"
+      );
+  }catch(error){}
+
+  employeeName.innerText =
+    (
+      portalUser &&
+      (
+        portalUser.name ||
+        portalUser.username
+      )
+    ) ||
+    sessionStorage.getItem(
+      "kidneyEmployeeName"
+    ) ||
+    sessionStorage.getItem(
+      "unifiedPortalUsername"
+    ) ||
+    "";
+
+}
+
+
 async function loadData(){
 
   try{
@@ -3212,6 +3258,7 @@ document.addEventListener(
 function init(){
 
   buildReportMonthOptions();
+  restorePortalIdentity();
 
   setLanguage(
     "en"
