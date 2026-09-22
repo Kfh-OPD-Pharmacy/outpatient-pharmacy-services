@@ -1442,6 +1442,7 @@ tr:has(.date-ok) td{
         <tr>
           <th id="colName">Medication Name</th>
           <th id="colExpiry">Expiry Date</th>
+          <th id="colEmployee">Employee Name</th>
           <th id="colStatus">Status</th>
         </tr>
       </thead>
@@ -1671,6 +1672,7 @@ const text = {
     noMatches:"لا يوجد دواء مطابق في القائمة.",
     colName:"اسم الدواء",
     colExpiry:"تاريخ الانتهاء",
+    colEmployee:"اسم الموظف",
     colStatus:"الحالة",
     printBtnText:"طباعة",
     refreshBtnText:"تحديث",
@@ -1694,6 +1696,7 @@ const text = {
     noMatches:"No matching medication in the list.",
     colName:"Medication Name",
     colExpiry:"Expiry Date",
+    colEmployee:"Employee Name",
     colStatus:"Status",
     printBtnText:"Print",
     refreshBtnText:"Refresh",
@@ -1750,6 +1753,9 @@ function setLanguage(lang){
 
   document.getElementById("colExpiry").innerText =
     text[lang].colExpiry;
+
+  document.getElementById("colEmployee").innerText =
+    text[lang].colEmployee;
 
   document.getElementById("colStatus").innerText =
     text[lang].colStatus;
@@ -2568,6 +2574,13 @@ function renderTable(){
         ) +
         "</td>" +
 
+        "<td>" +
+        escapeHtml(
+          m.registeredBy ||
+          ""
+        ) +
+        "</td>" +
+
         "<td><span class=\"status-pill " +
         pillClass(
           m
@@ -2867,6 +2880,12 @@ function createPrintPage(
 
         "<th>" +
         escapeHtml(
+          text[currentLang].colEmployee
+        ) +
+        "</th>" +
+
+        "<th>" +
+        escapeHtml(
           text[currentLang].colStatus
         ) +
         "</th>" +
@@ -2892,7 +2911,7 @@ function createPrintPage(
       );
 
     tr.innerHTML =
-      '<td colspan="3">' +
+      '<td colspan="4">' +
       escapeHtml(
         text[currentLang].emptyNote
       ) +
@@ -2931,6 +2950,13 @@ function createPrintPage(
           "\">" +
           escapeHtml(
             item.expiry
+          ) +
+          "</td>" +
+
+          "<td>" +
+          escapeHtml(
+            item.registeredBy ||
+            ""
           ) +
           "</td>" +
 
@@ -3061,19 +3087,8 @@ async function loadData(){
 
   try{
 
-    const response =
-      await fetch(
-        API_URL +
-        "?action=dashboard&t=" +
-        Date.now(),
-        {
-          method:"GET",
-          cache:"no-store"
-        }
-      );
-
     const data =
-      await response.json();
+      await loadDashboardData();
 
     if (
       !data ||
@@ -3113,6 +3128,65 @@ async function loadData(){
 
   }
 
+}
+
+
+async function loadDashboardData(){
+
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (sessionToken){
+    try{
+      const protectedResponse =
+        await fetch(
+          API_URL,
+          {
+            method:"POST",
+            headers:{
+              "Content-Type":
+                "text/plain;charset=utf-8"
+            },
+            body:
+              JSON.stringify({
+                action:
+                  "dashboardWithEmployee",
+                sessionToken:
+                  sessionToken,
+                token:
+                  sessionToken
+              })
+          }
+        );
+
+      if (protectedResponse.ok){
+        const protectedData =
+          await protectedResponse.json();
+
+        if (
+          protectedData &&
+          protectedData.success
+        ){
+          return protectedData;
+        }
+      }
+    }catch(error){}
+  }
+
+  const publicResponse =
+    await fetch(
+      API_URL +
+      "?action=dashboard&t=" +
+      Date.now(),
+      {
+        method:"GET",
+        cache:"no-store"
+      }
+    );
+
+  return await publicResponse.json();
 }
 
 
