@@ -1442,8 +1442,8 @@ tr:has(.date-ok) td{
         <tr>
           <th id="colName">Medication Name</th>
           <th id="colExpiry">Expiry Date</th>
-          <th id="colEmployee">Employee Name</th>
           <th id="colStatus">Status</th>
+          <th id="colEmployee">Employee Name</th>
         </tr>
       </thead>
 
@@ -2574,13 +2574,6 @@ function renderTable(){
         ) +
         "</td>" +
 
-        "<td>" +
-        escapeHtml(
-          m.registeredBy ||
-          ""
-        ) +
-        "</td>" +
-
         "<td><span class=\"status-pill " +
         pillClass(
           m
@@ -2591,7 +2584,14 @@ function renderTable(){
             m.daysLeft
           )
         ) +
-        "</span></td>";
+        "</span></td>" +
+
+        "<td>" +
+        escapeHtml(
+          m.registeredBy ||
+          ""
+        ) +
+        "</td>";
 
       tbody.appendChild(
         tr
@@ -2880,13 +2880,13 @@ function createPrintPage(
 
         "<th>" +
         escapeHtml(
-          text[currentLang].colEmployee
+          text[currentLang].colStatus
         ) +
         "</th>" +
 
         "<th>" +
         escapeHtml(
-          text[currentLang].colStatus
+          text[currentLang].colEmployee
         ) +
         "</th>" +
 
@@ -2955,16 +2955,16 @@ function createPrintPage(
 
           "<td>" +
           escapeHtml(
-            item.registeredBy ||
-            ""
+            statusLabel(
+              item.daysLeft
+            )
           ) +
           "</td>" +
 
           "<td>" +
           escapeHtml(
-            statusLabel(
-              item.daysLeft
-            )
+            item.registeredBy ||
+            ""
           ) +
           "</td>";
 
