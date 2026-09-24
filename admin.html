@@ -664,7 +664,9 @@ tbody tr:last-child td{
   <div class="page-title" id="pageTitle"></div>
 </div>
 
-<div id="loginView" class="login-card">
+<div id="sessionStatus" class="empty-box" role="status" style="display:none"></div>
+
+<div id="loginView" class="login-card" style="display:none">
   <label id="adminUsernameLabel" for="adminUsername"></label>
   <input type="text" id="adminUsername" autocomplete="username">
 
@@ -841,10 +843,10 @@ const UNIFIED_API_URL =
 let currentLang = "ar";
 
 let adminUsername =
-  sessionStorage.getItem("unifiedAdminUsername") || "";
+  sessionStorage.getItem("unifiedPortalUsername") || "";
 
 let adminSessionToken =
-  sessionStorage.getItem("unifiedAdminSessionToken") || "";
+  sessionStorage.getItem("unifiedPortalSessionToken") || "";
 
 sessionStorage.removeItem(
   "unifiedAdminPin"
@@ -855,6 +857,8 @@ let users = [];
 let usersSearchTerm = "";
 let usersStatusFilter = "all";
 let inactivityTimer = null;
+let sessionGeneration = 0;
+let sessionVerified = false;
 
 const INACTIVITY_LIMIT_MS =
   30 * 60 * 1000;
@@ -1468,139 +1472,81 @@ function renderDate() {
    ADMIN LOGIN
 ================================ */
 
-async function loginAdmin() {
-
-  const username =
-    document.getElementById(
-      "adminUsername"
-    ).value.trim();
-
-  const pin =
-    document.getElementById(
-      "adminPin"
-    ).value.trim();
-
-  if (!username || !pin) {
-    showLoginResult(
-      "error",
-      text[currentLang].invalidLogin
-    );
-    return;
-  }
-
-  try {
-
-    const result =
-      await unifiedApi({
-        action:
-          "adminLogin",
-        username:
-          username,
-        pin:
-          pin
-      });
-
-    if (!result.success) {
-
-      showLoginResult(
-        "error",
-        text[currentLang].invalidLogin
-      );
-
-      return;
-    }
-
-    adminUsername =
-      result.admin &&
-      result.admin.username
-        ? result.admin.username
-        : username;
-
-    adminSessionToken =
-      result.sessionToken || "";
-
-    if (!adminSessionToken) {
-      showLoginResult(
-        "error",
-        text[currentLang].invalidLogin
-      );
-
-      return;
-    }
-
-    sessionStorage.setItem(
-      "unifiedAdminUsername",
-      adminUsername
-    );
-
-    sessionStorage.setItem(
-      "unifiedAdminSessionToken",
-      adminSessionToken
-    );
-
-    document.getElementById(
-      "adminPin"
-    ).value =
-      "";
-
-    resetInactivityTimer();
-
-    showAdminView();
-
-  } catch (error) {
-
-    showLoginResult(
-      "error",
-      text[currentLang].invalidLogin
-    );
-  }
+function loginAdmin() {
+  window.location.replace("index.html");
 }
 
-/* ================================
-   LOGOUT
-================================ */
+function hideAdminData() {
+  sessionVerified = false;
+  window.clearTimeout(inactivityTimer);
+  document.getElementById("adminView").style.display = "none";
+  document.getElementById("loginView").style.display = "none";
+  users = [];
+  document.getElementById("usersBody").innerHTML = "";
+  clearForm();
+  clearResult();
+}
 
-function logoutAdmin() {
-
-  const tokenToRevoke =
-    adminSessionToken;
-
-  sessionStorage.removeItem(
-    "unifiedAdminUsername"
-  );
-
-  sessionStorage.removeItem(
-    "unifiedAdminSessionToken"
-  );
-
+function clearPortalSession() {
+  ["unifiedPortalUsername", "unifiedPortalSessionToken", "unifiedPortalUser"]
+    .forEach(function(key) { sessionStorage.removeItem(key); });
   adminUsername = "";
   adminSessionToken = "";
-  users = [];
+}
 
-  document.getElementById(
-    "adminView"
-  ).style.display =
-    "none";
-
-  document.getElementById(
-    "loginView"
-  ).style.display =
-    "block";
-
-  document.getElementById(
-    "adminPin"
-  ).value =
-    "";
-
+function logoutAdmin() {
+  const tokenToRevoke = adminSessionToken;
+  sessionGeneration++;
+  hideAdminData();
+  clearPortalSession();
   if (tokenToRevoke) {
     unifiedApi({
-      action:
-        "revokeSession",
-      sessionToken:
-        tokenToRevoke
-    }).catch(
-      function() {}
-    );
+      action: "revokeSession",
+      sessionToken: tokenToRevoke
+    }).catch(function() {});
+  }
+  window.location.replace("index.html");
+}
+
+async function validatePortalSession() {
+  const generation = ++sessionGeneration;
+  hideAdminData();
+  const status = document.getElementById("sessionStatus");
+  status.style.display = "block";
+  status.innerText = text[currentLang].loading;
+  adminSessionToken = sessionStorage.getItem("unifiedPortalSessionToken") || "";
+  if (!adminSessionToken) {
+    clearPortalSession();
+    window.location.replace("index.html");
+    return;
+  }
+  try {
+    const result = await unifiedApi({
+      action: "validateSession",
+      service: "userManagement"
+    });
+    if (generation !== sessionGeneration) return;
+    if (result.success && result.user && result.user.username) {
+      adminUsername = result.user.username;
+      sessionStorage.setItem("unifiedPortalUsername", adminUsername);
+      sessionStorage.setItem("unifiedPortalUser", JSON.stringify(result.user));
+      sessionVerified = true;
+      status.style.display = "none";
+      showAdminView();
+    } else if (result.code === "NO_PERMISSION") {
+      window.location.replace("control-panel.html");
+    } else if (result.code === "INVALID_SESSION" || result.code === "MISSING_SESSION") {
+      clearPortalSession();
+      window.location.replace("index.html");
+    } else {
+      throw new Error("Session validation failed");
+    }
+  } catch (error) {
+    if (generation !== sessionGeneration) return;
+    // A transport failure does not invalidate the shared portal session.
+    status.innerText = currentLang === "ar"
+      ? "تعذر التحقق من الجلسة. أعد تحميل الصفحة للمحاولة."
+      : "Unable to verify your session. Reload the page to retry.";
   }
 }
 
@@ -1609,6 +1555,8 @@ function logoutAdmin() {
 ================================ */
 
 function showAdminView() {
+
+  if (!sessionVerified) return;
 
   document.getElementById(
     "loginView"
@@ -1844,6 +1792,8 @@ function startInactivityWatcher() {
 }
 
 function resetInactivityTimer() {
+
+  if (!sessionVerified) return;
 
   window.clearTimeout(
     inactivityTimer
@@ -2383,6 +2333,8 @@ async function unifiedApi(
   payload
 ) {
 
+  const generation = sessionGeneration;
+
   const response =
     await fetch(
       UNIFIED_API_URL,
@@ -2395,21 +2347,41 @@ async function unifiedApi(
             "text/plain;charset=utf-8"
         },
 
+        keepalive: payload.action === "revokeSession",
+
         body:
           JSON.stringify({
             sessionToken:
               payload.sessionToken ||
               adminSessionToken,
 
-            adminUsername:
-              adminUsername,
-
             ...payload
           })
       }
     );
 
-  return response.json();
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  const result = await response.json();
+  if (payload.action !== "revokeSession" && generation !== sessionGeneration) {
+    throw new Error("Stale session response");
+  }
+  if (payload.action.startsWith("admin") &&
+      ["UNAUTHORIZED", "INVALID_SESSION", "NO_PERMISSION"].includes(result.code)) {
+    sessionGeneration++;
+    hideAdminData();
+    if (result.code === "INVALID_SESSION") {
+      clearPortalSession();
+      window.location.replace("index.html");
+    } else if (result.code === "NO_PERMISSION") {
+      window.location.replace("control-panel.html");
+    } else {
+      const status = document.getElementById("sessionStatus");
+      status.style.display = "block";
+      status.innerText = text[currentLang].failed;
+    }
+    throw new Error("Session authorization changed");
+  }
+  return result;
 }
 
 /* ================================
@@ -2514,43 +2486,14 @@ function escapeAttribute(
 
 setLanguage("ar");
 
-if (
-  adminUsername &&
-  adminSessionToken
-) {
-
-  /*
-    نتحقق من جلسة الأدمن
-    قبل إظهار الإدارة.
-  */
-  unifiedApi({
-    action:
-      "validateSession",
-
-    service:
-      "admin"
-  })
-  .then(
-    function(result) {
-
-      if (
-        result &&
-        result.success &&
-        result.user &&
-        result.user.isAdmin
-      ) {
-        showAdminView();
-      } else {
-        logoutAdmin();
-      }
-    }
-  )
-  .catch(
-    function() {
-      logoutAdmin();
-    }
-  );
-}
+window.addEventListener("pagehide", function() {
+  sessionGeneration++;
+  hideAdminData();
+});
+window.addEventListener("pageshow", function(event) {
+  if (event.persisted) validatePortalSession();
+});
+validatePortalSession();
 
 </script>
 
