@@ -22,12 +22,12 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
 .language-chip{color:#168fb3;font-size:13px;font-weight:bold;padding:4px 0;white-space:nowrap;background:transparent;border:0;cursor:pointer;font-family:inherit}
 .page-title{text-align:center;font-size:24px;font-weight:bold;margin:20px 0 10px;color:#168fb3}
 .subtitle{text-align:center;color:#334155;font-size:15px;line-height:1.7;margin:0 auto 24px;max-width:620px}
-.portal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,210px));justify-content:center;gap:14px;max-width:720px;margin:0 auto}
-.portal-card{height:124px;background:#168fb3;border:1px solid #168fb3;border-radius:8px;padding:14px;text-decoration:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;transition:.15s ease}
-.portal-card:hover{border-color:#0f7592;transform:translateY(-1px);box-shadow:0 8px 18px rgba(22,143,179,.28);filter:brightness(1.05)}
+.portal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,240px));justify-content:center;gap:16px;max-width:520px;margin:0 auto}
+.portal-card{height:116px;background:#168fb3;border:1px solid #168fb3;border-radius:10px;padding:14px;text-decoration:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;transition:.15s ease;box-shadow:0 4px 10px rgba(0,0,0,.04)}
+.portal-card:hover{border-color:#0f7592;transform:translateY(-2px);box-shadow:0 9px 20px rgba(22,143,179,.24);filter:brightness(1.04)}
 .card-title{font-size:16px;font-weight:bold;color:#fff;margin:0;line-height:1.5}
 .card-desc{font-size:12px;color:rgba(255,255,255,.86);line-height:1.55;margin:0}
-.card-icon{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 auto}
+.card-icon{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
 
 .login-card{
   width:100%;
@@ -190,26 +190,67 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   color:#065f46
 }
 .portal-session{
-  display:flex;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr) 30px;
   align-items:center;
   justify-content:center;
-  gap:10px;
-  margin:0 auto 18px;
-  color:#334155;
-  font-size:13px
+  box-sizing:border-box;
+  width:246px;
+  max-width:calc(100vw - 40px);
+  height:42px;
+  gap:6px;
+  padding:4px 6px;
+  margin:0 auto 22px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+  color:#168fb3;
+  direction:ltr
 }
 .portal-user-name{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-family:Arial,sans-serif;
+  font-size:15px;
   font-weight:bold;
+  line-height:1.2;
+  text-align:center;
   color:#168fb3
 }
 .logout-btn{
+  width:30px;
+  height:30px;
+  min-height:0;
+  padding:0;
+  margin:0;
   border:0;
   background:transparent;
   color:#168fb3;
   cursor:pointer;
-  font-size:13px;
-  font-weight:bold;
-  padding:4px 6px
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  grid-column:1;
+  grid-row:1
+}
+.portal-session-spacer{
+  width:30px;
+  height:30px;
+  grid-column:3;
+  grid-row:1
+}
+.power-svg{
+  width:25px;
+  height:25px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
 }
 .no-access{
   display:none;
@@ -231,8 +272,8 @@ body{padding:10px;background:#fff}
 .official-header h2,.official-header h3{font-size:12px}
 .page-title{font-size:20px;margin-top:18px}
 .subtitle{font-size:13px;margin-bottom:20px}
-.portal-grid{grid-template-columns:1fr;max-width:270px;gap:12px}
-.portal-card{height:108px;padding:12px}
+.portal-grid{grid-template-columns:1fr;max-width:300px;gap:12px}
+.portal-card{height:104px;padding:12px}
 .card-title{font-size:15px}
 .card-desc{font-size:12px}
 .card-icon{width:30px;height:30px;font-size:17px}
@@ -515,33 +556,45 @@ body{padding:10px;background:#fff}
 
   <div id="portalView" style="display:none">
     <div class="portal-session">
+      <button
+        type="button"
+        class="logout-btn"
+        id="logoutBtn"
+        onclick="logoutPortal()"
+        title="Logout"
+        aria-label="Logout">
+        <svg
+          class="power-svg"
+          viewBox="0 0 24 24"
+          aria-hidden="true">
+          <path d="M12 3v9"></path>
+          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        </svg>
+      </button>
+
       <span id="portalUserName" class="portal-user-name"></span>
-      <button type="button" class="logout-btn" id="logoutBtn" onclick="logoutPortal()">تسجيل الخروج</button>
+      <span class="portal-session-spacer" aria-hidden="true"></span>
     </div>
 
     <div class="portal-grid">
-      <a class="portal-card" id="outpatientCard" href="outpatient-pharmacy.html" style="display:none">
+      <a class="portal-card" id="outpatientCard" href="outpatient-pharmacy.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
         <div class="card-icon">🏥</div>
         <p class="card-title" id="outpatientTitle">صيدلية العيادات الخارجية</p>
-        <p class="card-desc" id="outpatientDesc">خدمات صيدلية العيادات الخارجية.</p>
       </a>
 
-      <a class="portal-card" id="diabetesCard" href="diabetes-center.html" style="display:none">
+      <a class="portal-card" id="diabetesCard" href="diabetes-center.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
         <div class="card-icon">🩺</div>
         <p class="card-title" id="diabetesTitle">صيدلية مركز السكر</p>
-        <p class="card-desc" id="diabetesDesc">خدمات صيدلية مركز السكر.</p>
       </a>
 
-      <a class="portal-card" id="kidneyCard" href="expiry/kidney/index.html" style="display:none">
+      <a class="portal-card" id="kidneyCard" href="expiry/kidney/index.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
         <div class="card-icon">💠</div>
         <p class="card-title" id="kidneyTitle">صيدلية مركز الكلى</p>
-        <p class="card-desc" id="kidneyDesc">خدمات تتبع الصلاحية والطلبات.</p>
       </a>
 
-      <a class="portal-card" id="controlCard" href="control-panel.html" style="display:none">
+      <a class="portal-card" id="controlCard" href="control-panel.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
         <div class="card-icon">⚙</div>
         <p class="card-title" id="controlTitle">لوحة التحكم</p>
-        <p class="card-desc" id="controlDesc">إدارة المستخدمين والأدوية المركزية.</p>
       </a>
     </div>
 
@@ -734,10 +787,18 @@ function setLanguage(lang) {
   ).innerText =
     text[lang].updatePin;
 
-  document.getElementById(
-    "logoutBtn"
-  ).innerText =
+  const logoutBtn =
+    document.getElementById(
+      "logoutBtn"
+    );
+
+  logoutBtn.title =
     text[lang].logout;
+
+  logoutBtn.setAttribute(
+    "aria-label",
+    text[lang].logout
+  );
 
   document.getElementById(
     "noAccessMessage"
@@ -846,9 +907,13 @@ function showLoginResult(
 }
 
 
-function refreshCurrentPageFresh() {
+function navigateFresh(
+  target,
+  replaceHistory = false
+) {
   const url =
     new URL(
+      target,
       window.location.href
     );
 
@@ -857,8 +922,22 @@ function refreshCurrentPageFresh() {
     Date.now().toString()
   );
 
-  window.location.replace(
-    url.toString()
+  if (replaceHistory) {
+    window.location.replace(
+      url.toString()
+    );
+  } else {
+    window.location.assign(
+      url.toString()
+    );
+  }
+}
+
+
+function refreshCurrentPageFresh() {
+  navigateFresh(
+    window.location.pathname,
+    true
   );
 }
 
@@ -1513,9 +1592,20 @@ async function restorePortalSession() {
 }
 
 
-function logoutPortal() {
+async function logoutPortal() {
   const tokenToRevoke =
     portalSessionToken;
+
+  if (tokenToRevoke) {
+    try {
+      await unifiedApi({
+        action:
+          "revokeSession",
+        sessionToken:
+          tokenToRevoke
+      });
+    } catch (error) {}
+  }
 
   clearPortalStorage();
 
@@ -1525,18 +1615,11 @@ function logoutPortal() {
     "";
 
   showLoginResult("");
-  showLoginView();
 
-  if (tokenToRevoke) {
-    unifiedApi({
-      action:
-        "revokeSession",
-      sessionToken:
-        tokenToRevoke
-    }).catch(
-      function() {}
-    );
-  }
+  navigateFresh(
+    window.location.pathname,
+    true
+  );
 }
 
 
