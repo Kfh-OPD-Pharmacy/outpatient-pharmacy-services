@@ -65,7 +65,95 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
 }
 .login-actions{
   display:flex;
-  justify-content:center
+  align-items:center;
+  justify-content:center;
+  gap:10px
+}
+.login-icon-btn{
+  width:44px;
+  height:44px;
+  min-height:44px;
+  padding:0;
+  border-radius:8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-family:inherit
+}
+.login-icon-btn.primary{
+  border:0;
+  background:#168fb3;
+  color:#fff
+}
+.login-icon-btn.secondary{
+  border:1px solid #168fb3;
+  background:#fff;
+  color:#168fb3
+}
+.login-icon-btn:hover{
+  transform:translateY(-1px)
+}
+.login-icon-btn:disabled{
+  background:#94a3b8;
+  border-color:#94a3b8;
+  color:#fff;
+  cursor:not-allowed;
+  transform:none
+}
+.login-action-svg{
+  width:22px;
+  height:22px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.pin-change-panel{
+  display:none;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb
+}
+.pin-change-panel.visible{
+  display:block
+}
+.pin-change-actions{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px
+}
+.pin-change-btn{
+  min-height:40px;
+  padding:8px 16px;
+  border:0;
+  border-radius:8px;
+  background:#168fb3;
+  color:#fff;
+  font-size:13px;
+  font-weight:bold;
+  cursor:pointer
+}
+.pin-change-btn:disabled{
+  background:#94a3b8;
+  cursor:not-allowed
+}
+.pin-change-result{
+  display:none;
+  margin-top:10px;
+  padding:9px 10px;
+  border-radius:8px;
+  text-align:center;
+  font-size:13px;
+  line-height:1.5
+}
+.pin-change-result.error{
+  display:block;
+  background:#fef2f2;
+  color:#991b1b
 }
 .primary-btn{
   min-height:44px;
@@ -95,6 +183,11 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   display:block;
   background:#fef2f2;
   color:#991b1b
+}
+.login-result.success{
+  display:block;
+  background:#ecfdf5;
+  color:#065f46
 }
 .portal-session{
   display:flex;
@@ -352,7 +445,6 @@ body{padding:10px;background:#fff}
   </div>
 
   <h1 class="page-title" id="pageTitle">بوابة خدمات الرعاية الصيدلانية</h1>
-  <p class="subtitle" id="subtitle">بوابة موحدة لتقديم الخدمات الصيدلانية.</p>
 
   <div id="loginView" class="login-card">
     <label id="usernameLabel" for="portalUsername">اسم المستخدم</label>
@@ -362,10 +454,63 @@ body{padding:10px;background:#fff}
     <input type="password" id="portalPin" inputmode="numeric" autocomplete="current-password">
 
     <div class="login-actions">
-      <button type="button" class="primary-btn" id="loginBtn" onclick="loginPortal()">تسجيل الدخول</button>
+      <button
+        type="button"
+        class="login-icon-btn primary"
+        id="loginBtn"
+        onclick="loginPortal()"
+        title="Login"
+        aria-label="Login">
+        <svg class="login-action-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 17l5-5-5-5"></path>
+          <path d="M15 12H3"></path>
+          <path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"></path>
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        class="login-icon-btn secondary"
+        id="changePinBtn"
+        onclick="togglePinChangePanel()"
+        title="Change PIN"
+        aria-label="Change PIN">
+        <svg class="login-action-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="8" cy="15" r="3"></circle>
+          <path d="M10.5 13.5 20 4"></path>
+          <path d="M17 4h3v3"></path>
+          <path d="M13 11l2 2"></path>
+        </svg>
+      </button>
     </div>
 
     <div id="loginResult" class="login-result"></div>
+
+    <div id="pinChangePanel" class="pin-change-panel" aria-hidden="true">
+      <label id="changeUsernameLabel" for="changeUsername">Username</label>
+      <input type="text" id="changeUsername" autocomplete="username">
+
+      <label id="currentPinLabel" for="currentPin">Current PIN</label>
+      <input type="password" id="currentPin" inputmode="numeric" autocomplete="current-password">
+
+      <label id="newPinLabel" for="newPin">New PIN</label>
+      <input type="password" id="newPin" inputmode="numeric" autocomplete="new-password">
+
+      <label id="confirmPinLabel" for="confirmPin">Confirm New PIN</label>
+      <input type="password" id="confirmPin" inputmode="numeric" autocomplete="new-password">
+
+      <div class="pin-change-actions">
+        <button
+          type="button"
+          class="pin-change-btn"
+          id="updatePinBtn"
+          onclick="changePortalPin()">
+          Update PIN
+        </button>
+      </div>
+
+      <div id="pinChangeResult" class="pin-change-result"></div>
+    </div>
   </div>
 
   <div id="portalView" style="display:none">
@@ -408,7 +553,7 @@ body{padding:10px;background:#fff}
 const UNIFIED_API_URL =
   "https://script.google.com/macros/s/AKfycbxdYdIiVRYwqXYj7TIg-vPrg1hCGiJOnfusGEXF6ughJdUNEFayU3g5HyWFY9u0SO-U/exec";
 
-let currentLang = "ar";
+let currentLang = "en";
 
 let portalUsername =
   sessionStorage.getItem(
@@ -431,6 +576,17 @@ const text = {
     subtitle: "بوابة موحدة لتقديم الخدمات الصيدلانية.",
     username: "اسم المستخدم",
     login: "تسجيل الدخول",
+    changePin: "تغيير PIN",
+    currentPin: "PIN الحالي",
+    newPin: "PIN الجديد",
+    confirmPin: "تأكيد PIN الجديد",
+    updatePin: "تحديث PIN",
+    pinChanged: "تم تغيير PIN بنجاح.",
+    pinMismatch: "PIN الجديد وتأكيده غير متطابقين.",
+    pinTooShort: "PIN الجديد يجب أن يكون 4 أرقام على الأقل.",
+    invalidCurrentPin: "اسم المستخدم أو PIN الحالي غير صحيح.",
+    userNotFound: "المستخدم غير موجود.",
+    networkError: "تعذر الاتصال بالخدمة. حاول مرة أخرى.",
     logout: "تسجيل الخروج",
     invalidLogin: "اسم المستخدم أو PIN غير صحيح، أو لا توجد لديك صلاحية دخول.",
     outpatientTitle: "صيدلية العيادات الخارجية",
@@ -452,6 +608,17 @@ const text = {
     subtitle: "A unified portal for pharmaceutical care services.",
     username: "Username",
     login: "Login",
+    changePin: "Change PIN",
+    currentPin: "Current PIN",
+    newPin: "New PIN",
+    confirmPin: "Confirm New PIN",
+    updatePin: "Update PIN",
+    pinChanged: "PIN changed successfully.",
+    pinMismatch: "New PIN and confirmation do not match.",
+    pinTooShort: "New PIN must be at least 4 digits.",
+    invalidCurrentPin: "Invalid username or current PIN.",
+    userNotFound: "User not found.",
+    networkError: "Could not connect to the service. Please try again.",
     logout: "Logout",
     invalidLogin: "Invalid username/PIN or no portal permission.",
     outpatientTitle: "Outpatient Pharmacy",
@@ -516,10 +683,56 @@ function setLanguage(lang) {
   ).innerText =
     text[lang].username;
 
-  document.getElementById(
-    "loginBtn"
-  ).innerText =
+  const loginBtn =
+    document.getElementById(
+      "loginBtn"
+    );
+
+  loginBtn.title =
     text[lang].login;
+
+  loginBtn.setAttribute(
+    "aria-label",
+    text[lang].login
+  );
+
+  const changePinBtn =
+    document.getElementById(
+      "changePinBtn"
+    );
+
+  changePinBtn.title =
+    text[lang].changePin;
+
+  changePinBtn.setAttribute(
+    "aria-label",
+    text[lang].changePin
+  );
+
+  document.getElementById(
+    "changeUsernameLabel"
+  ).innerText =
+    text[lang].username;
+
+  document.getElementById(
+    "currentPinLabel"
+  ).innerText =
+    text[lang].currentPin;
+
+  document.getElementById(
+    "newPinLabel"
+  ).innerText =
+    text[lang].newPin;
+
+  document.getElementById(
+    "confirmPinLabel"
+  ).innerText =
+    text[lang].confirmPin;
+
+  document.getElementById(
+    "updatePinBtn"
+  ).innerText =
+    text[lang].updatePin;
 
   document.getElementById(
     "logoutBtn"
@@ -604,7 +817,10 @@ async function unifiedApi(payload) {
 }
 
 
-function showLoginResult(message) {
+function showLoginResult(
+  message,
+  isSuccess
+) {
   const result =
     document.getElementById(
       "loginResult"
@@ -621,10 +837,292 @@ function showLoginResult(message) {
   }
 
   result.className =
-    "login-result error";
+    isSuccess
+      ? "login-result success"
+      : "login-result error";
 
   result.innerText =
     message;
+}
+
+
+function refreshCurrentPageFresh() {
+  const url =
+    new URL(
+      window.location.href
+    );
+
+  url.searchParams.set(
+    "_r",
+    Date.now().toString()
+  );
+
+  window.location.replace(
+    url.toString()
+  );
+}
+
+
+function showPinChangeResult(
+  message,
+  isError
+) {
+  const result =
+    document.getElementById(
+      "pinChangeResult"
+    );
+
+  if (!message) {
+    result.className =
+      "pin-change-result";
+
+    result.removeAttribute(
+      "style"
+    );
+
+    result.innerText =
+      "";
+
+    return;
+  }
+
+  result.className =
+    isError
+      ? "pin-change-result error"
+      : "pin-change-result";
+
+  result.style.display =
+    "block";
+
+  result.style.background =
+    isError
+      ? "#fef2f2"
+      : "#ecfdf5";
+
+  result.style.color =
+    isError
+      ? "#991b1b"
+      : "#065f46";
+
+  result.innerText =
+    message;
+}
+
+
+function clearPinChangeFields() {
+  [
+    "currentPin",
+    "newPin",
+    "confirmPin"
+  ].forEach(
+    function(id) {
+      document.getElementById(
+        id
+      ).value =
+        "";
+    }
+  );
+}
+
+
+function closePinChangePanel() {
+  const panel =
+    document.getElementById(
+      "pinChangePanel"
+    );
+
+  panel.classList.remove(
+    "visible"
+  );
+
+  panel.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  clearPinChangeFields();
+  showPinChangeResult(
+    "",
+    false
+  );
+}
+
+
+function togglePinChangePanel() {
+  const panel =
+    document.getElementById(
+      "pinChangePanel"
+    );
+
+  const willOpen =
+    !panel.classList.contains(
+      "visible"
+    );
+
+  if (!willOpen) {
+    closePinChangePanel();
+    return;
+  }
+
+  document.getElementById(
+    "changeUsername"
+  ).value =
+    document.getElementById(
+      "portalUsername"
+    ).value.trim();
+
+  clearPinChangeFields();
+  showPinChangeResult(
+    "",
+    false
+  );
+
+  panel.classList.add(
+    "visible"
+  );
+
+  panel.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+}
+
+
+async function changePortalPin() {
+  const username =
+    document.getElementById(
+      "changeUsername"
+    ).value.trim();
+
+  const currentPin =
+    document.getElementById(
+      "currentPin"
+    ).value.trim();
+
+  const newPin =
+    document.getElementById(
+      "newPin"
+    ).value.trim();
+
+  const confirmPin =
+    document.getElementById(
+      "confirmPin"
+    ).value.trim();
+
+  if (
+    !username ||
+    !currentPin ||
+    !newPin ||
+    !confirmPin
+  ) {
+    showPinChangeResult(
+      text[currentLang].invalidCurrentPin,
+      true
+    );
+    return;
+  }
+
+  if (
+    newPin !==
+    confirmPin
+  ) {
+    showPinChangeResult(
+      text[currentLang].pinMismatch,
+      true
+    );
+    return;
+  }
+
+  if (
+    newPin.length < 4
+  ) {
+    showPinChangeResult(
+      text[currentLang].pinTooShort,
+      true
+    );
+    return;
+  }
+
+  const updateButton =
+    document.getElementById(
+      "updatePinBtn"
+    );
+
+  updateButton.disabled =
+    true;
+
+  showPinChangeResult(
+    "",
+    false
+  );
+
+  try {
+    const result =
+      await unifiedApi({
+        action:
+          "changeEmployeePassword",
+        username:
+          username,
+        oldPassword:
+          currentPin,
+        newPassword:
+          newPin
+      });
+
+    if (
+      !result ||
+      result.success !== true
+    ) {
+      const code =
+        result &&
+        result.code
+          ? result.code
+          : "";
+
+      let message =
+        text[currentLang].invalidCurrentPin;
+
+      if (
+        code ===
+        "PIN_TOO_SHORT"
+      ) {
+        message =
+          text[currentLang].pinTooShort;
+      } else if (
+        code ===
+        "NOT_FOUND"
+      ) {
+        message =
+          text[currentLang].userNotFound;
+      }
+
+      showPinChangeResult(
+        message,
+        true
+      );
+
+      return;
+    }
+
+    clearPinChangeFields();
+
+    closePinChangePanel();
+
+    showLoginResult(
+      text[currentLang].pinChanged,
+      true
+    );
+
+  } catch (error) {
+    showPinChangeResult(
+      text[currentLang].networkError,
+      true
+    );
+
+  } finally {
+    updateButton.disabled =
+      false;
+  }
 }
 
 
@@ -902,9 +1400,7 @@ async function loginPortal() {
     ).value =
       "";
 
-    showPortalView(
-      currentUser
-    );
+    refreshCurrentPageFresh();
 
   } catch (error) {
     showLoginResult(
@@ -1055,7 +1551,7 @@ document.getElementById(
   }
 );
 
-setLanguage("ar");
+setLanguage("en");
 restorePortalSession();
 </script>
 </body>
