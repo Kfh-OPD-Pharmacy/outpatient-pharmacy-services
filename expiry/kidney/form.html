@@ -999,7 +999,7 @@ select{
           type="button"
           class="back-button"
           id="loginBackButton"
-          onclick="history.back()"
+          onclick="goBackAndRefresh()"
           title="رجوع"
           aria-label="رجوع">
           ↩
@@ -2584,6 +2584,30 @@ function showLoginView(){
   ).style.display =
     "inline-flex";
 
+}
+
+
+function goBackAndRefresh(){
+  let destination = "index.html";
+
+  try {
+    if (document.referrer){
+      const previous = new URL(document.referrer);
+      const current = new URL(window.location.href);
+
+      if (
+        ["http:", "https:"].includes(previous.protocol) &&
+        previous.origin === current.origin &&
+        previous.pathname !== current.pathname &&
+        !previous.username &&
+        !previous.password
+      ){
+        destination = previous.href;
+      }
+    }
+  } catch (error) {}
+
+  window.location.replace(destination);
 }
 
 
