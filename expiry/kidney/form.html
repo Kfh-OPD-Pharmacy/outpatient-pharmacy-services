@@ -966,6 +966,80 @@ select{
   }
 }
 
+
+/* Shared Kidney user toolbar: screen only, preserving print layout. */
+@media screen{
+  .meta-row .kidney-user-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:nowrap;
+    direction:ltr;
+    box-sizing:border-box;
+    width:246px;
+    max-width:calc(100vw - 156px);
+    min-width:86px;
+    height:42px;
+    gap:6px;
+    padding:4px 6px;
+    margin:0;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.06);
+    color:#168fb3;
+  }
+  .meta-row .kidney-user-toolbar #employeeName{
+    flex:1 1 auto;
+    min-width:0;
+    max-width:160px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-family:Arial,sans-serif;
+    font-size:15px;
+    font-weight:bold;
+    line-height:1.2;
+    text-align:center;
+    color:#168fb3;
+  }
+  .meta-row .kidney-user-toolbar .kidney-toolbar-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 30px;
+    box-sizing:border-box;
+    width:30px;
+    height:30px;
+    min-height:0;
+    padding:0;
+    margin:0;
+    border:0;
+    background:transparent;
+    color:#168fb3;
+    font-family:Arial,sans-serif;
+    font-size:28px;
+    line-height:1;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .meta-row .kidney-user-toolbar .power-svg{
+    width:25px;
+    height:25px;
+    display:block;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2.35;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+}
+@media screen and (max-width:700px){
+  .meta-row .kidney-user-toolbar #employeeName{
+    max-width:90px;
+  }
+}
+
 </style>
 </head>
 
@@ -993,26 +1067,11 @@ select{
 
       <div class="date-box" id="dateBox"></div>
 
-      <div class="employee-toolbar">
+      <div class="employee-toolbar kidney-user-toolbar">
 
-        <button
+      <button
           type="button"
-          class="back-button"
-          id="loginBackButton"
-          onclick="goBackAndRefresh()"
-          title="رجوع"
-          aria-label="رجوع">
-          ↩
-        </button>
-
-        <span
-          class="employee-name"
-          id="employeeName">
-        </span>
-
-        <button
-          type="button"
-          class="logout-icon"
+          class="logout-icon kidney-toolbar-button"
           id="logoutBtn"
           onclick="logoutEmployee()"
           title="تسجيل الخروج"
@@ -1030,7 +1089,22 @@ select{
 
         </button>
 
-      </div>
+      <span dir="auto"
+          class="employee-name"
+          id="employeeName">
+        </span>
+
+      <button
+          type="button"
+          class="back-button kidney-toolbar-button"
+          id="loginBackButton"
+          onclick="navigateFresh('index.html'); return false;"
+          title="رجوع"
+          aria-label="رجوع">
+          ↩
+        </button>
+
+    </div>
 
       <button
         type="button"
@@ -1291,6 +1365,18 @@ select{
 
 
 <script>
+
+function navigateFresh(target, replaceHistory = false){
+  const url = new URL(target, window.location.href);
+  url.searchParams.set("_r", Date.now().toString());
+  if (replaceHistory){
+    window.location.replace(url.toString());
+  } else {
+    window.location.assign(url.toString());
+  }
+}
+
+
 
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
@@ -2506,9 +2592,7 @@ async function logoutEmployee(){
   ).style.display =
     "none";
 
-  window.location.replace(
-    "../../index.html"
-  );
+  navigateFresh("../../index.html", true);
 
 }
 
@@ -2584,30 +2668,6 @@ function showLoginView(){
   ).style.display =
     "inline-flex";
 
-}
-
-
-function goBackAndRefresh(){
-  let destination = "index.html";
-
-  try {
-    if (document.referrer){
-      const previous = new URL(document.referrer);
-      const current = new URL(window.location.href);
-
-      if (
-        ["http:", "https:"].includes(previous.protocol) &&
-        previous.origin === current.origin &&
-        previous.pathname !== current.pathname &&
-        !previous.username &&
-        !previous.password
-      ){
-        destination = previous.href;
-      }
-    }
-  } catch (error) {}
-
-  window.location.replace(destination);
 }
 
 

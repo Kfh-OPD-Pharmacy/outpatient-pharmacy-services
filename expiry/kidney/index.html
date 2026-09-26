@@ -645,6 +645,84 @@ a.portal-card:hover,
   }
 }
 
+
+/* Shared Kidney user toolbar: screen only, matching the four service pages. */
+@media screen{
+  .meta-row .kidney-user-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:nowrap;
+    direction:ltr;
+    box-sizing:border-box;
+    width:246px;
+    max-width:calc(100vw - 156px);
+    min-width:86px;
+    height:42px;
+    gap:6px;
+    padding:4px 6px;
+    margin:0;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.06);
+    color:#168fb3;
+  }
+
+  .meta-row .kidney-user-toolbar #employeeName{
+    flex:1 1 auto;
+    min-width:0;
+    max-width:160px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-family:Arial,sans-serif;
+    font-size:15px;
+    font-weight:bold;
+    line-height:1.2;
+    text-align:center;
+    color:#168fb3;
+  }
+
+  .meta-row .kidney-user-toolbar .kidney-toolbar-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 30px;
+    box-sizing:border-box;
+    width:30px;
+    height:30px;
+    min-height:0;
+    padding:0;
+    margin:0;
+    border:0;
+    background:transparent;
+    color:#168fb3;
+    font-family:Arial,sans-serif;
+    font-size:28px;
+    line-height:1;
+    text-decoration:none;
+    cursor:pointer;
+  }
+
+  .meta-row .kidney-user-toolbar .power-svg{
+    width:25px;
+    height:25px;
+    display:block;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2.35;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+}
+
+@media screen and (max-width:700px){
+  .meta-row .kidney-user-toolbar #employeeName{
+    max-width:90px;
+  }
+}
+
 </style>
 </head>
 
@@ -686,24 +764,11 @@ a.portal-card:hover,
       id="dateBox">
     </div>
 
-    <div class="employee-toolbar">
-
-      <a
-        class="portal-back-button"
-        href="../../index.html"
-        title="رجوع"
-        aria-label="رجوع">
-        ↩
-      </a>
-
-      <span
-        class="employee-name"
-        id="employeeName">
-      </span>
+    <div class="employee-toolbar kidney-user-toolbar">
 
       <button
         type="button"
-        class="logout-icon"
+        class="logout-icon kidney-toolbar-button"
         id="logoutBtn"
         onclick="logoutPortal()"
         title="خروج"
@@ -718,6 +783,20 @@ a.portal-card:hover,
         </svg>
 
       </button>
+
+      <span
+        class="employee-name"
+        id="employeeName">
+      </span>
+
+      <a
+        class="portal-back-button kidney-toolbar-button"
+        href="../../index.html"
+        onclick="navigateFresh(this.getAttribute('href')); return false;"
+        title="رجوع"
+        aria-label="رجوع">
+        ↩
+      </a>
 
     </div>
 
@@ -756,7 +835,7 @@ a.portal-card:hover,
       class="portal-card"
       id="formCard"
       style="display:none"
-      href="form.html">
+      href="form.html" onclick="navigateFresh(this.getAttribute('href')); return false;">
 
       <div class="card-head">
 
@@ -789,7 +868,7 @@ a.portal-card:hover,
       class="portal-card"
       id="dashboardCard"
       style="display:none"
-      href="dashboard.html">
+      href="dashboard.html" onclick="navigateFresh(this.getAttribute('href')); return false;">
 
       <div class="card-head">
 
@@ -822,7 +901,7 @@ a.portal-card:hover,
       class="portal-card"
       id="orderCard"
       style="display:none"
-      href="kidneyorder.html">
+      href="kidneyorder.html" onclick="navigateFresh(this.getAttribute('href')); return false;">
 
       <div class="card-head">
 
@@ -855,7 +934,7 @@ a.portal-card:hover,
       class="portal-card"
       id="labelsCard"
       style="display:none"
-      href="shelf-labels.html">
+      href="shelf-labels.html" onclick="navigateFresh(this.getAttribute('href')); return false;">
 
       <div class="card-head">
 
@@ -890,8 +969,20 @@ a.portal-card:hover,
 
 <script>
 
+function navigateFresh(target, replaceHistory = false){
+  const url = new URL(target, window.location.href);
+  url.searchParams.set("_r", Date.now().toString());
+  if (replaceHistory){
+    window.location.replace(url.toString());
+  } else {
+    window.location.assign(url.toString());
+  }
+}
+
+
+
 let currentLang =
-  "ar";
+  "en";
 
 
 const text = {
@@ -1168,9 +1259,7 @@ async function logoutPortal(){
   hideAllKidneyCards();
 
 
-  window.location.replace(
-    "../../index.html"
-  );
+  navigateFresh("../../index.html", true);
 
 }
 
@@ -1421,7 +1510,7 @@ window.addEventListener(
 
 
 setLanguage(
-  "ar"
+  "en"
 );
 
 validatePageAccess();
