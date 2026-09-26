@@ -3,345 +3,240 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>صيدلية مركز الكلى</title>
-
+<title>بوابة خدمات الرعاية الصيدلانية</title>
+<meta property="og:title" content="بوابة خدمات الرعاية الصيدلانية">
+<meta property="og:description" content="بوابة موحدة لتقديم الخدمات الصيدلانية.">
+<meta name="twitter:title" content="بوابة خدمات الرعاية الصيدلانية">
+<meta name="twitter:description" content="بوابة موحدة لتقديم الخدمات الصيدلانية.">
 <style>
 *{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f3f4f6;margin:0;padding:16px;color:#168fb3}
+.container{max-width:980px;margin:auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,.1);min-height:calc(100vh - 32px)}
+.top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;direction:ltr}
+.logo{width:120px;height:120px;object-fit:contain}
+.official-header{width:fit-content;max-width:100%;text-align:right;transform:translateY(14px);padding-left:8px;border-left:4px solid #168fb3;direction:rtl}
+.official-header h2,.official-header h3{margin:2px 0;font-size:13px;line-height:1.4;color:#168fb3}
+hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
+.meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;direction:ltr}
+.date-box{color:#168fb3;padding:4px 0;font-size:13px;font-weight:bold;text-align:center}
+.language-chip{color:#168fb3;font-size:13px;font-weight:bold;padding:4px 0;white-space:nowrap;background:transparent;border:0;cursor:pointer;font-family:inherit}
+.page-title{text-align:center;font-size:24px;font-weight:bold;margin:20px 0 10px;color:#168fb3}
+.subtitle{text-align:center;color:#334155;font-size:15px;line-height:1.7;margin:0 auto 24px;max-width:620px}
+.portal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,210px));justify-content:center;gap:14px;max-width:720px;margin:0 auto}
+.portal-card{height:124px;background:#168fb3;border:1px solid #168fb3;border-radius:8px;padding:14px;text-decoration:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;transition:.15s ease}
+.portal-card:hover{border-color:#0f7592;transform:translateY(-1px);box-shadow:0 8px 18px rgba(22,143,179,.28);filter:brightness(1.05)}
+.card-title{font-size:16px;font-weight:bold;color:#fff;margin:0;line-height:1.5}
+.card-desc{font-size:12px;color:rgba(255,255,255,.86);line-height:1.55;margin:0}
+.card-icon{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 auto}
 
-body{
-  font-family:Arial,sans-serif;
-  background:#f3f4f6;
-  margin:0;
-  padding:16px;
-  color:#168fb3
-}
-
-.container{
-  max-width:980px;
-  margin:auto;
-  background:#fff;
+.login-card{
+  width:100%;
+  max-width:420px;
+  margin:18px auto 0;
   padding:22px;
+  background:#fff;
+  border:1px solid #e5e7eb;
   border-radius:14px;
-  box-shadow:0 10px 25px rgba(0,0,0,.1);
-  min-height:calc(100vh - 32px)
+  box-shadow:0 8px 20px rgba(0,0,0,.08)
 }
-
-.top-bar{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:8px;
-  direction:ltr
+.login-card label{
+  display:block;
+  margin:0 0 6px;
+  color:#168fb3;
+  font-size:14px;
+  font-weight:bold
 }
-
-.logo{
-  width:120px;
-  height:120px;
-  object-fit:contain
+.login-card input{
+  width:100%;
+  height:44px;
+  margin:0 0 12px;
+  padding:8px 12px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#111827;
+  font-size:14px;
+  font-family:inherit
 }
-
-.official-header{
-  width:fit-content;
-  max-width:100%;
-  transform:translateY(14px);
-  border-left:4px solid #168fb3
+.login-card input:focus{
+  border-color:#168fb3;
+  box-shadow:0 0 0 2px rgba(22,143,179,.12);
+  outline:none
 }
-
-/* العربي يبقى مثل ما هو */
-html[dir="rtl"] .official-header{
-  text-align:right;
-  direction:rtl;
-  padding-left:8px;
-  padding-right:0
-}
-
-/* الإنجليزي يبدأ مباشرة من عند الخط */
-html[dir="ltr"] .official-header{
-  text-align:left;
-  direction:ltr;
-  padding-left:6px;
-  padding-right:0
-}
-
-.official-header h2,
-.official-header h3{
-  margin:2px 0;
-  font-size:13px;
-  line-height:1.4;
-  color:#168fb3
-}
-
-hr{
-  border:none;
-  border-top:1px solid #e5e7eb;
-  margin:14px 0
-}
-
-.meta-row{
+.login-actions{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:14px;
-  direction:ltr
+  justify-content:center;
+  gap:10px
 }
-
-.date-box{
-  color:#168fb3;
-  padding:4px 0;
-  font-size:13px;
-  font-weight:bold;
-  text-align:center
-}
-
-.language-chip{
-  color:#168fb3;
-  font-size:13px;
-  font-weight:bold;
-  padding:4px 0;
-  white-space:nowrap;
-  background:transparent;
-  border:0;
+.login-icon-btn{
+  width:44px;
+  height:44px;
+  min-height:44px;
+  padding:0;
+  border-radius:8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   cursor:pointer;
   font-family:inherit
 }
-
-
-/* TITLE + BACK BUTTON */
-
-.title-row{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  margin:18px 0 22px;
-  direction:rtl
+.login-icon-btn.primary{
+  border:0;
+  background:#168fb3;
+  color:#fff
 }
-
-.page-title{
-  text-align:center;
-  font-size:23px;
-  font-weight:bold;
-  margin:0;
+.login-icon-btn.secondary{
+  border:1px solid #168fb3;
+  background:#fff;
   color:#168fb3
 }
-
-.back-button{
-  width:38px;
-  height:38px;
-  margin:0;
-  padding:0;
-  border:0;
-  outline:0;
-  background:transparent;
-  color:#168fb3;
-  font-size:34px;
-  font-weight:400;
-  line-height:1;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  font-family:Arial,sans-serif;
-  flex:0 0 auto;
-  transition:.15s ease
+.login-icon-btn:hover{
+  transform:translateY(-1px)
 }
-
-.back-button:hover{
-  background:transparent;
-  color:#0f7592;
-  transform:translateX(-2px)
-}
-
-
-.subtitle{
-  display:none
-}
-
-.portal-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(185px,200px));
-  justify-content:center;
-  gap:14px 16px;
-  max-width:430px;
-  margin:0 auto
-}
-
-.portal-card{
-  width:100%;
-  height:120px;
-  box-sizing:border-box;
-  background:#168fb3;
-  border:1px solid #168fb3;
-  border-radius:8px;
-  padding:12px;
-  text-decoration:none;
+.login-icon-btn:disabled{
+  background:#94a3b8;
+  border-color:#94a3b8;
   color:#fff;
+  cursor:not-allowed;
+  transform:none
+}
+.login-action-svg{
+  width:22px;
+  height:22px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.pin-change-panel{
+  display:none;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb
+}
+.pin-change-panel.visible{
+  display:block
+}
+.pin-change-actions{
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:8px;
-  transition:.15s ease
+  gap:10px
 }
-
-a.portal-card:hover,
-.portal-card:hover{
-  border-color:#0f7592;
-  transform:translateY(-1px);
-  box-shadow:0 8px 18px rgba(22,143,179,.28);
-  filter:brightness(1.05)
+.pin-change-btn{
+  min-height:40px;
+  padding:8px 16px;
+  border:0;
+  border-radius:8px;
+  background:#168fb3;
+  color:#fff;
+  font-size:13px;
+  font-weight:bold;
+  cursor:pointer
 }
-
-.card-head{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  width:100%;
-  text-align:center
+.pin-change-btn:disabled{
+  background:#94a3b8;
+  cursor:not-allowed
 }
-
-.card-text{
+.pin-change-result{
+  display:none;
+  margin-top:10px;
+  padding:9px 10px;
+  border-radius:8px;
   text-align:center;
-  min-width:0
+  font-size:13px;
+  line-height:1.5
 }
-
-.card-title{
+.pin-change-result.error{
+  display:block;
+  background:#fef2f2;
+  color:#991b1b
+}
+.primary-btn{
+  min-height:44px;
+  padding:9px 18px;
+  border:0;
+  border-radius:8px;
+  background:#168fb3;
+  color:#fff;
   font-size:14px;
   font-weight:bold;
-  color:#fff;
-  margin:0;
-  white-space:nowrap
+  cursor:pointer
 }
-
-.card-desc{
-  display:none
+.primary-btn:disabled{
+  background:#94a3b8;
+  cursor:not-allowed
 }
-
-.card-icon{
-  width:30px;
-  height:30px;
+.login-result{
+  display:none;
+  margin-top:12px;
+  padding:10px 12px;
   border-radius:8px;
-  background:rgba(255,255,255,.2);
-  color:#fff;
+  text-align:center;
+  font-size:13px;
+  line-height:1.5
+}
+.login-result.error{
+  display:block;
+  background:#fef2f2;
+  color:#991b1b
+}
+.login-result.success{
+  display:block;
+  background:#ecfdf5;
+  color:#065f46
+}
+.portal-session{
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:17px;
-  flex:0 0 auto
+  gap:10px;
+  margin:0 auto 18px;
+  color:#334155;
+  font-size:13px
 }
-
-.card-actions{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:8px;
-  width:100%;
-  margin-top:4px
-}
-
-.mini-link{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:6px 10px;
-  border-radius:999px;
-  background:#168fb3;
-  color:#fff;
-  text-decoration:none;
-  font-size:11px;
+.portal-user-name{
   font-weight:bold;
-  white-space:nowrap
+  color:#168fb3
 }
-
-.main-home-link{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:fit-content;
-  margin:22px auto 0;
-  color:#168fb3;
-  text-decoration:none;
-  font-size:28px;
-  line-height:1;
+.logout-btn{
+  border:0;
   background:transparent;
-  border:none;
-  padding:4px
+  color:#168fb3;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:bold;
+  padding:4px 6px
 }
-
-.main-home-link:hover{
-  color:#0f7592
+.no-access{
+  display:none;
+  max-width:620px;
+  margin:14px auto 0;
+  padding:12px;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  background:#f8fafc;
+  color:#475569;
+  text-align:center;
+  font-size:13px
 }
-
-
-@media (max-width:700px){
-
-  body{
-    padding:10px;
-    background:#fff
-  }
-
-  .container{
-    padding:14px;
-    border-radius:0;
-    box-shadow:none;
-    min-height:100vh
-  }
-
-  .logo{
-    width:84px;
-    height:84px
-  }
-
-  .official-header{
-    transform:translateY(10px)
-  }
-
-  .official-header h2,
-  .official-header h3{
-    font-size:12px
-  }
-
-  .title-row{
-    gap:8px;
-    margin:16px 0 20px
-  }
-
-  .page-title{
-    font-size:20px;
-    margin:0
-  }
-
-  .back-button{
-    width:34px;
-    height:34px;
-    font-size:31px
-  }
-
-  .portal-grid{
-    grid-template-columns:1fr;
-    max-width:250px;
-    gap:12px
-  }
-
-  .portal-card{
-    width:100%;
-    height:112px;
-    padding:12px
-  }
-
-  .card-title{
-    font-size:14px
-  }
-
-  .card-icon{
-    width:28px;
-    height:28px;
-    font-size:17px
-  }
+@media (max-width:760px){
+body{padding:10px;background:#fff}
+.container{padding:14px;border-radius:0;box-shadow:none;min-height:100vh}
+.logo{width:84px;height:84px}
+.official-header{transform:translateY(10px)}
+.official-header h2,.official-header h3{font-size:12px}
+.page-title{font-size:20px;margin-top:18px}
+.subtitle{font-size:13px;margin-bottom:20px}
+.portal-grid{grid-template-columns:1fr;max-width:270px;gap:12px}
+.portal-card{height:108px;padding:12px}
+.card-title{font-size:15px}
+.card-desc{font-size:12px}
+.card-icon{width:30px;height:30px;font-size:17px}
+.login-card{max-width:320px;padding:16px}
 }
 
 
@@ -529,505 +424,218 @@ a.portal-card:hover,
   }
 }
 
-
-/* Unified portal top-row session controls */
-.meta-row{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
-  align-items:center;
-  gap:12px;
-  direction:ltr
-}
-
-.meta-row .date-box{
-  justify-self:start
-}
-
-.meta-row .language-chip{
-  justify-self:end
-}
-
-.meta-row .employee-toolbar{
-  grid-column:2;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  margin:0;
-  padding:0;
-  direction:rtl;
-  color:#168fb3
-}
-
-.meta-row .employee-name{
-  white-space:nowrap;
-  font-size:18px;
-  line-height:1;
-  font-weight:bold;
-  color:#168fb3
-}
-
-.meta-row .portal-back-button,
-.meta-row .logout-icon{
-  width:34px;
-  height:34px;
-  margin:0;
-  padding:0;
-  border:0;
-  background:transparent;
-  color:#168fb3;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  flex:0 0 auto;
-  font-family:Arial,sans-serif
-}
-
-.meta-row .portal-back-button{
-  font-size:28px;
-  line-height:1;
-  text-decoration:none
-}
-
-.meta-row .portal-back-button:hover{
-  color:#0f7592;
-  transform:translateX(-1px)
-}
-
-.meta-row .logout-icon:hover{
-  color:#0f7592;
-  transform:scale(1.06)
-}
-
-.meta-row .power-svg{
-  width:30px;
-  height:30px;
-  display:block;
-  fill:none;
-  stroke:currentColor;
-  stroke-width:2.35;
-  stroke-linecap:round;
-  stroke-linejoin:round
-}
-
-@media (max-width:700px){
-  .meta-row{
-    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
-    gap:6px
-  }
-
-  .meta-row .employee-toolbar{
-    gap:6px
-  }
-
-  .meta-row .employee-name{
-    max-width:130px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    font-size:15px
-  }
-
-  .meta-row .portal-back-button,
-  .meta-row .logout-icon{
-    width:30px;
-    height:30px
-  }
-
-  .meta-row .power-svg{
-    width:25px;
-    height:25px
-  }
-
-  .meta-row .date-box,
-  .meta-row .language-chip{
-    font-size:11px
-  }
-}
-
-
-/* Shared Kidney user toolbar: screen only, matching the four service pages. */
-@media screen{
-  .meta-row .kidney-user-toolbar{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-wrap:nowrap;
-    direction:ltr;
-    box-sizing:border-box;
-    width:246px;
-    max-width:calc(100vw - 156px);
-    min-width:86px;
-    height:42px;
-    gap:6px;
-    padding:4px 6px;
-    margin:0;
-    background:#fff;
-    border:1px solid #e5e7eb;
-    border-radius:10px;
-    box-shadow:0 2px 6px rgba(0,0,0,.06);
-    color:#168fb3;
-  }
-
-  .meta-row .kidney-user-toolbar #employeeName{
-    flex:1 1 auto;
-    min-width:0;
-    max-width:160px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    font-family:Arial,sans-serif;
-    font-size:15px;
-    font-weight:bold;
-    line-height:1.2;
-    text-align:center;
-    color:#168fb3;
-  }
-
-  .meta-row .kidney-user-toolbar .kidney-toolbar-button{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    flex:0 0 30px;
-    box-sizing:border-box;
-    width:30px;
-    height:30px;
-    min-height:0;
-    padding:0;
-    margin:0;
-    border:0;
-    background:transparent;
-    color:#168fb3;
-    font-family:Arial,sans-serif;
-    font-size:28px;
-    line-height:1;
-    text-decoration:none;
-    cursor:pointer;
-  }
-
-  .meta-row .kidney-user-toolbar .power-svg{
-    width:25px;
-    height:25px;
-    display:block;
-    fill:none;
-    stroke:currentColor;
-    stroke-width:2.35;
-    stroke-linecap:round;
-    stroke-linejoin:round;
-  }
-}
-
-@media screen and (max-width:700px){
-  .meta-row .kidney-user-toolbar #employeeName{
-    max-width:90px;
-  }
-}
-
 </style>
 </head>
-
 <body>
-
 <div class="container">
-
   <div class="top-bar">
-
-    <img
-      class="logo"
-      src="../../logo.png"
-      alt="Logo">
-
+    <img class="logo" src="logo.png" alt="Logo">
     <div class="official-header">
-
-      <h2 id="officialLine1">
-        تجمع المدينة المنورة الصحي
-      </h2>
-
-      <h3 id="officialLine2">
-        مستشفى الملك فهد بالمدينة المنورة
-      </h3>
-
-      <h3 id="officialLine3">
-        إدارة الرعاية الصيدلانية
-      </h3>
-
+      <h2 id="officialLine1">تجمع المدينة المنورة الصحي</h2>
+      <h3 id="officialLine2">مستشفى الملك فهد بالمدينة المنورة</h3>
+      <h3 id="officialLine3">إدارة الرعاية الصيدلانية</h3>
     </div>
-
   </div>
 
   <hr>
 
   <div class="meta-row">
+    <div class="date-box" id="dateBox"></div>
+    <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
+  </div>
 
-    <div
-      class="date-box"
-      id="dateBox">
-    </div>
+  <h1 class="page-title" id="pageTitle">بوابة خدمات الرعاية الصيدلانية</h1>
 
-    <div class="employee-toolbar kidney-user-toolbar">
+  <div id="loginView" class="login-card">
+    <label id="usernameLabel" for="portalUsername">اسم المستخدم</label>
+    <input type="text" id="portalUsername" autocomplete="username">
+
+    <label id="pinLabel" for="portalPin">PIN</label>
+    <input type="password" id="portalPin" inputmode="numeric" autocomplete="current-password">
+
+    <div class="login-actions">
+      <button
+        type="button"
+        class="login-icon-btn primary"
+        id="loginBtn"
+        onclick="loginPortal()"
+        title="Login"
+        aria-label="Login">
+        <svg class="login-action-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 17l5-5-5-5"></path>
+          <path d="M15 12H3"></path>
+          <path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"></path>
+        </svg>
+      </button>
 
       <button
         type="button"
-        class="logout-icon kidney-toolbar-button"
-        id="logoutBtn"
-        onclick="logoutPortal()"
-        title="خروج"
-        aria-label="خروج">
-
-        <svg
-          class="power-svg"
-          viewBox="0 0 24 24"
-          aria-hidden="true">
-          <path d="M12 3v9"></path>
-          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        class="login-icon-btn secondary"
+        id="changePinBtn"
+        onclick="togglePinChangePanel()"
+        title="Change PIN"
+        aria-label="Change PIN">
+        <svg class="login-action-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="8" cy="15" r="3"></circle>
+          <path d="M10.5 13.5 20 4"></path>
+          <path d="M17 4h3v3"></path>
+          <path d="M13 11l2 2"></path>
         </svg>
-
       </button>
-
-      <span
-        class="employee-name"
-        id="employeeName">
-      </span>
-
-      <a
-        class="portal-back-button kidney-toolbar-button"
-        href="../../index.html"
-        onclick="navigateFresh(this.getAttribute('href')); return false;"
-        title="رجوع"
-        aria-label="رجوع">
-        ↩
-      </a>
-
     </div>
 
-    <button
-      type="button"
-      class="language-chip"
-      id="languageToggle"
-      onclick="toggleLanguage()">
-      🌐 ع | E
-    </button>
+    <div id="loginResult" class="login-result"></div>
 
+    <div id="pinChangePanel" class="pin-change-panel" aria-hidden="true">
+      <label id="changeUsernameLabel" for="changeUsername">Username</label>
+      <input type="text" id="changeUsername" autocomplete="username">
+
+      <label id="currentPinLabel" for="currentPin">Current PIN</label>
+      <input type="password" id="currentPin" inputmode="numeric" autocomplete="current-password">
+
+      <label id="newPinLabel" for="newPin">New PIN</label>
+      <input type="password" id="newPin" inputmode="numeric" autocomplete="new-password">
+
+      <label id="confirmPinLabel" for="confirmPin">Confirm New PIN</label>
+      <input type="password" id="confirmPin" inputmode="numeric" autocomplete="new-password">
+
+      <div class="pin-change-actions">
+        <button
+          type="button"
+          class="pin-change-btn"
+          id="updatePinBtn"
+          onclick="changePortalPin()">
+          Update PIN
+        </button>
+      </div>
+
+      <div id="pinChangeResult" class="pin-change-result"></div>
+    </div>
   </div>
 
+  <div id="portalView" style="display:none">
+    <div class="portal-session">
+      <span id="portalUserName" class="portal-user-name"></span>
+      <button type="button" class="logout-btn" id="logoutBtn" onclick="logoutPortal()">تسجيل الخروج</button>
+    </div>
 
-  <div class="title-row">
+    <div class="portal-grid">
+      <a class="portal-card" id="outpatientCard" href="outpatient-pharmacy.html" style="display:none">
+        <div class="card-icon">🏥</div>
+        <p class="card-title" id="outpatientTitle">صيدلية العيادات الخارجية</p>
+        <p class="card-desc" id="outpatientDesc">خدمات صيدلية العيادات الخارجية.</p>
+      </a>
 
-    <h1
-      class="page-title"
-      id="pageTitle">
-      صيدلية مركز الكلى
-    </h1>
+      <a class="portal-card" id="diabetesCard" href="diabetes-center.html" style="display:none">
+        <div class="card-icon">🩺</div>
+        <p class="card-title" id="diabetesTitle">صيدلية مركز السكر</p>
+        <p class="card-desc" id="diabetesDesc">خدمات صيدلية مركز السكر.</p>
+      </a>
 
+      <a class="portal-card" id="kidneyCard" href="expiry/kidney/index.html" style="display:none">
+        <div class="card-icon">💠</div>
+        <p class="card-title" id="kidneyTitle">صيدلية مركز الكلى</p>
+        <p class="card-desc" id="kidneyDesc">خدمات تتبع الصلاحية والطلبات.</p>
+      </a>
+
+      <a class="portal-card" id="controlCard" href="control-panel.html" style="display:none">
+        <div class="card-icon">⚙</div>
+        <p class="card-title" id="controlTitle">لوحة التحكم</p>
+        <p class="card-desc" id="controlDesc">إدارة المستخدمين والأدوية المركزية.</p>
+      </a>
+    </div>
+
+    <div id="noAccessMessage" class="no-access"></div>
   </div>
-
-
-  <p
-    class="subtitle"
-    id="subtitle">
-    بوابة داخلية لتسجيل ومراقبة تواريخ انتهاء صلاحية الأدوية بالصيدلية.
-  </p>
-
-
-  <div class="portal-grid">
-
-    <a
-      class="portal-card"
-      id="formCard"
-      style="display:none"
-      href="form.html" onclick="navigateFresh(this.getAttribute('href')); return false;">
-
-      <div class="card-head">
-
-        <div class="card-text">
-
-          <p
-            class="card-title"
-            id="formTitle">
-            تسجيل تاريخ الانتهاء
-          </p>
-
-          <p
-            class="card-desc"
-            id="formDesc">
-            إدخال بيانات دواء جديد، مع تنبيه تلقائي عند وجود تاريخ أقدم مسجل مسبقا.
-          </p>
-
-        </div>
-
-        <div class="card-icon">
-          💊
-        </div>
-
-      </div>
-
-    </a>
-
-
-    <a
-      class="portal-card"
-      id="dashboardCard"
-      style="display:none"
-      href="dashboard.html" onclick="navigateFresh(this.getAttribute('href')); return false;">
-
-      <div class="card-head">
-
-        <div class="card-text">
-
-          <p
-            class="card-title"
-            id="dashboardTitle">
-            مؤشر صلاحية الأدوية
-          </p>
-
-          <p
-            class="card-desc"
-            id="dashboardDesc">
-            عرض فوري لكل الأدوية المسجلة، مرتبة حسب الأقرب لتاريخ الانتهاء.
-          </p>
-
-        </div>
-
-        <div class="card-icon">
-          📊
-        </div>
-
-      </div>
-
-    </a>
-
-
-    <a
-      class="portal-card"
-      id="orderCard"
-      style="display:none"
-      href="kidneyorder.html" onclick="navigateFresh(this.getAttribute('href')); return false;">
-
-      <div class="card-head">
-
-        <div class="card-text">
-
-          <p
-            class="card-title"
-            id="orderTitle">
-            Kidney Order / الطلبية
-          </p>
-
-          <p
-            class="card-desc"
-            id="orderDesc">
-            إنشاء طلبية أدوية لصيدلية مركز الكلى.
-          </p>
-
-        </div>
-
-        <div class="card-icon">
-          📦
-        </div>
-
-      </div>
-
-    </a>
-
-
-    <a
-      class="portal-card"
-      id="labelsCard"
-      style="display:none"
-      href="shelf-labels.html" onclick="navigateFresh(this.getAttribute('href')); return false;">
-
-      <div class="card-head">
-
-        <div class="card-text">
-
-          <p
-            class="card-title"
-            id="labelsTitle">
-            مولد الليبلات
-          </p>
-
-          <p
-            class="card-desc"
-            id="labelsDesc">
-            إنشاء وطباعة ليبلات الأدوية.
-          </p>
-
-        </div>
-
-        <div class="card-icon">
-          🏷️
-        </div>
-
-      </div>
-
-    </a>
-
-  </div>
-
 </div>
 
-
 <script>
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbxdYdIiVRYwqXYj7TIg-vPrg1hCGiJOnfusGEXF6ughJdUNEFayU3g5HyWFY9u0SO-U/exec";
 
-function navigateFresh(target, replaceHistory = false){
-  const url = new URL(target, window.location.href);
-  url.searchParams.set("_r", Date.now().toString());
-  if (replaceHistory){
-    window.location.replace(url.toString());
-  } else {
-    window.location.assign(url.toString());
-  }
-}
+let currentLang = "en";
 
+let portalUsername =
+  sessionStorage.getItem(
+    "unifiedPortalUsername"
+  ) || "";
 
+let portalSessionToken =
+  sessionStorage.getItem(
+    "unifiedPortalSessionToken"
+  ) || "";
 
-let currentLang =
-  "en";
-
+let currentUser = null;
 
 const text = {
-
-  ar:{
-    title:"صيدلية مركز الكلى",
-    officialLine1:"تجمع المدينة المنورة الصحي",
-    officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
-    officialLine3:"إدارة الرعاية الصيدلانية",
-    subtitle:"بوابة داخلية لتسجيل ومراقبة تواريخ انتهاء صلاحية الأدوية بالصيدلية.",
-    dashboardTitle:"مؤشر صلاحية الأدوية",
-    dashboardDesc:"عرض فوري لكل الأدوية المسجلة، مرتبة حسب الأقرب لتاريخ الانتهاء.",
-    formTitle:"تسجيل تاريخ الانتهاء",
-    formDesc:"إدخال بيانات دواء جديد، مع تنبيه تلقائي عند وجود تاريخ أقدم مسجل مسبقا.",
-    orderTitle:"Kidney Order / الطلبية",
-    orderDesc:"إنشاء طلبية أدوية لصيدلية مركز الكلى.",
-    labelsTitle:"مولد الليبلات",
-    labelsDesc:"إنشاء وطباعة ليبلات الأدوية.",
-    back:"العودة إلى اختيار الصيدلية"
+  ar: {
+    title: "بوابة خدمات الرعاية الصيدلانية",
+    officialLine1: "تجمع المدينة المنورة الصحي",
+    officialLine2: "مستشفى الملك فهد بالمدينة المنورة",
+    officialLine3: "إدارة الرعاية الصيدلانية",
+    subtitle: "بوابة موحدة لتقديم الخدمات الصيدلانية.",
+    username: "اسم المستخدم",
+    login: "تسجيل الدخول",
+    changePin: "تغيير PIN",
+    currentPin: "PIN الحالي",
+    newPin: "PIN الجديد",
+    confirmPin: "تأكيد PIN الجديد",
+    updatePin: "تحديث PIN",
+    pinChanged: "تم تغيير PIN بنجاح.",
+    pinMismatch: "PIN الجديد وتأكيده غير متطابقين.",
+    pinTooShort: "PIN الجديد يجب أن يكون 4 أرقام على الأقل.",
+    invalidCurrentPin: "اسم المستخدم أو PIN الحالي غير صحيح.",
+    userNotFound: "المستخدم غير موجود.",
+    networkError: "تعذر الاتصال بالخدمة. حاول مرة أخرى.",
+    logout: "تسجيل الخروج",
+    invalidLogin: "اسم المستخدم أو PIN غير صحيح، أو لا توجد لديك صلاحية دخول.",
+    outpatientTitle: "صيدلية العيادات الخارجية",
+    outpatientDesc: "خدمات صيدلية العيادات الخارجية.",
+    diabetesTitle: "صيدلية مركز السكر",
+    diabetesDesc: "خدمات صيدلية مركز السكر.",
+    kidneyTitle: "صيدلية مركز الكلى",
+    kidneyDesc: "خدمات تتبع الصلاحية والطلبات.",
+    controlTitle: "لوحة التحكم",
+    controlDesc: "إدارة المستخدمين والأدوية المركزية.",
+    noAccess: "لا توجد خدمات متاحة لهذا المستخدم."
   },
 
-  en:{
-    title:"Kidney Center Pharmacy",
-    officialLine1:"Madinah Health Cluster",
-    officialLine2:"King Fahad Hospital - Madinah",
-    officialLine3:"Pharmaceutical Care Administration",
-    subtitle:"An internal portal to record and monitor medication expiry dates in the pharmacy.",
-    dashboardTitle:"Live Dashboard",
-    dashboardDesc:"Instant view of registered medications, sorted by nearest expiry date.",
-    formTitle:"Register Expiry Date",
-    formDesc:"Enter a new medication record with an automatic alert when an older expiry date already exists.",
-    orderTitle:"Kidney Order",
-    orderDesc:"Create a medication order for the Kidney Center Pharmacy.",
-    labelsTitle:"Labels Generator",
-    labelsDesc:"Create and print medication shelf labels.",
-    back:"Back to pharmacy selection"
+  en: {
+    title: "Pharmaceutical Care Services Portal",
+    officialLine1: "Madinah Health Cluster",
+    officialLine2: "King Fahad Hospital - Madinah",
+    officialLine3: "Pharmaceutical Care Administration",
+    subtitle: "A unified portal for pharmaceutical care services.",
+    username: "Username",
+    login: "Login",
+    changePin: "Change PIN",
+    currentPin: "Current PIN",
+    newPin: "New PIN",
+    confirmPin: "Confirm New PIN",
+    updatePin: "Update PIN",
+    pinChanged: "PIN changed successfully.",
+    pinMismatch: "New PIN and confirmation do not match.",
+    pinTooShort: "New PIN must be at least 4 digits.",
+    invalidCurrentPin: "Invalid username or current PIN.",
+    userNotFound: "User not found.",
+    networkError: "Could not connect to the service. Please try again.",
+    logout: "Logout",
+    invalidLogin: "Invalid username/PIN or no portal permission.",
+    outpatientTitle: "Outpatient Pharmacy",
+    outpatientDesc: "Outpatient pharmacy services.",
+    diabetesTitle: "Diabetes Center Pharmacy",
+    diabetesDesc: "Diabetes center pharmacy services.",
+    kidneyTitle: "Kidney Center Pharmacy",
+    kidneyDesc: "Expiry tracking and order services.",
+    controlTitle: "Control Panel",
+    controlDesc: "Unified users and central medications management.",
+    noAccess: "No services are available for this user."
   }
-
 };
 
 
-function setLanguage(lang){
-
-  currentLang =
-    lang;
+function setLanguage(lang) {
+  currentLang = lang;
 
   document.documentElement.lang =
     lang;
@@ -1040,78 +648,121 @@ function setLanguage(lang){
   document.title =
     text[lang].title;
 
-
   [
     "officialLine1",
     "officialLine2",
     "officialLine3",
-    "pageTitle",
     "subtitle",
-    "dashboardTitle",
-    "dashboardDesc",
-    "formTitle",
-    "formDesc",
-    "orderTitle",
-    "orderDesc",
-    "labelsTitle",
-    "labelsDesc"
-  ].forEach(function(id){
+    "outpatientTitle",
+    "outpatientDesc",
+    "diabetesTitle",
+    "diabetesDesc",
+    "kidneyTitle",
+    "kidneyDesc",
+    "controlTitle",
+    "controlDesc"
+  ].forEach(
+    function(id) {
+      const element =
+        document.getElementById(id);
 
-    document.getElementById(id).innerText =
-      text[lang][
-        id.replace(
-          "pageTitle",
-          "title"
-        )
-      ];
+      if (element) {
+        element.innerText =
+          text[lang][id];
+      }
+    }
+  );
 
-  });
+  document.getElementById(
+    "pageTitle"
+  ).innerText =
+    text[lang].title;
 
+  document.getElementById(
+    "usernameLabel"
+  ).innerText =
+    text[lang].username;
 
-  const homeLink =
-    document.querySelector(
-      ".main-home-link"
+  const loginBtn =
+    document.getElementById(
+      "loginBtn"
     );
 
-  if (
-    homeLink
-  ){
+  loginBtn.title =
+    text[lang].login;
 
-    homeLink.title =
-      text[lang].back;
+  loginBtn.setAttribute(
+    "aria-label",
+    text[lang].login
+  );
 
-    homeLink.setAttribute(
-      "aria-label",
-      text[lang].back
+  const changePinBtn =
+    document.getElementById(
+      "changePinBtn"
     );
 
-  }
+  changePinBtn.title =
+    text[lang].changePin;
 
+  changePinBtn.setAttribute(
+    "aria-label",
+    text[lang].changePin
+  );
+
+  document.getElementById(
+    "changeUsernameLabel"
+  ).innerText =
+    text[lang].username;
+
+  document.getElementById(
+    "currentPinLabel"
+  ).innerText =
+    text[lang].currentPin;
+
+  document.getElementById(
+    "newPinLabel"
+  ).innerText =
+    text[lang].newPin;
+
+  document.getElementById(
+    "confirmPinLabel"
+  ).innerText =
+    text[lang].confirmPin;
+
+  document.getElementById(
+    "updatePinBtn"
+  ).innerText =
+    text[lang].updatePin;
+
+  document.getElementById(
+    "logoutBtn"
+  ).innerText =
+    text[lang].logout;
+
+  document.getElementById(
+    "noAccessMessage"
+  ).innerText =
+    text[lang].noAccess;
 
   document.getElementById(
     "languageToggle"
   ).innerText =
     "🌐 ع | E";
 
-
   renderDate();
-
 }
 
 
-function toggleLanguage(){
-
+function toggleLanguage() {
   setLanguage(
     currentLang === "ar"
       ? "en"
       : "ar"
   );
-
 }
 
 
-function renderDate(){
-
+function renderDate() {
   const now =
     new Date();
 
@@ -1119,11 +770,10 @@ function renderDate(){
     new Intl.DateTimeFormat(
       "en-CA",
       {
-        timeZone:"Asia/Riyadh"
+        timeZone:
+          "Asia/Riyadh"
       }
-    ).format(
-      now
-    );
+    ).format(now);
 
   const dayName =
     new Intl.DateTimeFormat(
@@ -1131,49 +781,352 @@ function renderDate(){
         ? "ar-SA"
         : "en-US",
       {
-        timeZone:"Asia/Riyadh",
-        weekday:"long"
+        timeZone:
+          "Asia/Riyadh",
+        weekday:
+          "long"
       }
-    ).format(
-      now
-    );
-
+    ).format(now);
 
   document.getElementById(
     "dateBox"
   ).innerText =
     `${dayName} - ${date}`;
-
 }
 
 
-
-
-const UNIFIED_API_URL =
-  "https://script.google.com/macros/s/AKfycbxdYdIiVRYwqXYj7TIg-vPrg1hCGiJOnfusGEXF6ughJdUNEFayU3g5HyWFY9u0SO-U/exec";
-
-
-async function unifiedApi(payload){
-
+async function unifiedApi(payload) {
   const response =
     await fetch(
       UNIFIED_API_URL,
       {
-        method:"POST",
-        headers:{
-          "Content-Type":"text/plain;charset=utf-8"
+        method:
+          "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
         },
-        body:JSON.stringify(payload)
+
+        body:
+          JSON.stringify(payload)
       }
     );
 
   return response.json();
-
 }
 
 
-function clearPortalSession(){
+function showLoginResult(
+  message,
+  isSuccess
+) {
+  const result =
+    document.getElementById(
+      "loginResult"
+    );
 
+  if (!message) {
+    result.className =
+      "login-result";
+
+    result.innerText =
+      "";
+
+    return;
+  }
+
+  result.className =
+    isSuccess
+      ? "login-result success"
+      : "login-result error";
+
+  result.innerText =
+    message;
+}
+
+
+function refreshCurrentPageFresh() {
+  const url =
+    new URL(
+      window.location.href
+    );
+
+  url.searchParams.set(
+    "_r",
+    Date.now().toString()
+  );
+
+  window.location.replace(
+    url.toString()
+  );
+}
+
+
+function showPinChangeResult(
+  message,
+  isError
+) {
+  const result =
+    document.getElementById(
+      "pinChangeResult"
+    );
+
+  if (!message) {
+    result.className =
+      "pin-change-result";
+
+    result.removeAttribute(
+      "style"
+    );
+
+    result.innerText =
+      "";
+
+    return;
+  }
+
+  result.className =
+    isError
+      ? "pin-change-result error"
+      : "pin-change-result";
+
+  result.style.display =
+    "block";
+
+  result.style.background =
+    isError
+      ? "#fef2f2"
+      : "#ecfdf5";
+
+  result.style.color =
+    isError
+      ? "#991b1b"
+      : "#065f46";
+
+  result.innerText =
+    message;
+}
+
+
+function clearPinChangeFields() {
+  [
+    "currentPin",
+    "newPin",
+    "confirmPin"
+  ].forEach(
+    function(id) {
+      document.getElementById(
+        id
+      ).value =
+        "";
+    }
+  );
+}
+
+
+function closePinChangePanel() {
+  const panel =
+    document.getElementById(
+      "pinChangePanel"
+    );
+
+  panel.classList.remove(
+    "visible"
+  );
+
+  panel.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  clearPinChangeFields();
+  showPinChangeResult(
+    "",
+    false
+  );
+}
+
+
+function togglePinChangePanel() {
+  const panel =
+    document.getElementById(
+      "pinChangePanel"
+    );
+
+  const willOpen =
+    !panel.classList.contains(
+      "visible"
+    );
+
+  if (!willOpen) {
+    closePinChangePanel();
+    return;
+  }
+
+  document.getElementById(
+    "changeUsername"
+  ).value =
+    document.getElementById(
+      "portalUsername"
+    ).value.trim();
+
+  clearPinChangeFields();
+  showPinChangeResult(
+    "",
+    false
+  );
+
+  panel.classList.add(
+    "visible"
+  );
+
+  panel.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+}
+
+
+async function changePortalPin() {
+  const username =
+    document.getElementById(
+      "changeUsername"
+    ).value.trim();
+
+  const currentPin =
+    document.getElementById(
+      "currentPin"
+    ).value.trim();
+
+  const newPin =
+    document.getElementById(
+      "newPin"
+    ).value.trim();
+
+  const confirmPin =
+    document.getElementById(
+      "confirmPin"
+    ).value.trim();
+
+  if (
+    !username ||
+    !currentPin ||
+    !newPin ||
+    !confirmPin
+  ) {
+    showPinChangeResult(
+      text[currentLang].invalidCurrentPin,
+      true
+    );
+    return;
+  }
+
+  if (
+    newPin !==
+    confirmPin
+  ) {
+    showPinChangeResult(
+      text[currentLang].pinMismatch,
+      true
+    );
+    return;
+  }
+
+  if (
+    newPin.length < 4
+  ) {
+    showPinChangeResult(
+      text[currentLang].pinTooShort,
+      true
+    );
+    return;
+  }
+
+  const updateButton =
+    document.getElementById(
+      "updatePinBtn"
+    );
+
+  updateButton.disabled =
+    true;
+
+  showPinChangeResult(
+    "",
+    false
+  );
+
+  try {
+    const result =
+      await unifiedApi({
+        action:
+          "changeEmployeePassword",
+        username:
+          username,
+        oldPassword:
+          currentPin,
+        newPassword:
+          newPin
+      });
+
+    if (
+      !result ||
+      result.success !== true
+    ) {
+      const code =
+        result &&
+        result.code
+          ? result.code
+          : "";
+
+      let message =
+        text[currentLang].invalidCurrentPin;
+
+      if (
+        code ===
+        "PIN_TOO_SHORT"
+      ) {
+        message =
+          text[currentLang].pinTooShort;
+      } else if (
+        code ===
+        "NOT_FOUND"
+      ) {
+        message =
+          text[currentLang].userNotFound;
+      }
+
+      showPinChangeResult(
+        message,
+        true
+      );
+
+      return;
+    }
+
+    clearPinChangeFields();
+
+    closePinChangePanel();
+
+    showLoginResult(
+      text[currentLang].pinChanged,
+      true
+    );
+
+  } catch (error) {
+    showPinChangeResult(
+      text[currentLang].networkError,
+      true
+    );
+
+  } finally {
+    updateButton.disabled =
+      false;
+  }
+}
+
+
+function clearPortalStorage() {
   sessionStorage.removeItem(
     "unifiedPortalUsername"
   );
@@ -1186,201 +1139,307 @@ function clearPortalSession(){
     "unifiedPortalUser"
   );
 
+  portalUsername = "";
+  portalSessionToken = "";
+  currentUser = null;
 }
 
-function setEmployeeName(
-  user
-){
 
-  const employeeName =
-    document.getElementById(
-      "employeeName"
-    );
+function showLoginView() {
+  document.getElementById(
+    "portalView"
+  ).style.display =
+    "none";
 
-  if (!employeeName){
-    return;
-  }
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "block";
+
+  hideAllPortalCards();
+}
 
 
-  employeeName.innerText =
+function showPortalView(user) {
+  currentUser =
+    user || null;
+
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "portalView"
+  ).style.display =
+    "block";
+
+  document.getElementById(
+    "portalUserName"
+  ).innerText =
     (
-      user &&
+      currentUser &&
       (
-        user.name ||
-        user.username
+        currentUser.name ||
+        currentUser.username
       )
-    ) ||
-    "";
+    ) || portalUsername;
 
+  renderPortalCards(
+    currentUser
+  );
 }
 
 
-function clearEmployeeName(){
-
-  const employeeName =
-    document.getElementById(
-      "employeeName"
-    );
-
-  if (employeeName){
-    employeeName.innerText =
-      "";
-  }
-
-}
-
-
-async function logoutPortal(){
-
-  const sessionToken =
-    sessionStorage.getItem(
-      "unifiedPortalSessionToken"
-    ) || "";
-
-
-  if (sessionToken){
-
-    try{
-
-      await unifiedApi({
-        action:
-          "revokeSession",
-        sessionToken:
-          sessionToken
-      });
-
-    }catch(error){}
-
-  }
-
-
-  clearPortalSession();
-  clearEmployeeName();
-  hideAllKidneyCards();
-
-
-  navigateFresh("../../index.html", true);
-
-}
-
-
-
-function hideAllKidneyCards(){
-
+function hideAllPortalCards() {
   [
-    "formCard",
-    "dashboardCard",
-    "orderCard",
-    "labelsCard"
-  ].forEach(function(id){
-
-    document.getElementById(id).style.display =
-      "none";
-
-  });
-
-}
-
-
-function renderAllowedKidneyServices(user){
-
-  const formAllowed =
-    Boolean(
-      user &&
-      user.kidneyExpiryRegisterAccess
-    );
-
-  const dashboardAllowed =
-    Boolean(
-      user &&
-      user.kidneyExpiryDashboardAccess
-    );
-
-  const orderAllowed =
-    Boolean(
-      user &&
-      user.kidneyOrderAccess
-    );
-
-  const labelsAllowed =
-    Boolean(
-      user &&
-      user.kidneyLabelsAccess
-    );
-
-  document.getElementById(
-    "formCard"
-  ).style.display =
-    formAllowed
-      ? "flex"
-      : "none";
-
-  document.getElementById(
-    "dashboardCard"
-  ).style.display =
-    dashboardAllowed
-      ? "flex"
-      : "none";
-
-  document.getElementById(
-    "orderCard"
-  ).style.display =
-    orderAllowed
-      ? "flex"
-      : "none";
-
-  document.getElementById(
-    "labelsCard"
-  ).style.display =
-    labelsAllowed
-      ? "flex"
-      : "none";
-
-  return (
-    formAllowed ||
-    dashboardAllowed ||
-    orderAllowed ||
-    labelsAllowed
+    "outpatientCard",
+    "diabetesCard",
+    "kidneyCard",
+    "controlCard"
+  ].forEach(
+    function(id) {
+      document.getElementById(
+        id
+      ).style.display =
+        "none";
+    }
   );
 
+  document.getElementById(
+    "noAccessMessage"
+  ).style.display =
+    "none";
 }
 
 
-async function validatePageAccess(){
+function hasAny(user, keys) {
+  return keys.some(
+    function(key) {
+      return Boolean(
+        user &&
+        user[key]
+      );
+    }
+  );
+}
 
-  hideAllKidneyCards();
 
-  const sessionToken =
+function renderPortalCards(user) {
+  hideAllPortalCards();
+
+  const outpatientAllowed =
+    hasAny(
+      user,
+      [
+        "opdMailRxAccess",
+        "opdMailDailyListAccess",
+        "opdMailIndicatorAccess",
+        "opdAppointmentManageAccess",
+        "opdAppointmentIndicatorAccess"
+      ]
+    );
+
+  const diabetesAllowed =
+    hasAny(
+      user,
+      [
+        "diabetesMailRxAccess",
+        "diabetesMailDailyListAccess",
+        "diabetesMailIndicatorAccess",
+        "diabetesAppointmentManageAccess",
+        "diabetesAppointmentIndicatorAccess"
+      ]
+    );
+
+  const kidneyAllowed =
+    hasAny(
+      user,
+      [
+        "kidneyExpiryRegisterAccess",
+        "kidneyExpiryDashboardAccess",
+        "kidneyOrderAccess",
+        "kidneyLabelsAccess"
+      ]
+    );
+
+  const controlAllowed =
+    hasAny(
+      user,
+      [
+        "userManagementAccess",
+        "medicationManagementAccess"
+      ]
+    );
+
+  document.getElementById(
+    "outpatientCard"
+  ).style.display =
+    outpatientAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "diabetesCard"
+  ).style.display =
+    diabetesAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "kidneyCard"
+  ).style.display =
+    kidneyAllowed
+      ? "flex"
+      : "none";
+
+  document.getElementById(
+    "controlCard"
+  ).style.display =
+    controlAllowed
+      ? "flex"
+      : "none";
+
+  const anyPortal =
+    outpatientAllowed ||
+    diabetesAllowed ||
+    kidneyAllowed ||
+    controlAllowed;
+
+  document.getElementById(
+    "noAccessMessage"
+  ).style.display =
+    anyPortal
+      ? "none"
+      : "block";
+}
+
+
+async function loginPortal() {
+  const username =
+    document.getElementById(
+      "portalUsername"
+    ).value.trim();
+
+  const pin =
+    document.getElementById(
+      "portalPin"
+    ).value.trim();
+
+  if (
+    !username ||
+    !pin
+  ) {
+    showLoginResult(
+      text[currentLang].invalidLogin
+    );
+
+    return;
+  }
+
+  const loginButton =
+    document.getElementById(
+      "loginBtn"
+    );
+
+  loginButton.disabled =
+    true;
+
+  showLoginResult("");
+
+  try {
+    const result =
+      await unifiedApi({
+        action:
+          "portalLogin",
+        username:
+          username,
+        pin:
+          pin
+      });
+
+    if (
+      !result.success ||
+      !result.sessionToken ||
+      !result.user
+    ) {
+      showLoginResult(
+        text[currentLang].invalidLogin
+      );
+
+      return;
+    }
+
+    portalUsername =
+      result.user.username ||
+      username;
+
+    portalSessionToken =
+      result.sessionToken;
+
+    currentUser =
+      result.user;
+
+    sessionStorage.setItem(
+      "unifiedPortalUsername",
+      portalUsername
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalSessionToken",
+      portalSessionToken
+    );
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(currentUser)
+    );
+
+    document.getElementById(
+      "portalPin"
+    ).value =
+      "";
+
+    refreshCurrentPageFresh();
+
+  } catch (error) {
+    showLoginResult(
+      text[currentLang].invalidLogin
+    );
+
+  } finally {
+    loginButton.disabled =
+      false;
+  }
+}
+
+
+async function restorePortalSession() {
+  portalSessionToken =
     sessionStorage.getItem(
       "unifiedPortalSessionToken"
     ) || "";
 
-  if (!sessionToken){
-
-    clearEmployeeName();
-    hideAllKidneyCards();
-
-    window.location.replace(
-      "../../index.html"
-    );
-
+  if (!portalSessionToken) {
+    showLoginView();
     return;
-
   }
 
-  let cachedUserRendered =
-    false;
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  let cachedUser = null;
 
   const cachedUserText =
     sessionStorage.getItem(
       "unifiedPortalUser"
     ) || "";
 
-  if (cachedUserText){
-
-    try{
-
-      const cachedUser =
+  if (cachedUserText) {
+    try {
+      cachedUser =
         JSON.parse(
           cachedUserText
         );
@@ -1388,135 +1447,112 @@ async function validatePageAccess(){
       if (
         cachedUser &&
         typeof cachedUser === "object"
-      ){
+      ) {
+        currentUser =
+          cachedUser;
 
-        setEmployeeName(
+        portalUsername =
+          cachedUser.username ||
+          portalUsername;
+
+        showPortalView(
           cachedUser
         );
-
-        cachedUserRendered =
-          renderAllowedKidneyServices(
-            cachedUser
-          );
-
       }
-
-    } catch (error){
-
-      cachedUserRendered =
-        false;
-
+    } catch (error) {
+      cachedUser = null;
     }
-
   }
 
-  try{
-
+  try {
     const result =
       await unifiedApi({
-        action:"validateSession",
-        sessionToken:sessionToken,
-        service:""
+        action:
+          "validateSession",
+        sessionToken:
+          portalSessionToken,
+        service:
+          ""
       });
 
     if (
       !result.success ||
       !result.user ||
       result.user.active === false
-    ){
-
-      clearPortalSession();
-      clearEmployeeName();
-      hideAllKidneyCards();
-
-      window.location.replace(
-        "../../index.html"
-      );
-
+    ) {
+      clearPortalStorage();
+      showLoginView();
       return;
-
     }
 
-    sessionStorage.setItem(
-      "unifiedPortalUser",
-      JSON.stringify(
-        result.user
-      )
-    );
+    currentUser =
+      result.user;
+
+    portalUsername =
+      result.user.username ||
+      portalUsername;
 
     sessionStorage.setItem(
       "unifiedPortalUsername",
-      result.user.username ||
-      ""
+      portalUsername
     );
 
-    setEmployeeName(
-      result.user
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(currentUser)
     );
 
-    const hasKidneyAccess =
-      renderAllowedKidneyServices(
-        result.user
-      );
+    showPortalView(
+      currentUser
+    );
 
-    if (!hasKidneyAccess){
-
-      clearEmployeeName();
-      hideAllKidneyCards();
-
-      window.location.replace(
-        "../../index.html"
-      );
-
-    }
-
-  } catch (error){
-
-    if (cachedUserRendered){
-
-      return;
-
-    }
-
-    hideAllKidneyCards();
-
+  } catch (error) {
+    clearPortalStorage();
+    showLoginView();
   }
-
 }
 
 
-window.addEventListener(
-  "pageshow",
-  function(){
+function logoutPortal() {
+  const tokenToRevoke =
+    portalSessionToken;
 
-    const sessionToken =
-      sessionStorage.getItem(
-        "unifiedPortalSessionToken"
-      ) || "";
+  clearPortalStorage();
 
-    if (sessionToken){
-      return;
-    }
+  document.getElementById(
+    "portalPin"
+  ).value =
+    "";
 
-    clearEmployeeName();
-    hideAllKidneyCards();
+  showLoginResult("");
+  showLoginView();
 
-    window.location.replace(
-      "../../index.html"
+  if (tokenToRevoke) {
+    unifiedApi({
+      action:
+        "revokeSession",
+      sessionToken:
+        tokenToRevoke
+    }).catch(
+      function() {}
     );
+  }
+}
 
+
+document.getElementById(
+  "portalPin"
+).addEventListener(
+  "keydown",
+  function(event) {
+    if (event.key === "Enter") {
+      loginPortal();
+    }
   }
 );
 
-
-setLanguage(
-  "en"
-);
-
-validatePageAccess();
-
-
+setLanguage("en");
+restorePortalSession();
 </script>
-
 </body>
 </html>
