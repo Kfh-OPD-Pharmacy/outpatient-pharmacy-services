@@ -833,9 +833,12 @@ td:first-child{
   </p>
 
 
+  <div id="loginResult" role="status"></div>
+
   <div
     class="login-card"
-    id="loginCard">
+    id="loginCard"
+    style="display:none">
 
     <label
       id="usernameLabel"
@@ -875,7 +878,7 @@ td:first-child{
     </div>
 
 
-    <div id="loginResult"></div>
+
 
   </div>
 
@@ -1072,13 +1075,13 @@ let currentLang =
 
 let adminUsername =
   sessionStorage.getItem(
-    "unifiedAdminUsername"
+    "unifiedPortalUsername"
   ) || "";
 
 
 let adminSessionToken =
   sessionStorage.getItem(
-    "unifiedAdminSessionToken"
+    "unifiedPortalSessionToken"
   ) || "";
 
 
@@ -1090,8 +1093,8 @@ let editingId =
   "";
 
 
-const MAIN_ADMIN_USERNAME =
-  "Admin";
+let sessionVerified = false;
+let sessionGeneration = 0;
 
 
 const text = {
@@ -1441,103 +1444,8 @@ function renderDate(){
 
 
 
-async function loginAdmin(){
-
-  const username =
-    document.getElementById(
-      "adminUsername"
-    ).value.trim();
-
-
-  const pin =
-    document.getElementById(
-      "adminPin"
-    ).value.trim();
-
-
-  if (
-    !username ||
-    !pin
-  ){
-
-    showLoginError();
-
-    return;
-
-  }
-
-
-  try{
-
-    const result =
-      await unifiedApi({
-
-        action:
-          "adminLogin",
-
-        username:
-          username,
-
-        pin:
-          pin
-
-      });
-
-
-    if (
-      !result ||
-      !result.success ||
-      !result.sessionToken ||
-      !result.admin ||
-      !result.admin.username ||
-      String(
-        result.admin.username
-      ).toLowerCase() !==
-        MAIN_ADMIN_USERNAME.toLowerCase()
-    ){
-
-      showLoginError();
-
-      return;
-
-    }
-
-
-    adminUsername =
-      result.admin.username;
-
-
-    adminSessionToken =
-      result.sessionToken;
-
-
-    sessionStorage.setItem(
-      "unifiedAdminUsername",
-      adminUsername
-    );
-
-
-    sessionStorage.setItem(
-      "unifiedAdminSessionToken",
-      adminSessionToken
-    );
-
-
-    document.getElementById(
-      "adminPin"
-    ).value =
-      "";
-
-
-    showAdmin();
-
-
-  }catch(error){
-
-    showLoginError();
-
-  }
-
+function loginAdmin(){
+  window.location.replace("index.html");
 }
 
 
@@ -1562,6 +1470,8 @@ function showLoginError(){
 
 
 function showAdmin(){
+
+  if (!sessionVerified) return;
 
   document.getElementById(
     "loginCard"
@@ -1593,47 +1503,51 @@ function showAdmin(){
 
 
 
+function hideProtectedContent(){
+  sessionVerified = false;
+  document.getElementById("loginCard").style.display = "none";
+  document.getElementById("adminStrip").style.display = "none";
+  document.getElementById("adminPanel").style.display = "none";
+  medications = [];
+  document.getElementById("medicationsBody").innerHTML = "";
+  clearForm();
+  clearResult();
+}
+
+function clearPortalSession(){
+  ["unifiedPortalUsername", "unifiedPortalSessionToken", "unifiedPortalUser"]
+    .forEach(function(key){ sessionStorage.removeItem(key); });
+  adminUsername = "";
+  adminSessionToken = "";
+}
+
+function handleSessionFailure(code){
+  sessionGeneration++;
+  hideProtectedContent();
+  if (code === "INVALID_SESSION" || code === "MISSING_SESSION"){
+    clearPortalSession();
+    window.location.replace("index.html");
+  } else if (code === "NO_PERMISSION"){
+    window.location.replace("control-panel.html");
+  } else {
+    const result = document.getElementById("loginResult");
+    result.className = "error";
+    result.innerText = text[currentLang].failed;
+  }
+}
+
 function logoutAdmin(){
-
-  sessionStorage.removeItem(
-    "unifiedAdminUsername"
-  );
-
-
-  sessionStorage.removeItem(
-    "unifiedAdminSessionToken"
-  );
-
-
-  adminUsername =
-    "";
-
-
-  adminSessionToken =
-    "";
-
-
-  medications =
-    [];
-
-
-  document.getElementById(
-    "loginCard"
-  ).style.display =
-    "block";
-
-
-  document.getElementById(
-    "adminStrip"
-  ).style.display =
-    "none";
-
-
-  document.getElementById(
-    "adminPanel"
-  ).style.display =
-    "none";
-
+  const tokenToRevoke = adminSessionToken;
+  sessionGeneration++;
+  hideProtectedContent();
+  clearPortalSession();
+  if (tokenToRevoke){
+    unifiedApi({
+      action: "revokeSession",
+      sessionToken: tokenToRevoke
+    }).catch(function(){});
+  }
+  window.location.replace("index.html");
 }
 
 
@@ -1655,15 +1569,14 @@ async function unifiedApi(
             "text/plain;charset=utf-8"
         },
 
+        keepalive: payload.action === "revokeSession",
+
         body:
           JSON.stringify({
 
             sessionToken:
               payload.sessionToken ||
               adminSessionToken,
-
-            adminUsername:
-              adminUsername,
 
             ...payload
 
@@ -1673,6 +1586,7 @@ async function unifiedApi(
     );
 
 
+  if (!response.ok) throw new Error("HTTP " + response.status);
   return response.json();
 
 }
@@ -1695,6 +1609,14 @@ function medicationsApiReady(){
 async function medicationsApi(
   payload
 ){
+  const generation = sessionGeneration;
+  if (!sessionVerified ||
+      adminSessionToken !== sessionStorage.getItem("unifiedPortalSessionToken")){
+    handleSessionFailure("AUTH_UNAVAILABLE");
+    await validateExistingSession();
+    throw new Error("Session requires validation");
+  }
+
 
   if (
     !medicationsApiReady()
@@ -1726,10 +1648,7 @@ async function medicationsApi(
             ...payload,
 
             sessionToken:
-              adminSessionToken,
-
-            adminUsername:
-              adminUsername
+              adminSessionToken
 
           })
 
@@ -1737,70 +1656,68 @@ async function medicationsApi(
     );
 
 
-  return response.json();
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  const result = await response.json();
+  if (generation !== sessionGeneration ||
+      adminSessionToken !== sessionStorage.getItem("unifiedPortalSessionToken")){
+    throw new Error("Stale session response");
+  }
+  if (["INVALID_SESSION", "MISSING_SESSION", "NO_PERMISSION",
+       "AUTH_UNAVAILABLE", "NO_ADMIN_PERMISSION"].includes(result.code)){
+    handleSessionFailure(result.code);
+    throw new Error("Authorization failed");
+  }
+  return result;
 
 }
 
 
 
 async function validateExistingSession(){
-
-  if (
-    !adminSessionToken ||
-    !adminUsername
-  ){
-
+  const generation = ++sessionGeneration;
+  hideProtectedContent();
+  const status = document.getElementById("loginResult");
+  status.className = "";
+  status.innerText = "";
+  adminSessionToken = sessionStorage.getItem("unifiedPortalSessionToken") || "";
+  if (!adminSessionToken){
+    handleSessionFailure("MISSING_SESSION");
     return;
-
   }
-
-
-  try{
-
-    const result =
-      await unifiedApi({
-
-        action:
-          "validateSession",
-
-        sessionToken:
-          adminSessionToken,
-
-        service:
-          "admin"
-
-      });
-
-
-    if (
-      result &&
-      result.success &&
-      result.user &&
-      result.user.isAdmin &&
-      result.user.username &&
-      String(
-        result.user.username
-      ).toLowerCase() ===
-        MAIN_ADMIN_USERNAME.toLowerCase()
-    ){
-
-      adminUsername =
-        result.user.username;
-
-
-      showAdmin();
-
+  const token = adminSessionToken;
+  try {
+    const result = await unifiedApi({
+      action: "validateSession",
+      sessionToken: token,
+      service: "medicationManagement"
+    });
+    if (generation !== sessionGeneration) return;
+    if (token !== sessionStorage.getItem("unifiedPortalSessionToken")){
+      await validateExistingSession();
       return;
-
     }
-
-
-  }catch(error){
+    if (!result.success){
+      handleSessionFailure(result.code);
+      return;
+    }
+    if (!result.user || !result.user.username){
+      handleSessionFailure("AUTH_UNAVAILABLE");
+      return;
+    }
+    if (result.user.medicationManagementAccess !== true){
+      handleSessionFailure("NO_PERMISSION");
+      return;
+    }
+    adminUsername = result.user.username;
+    sessionStorage.setItem("unifiedPortalUsername", adminUsername);
+    sessionStorage.setItem("unifiedPortalUser", JSON.stringify(result.user));
+    sessionVerified = true;
+    showAdmin();
+  } catch (error){
+    if (generation === sessionGeneration){
+      handleSessionFailure("AUTH_UNAVAILABLE");
+    }
   }
-
-
-  logoutAdmin();
-
 }
 
 
@@ -1829,7 +1746,8 @@ async function loadMedications(){
     const result =
       await medicationsApi({
         action:
-          "listMedications"
+          "listMedications",
+        includeInactive: true
       });
 
 
@@ -2388,6 +2306,15 @@ setLanguage(
 );
 
 
+window.addEventListener("pagehide", function(){
+  sessionGeneration++;
+  hideProtectedContent();
+});
+window.addEventListener("pageshow", function(event){
+  if (event.persisted || !sessionStorage.getItem("unifiedPortalSessionToken")){
+    validateExistingSession();
+  }
+});
 validateExistingSession();
 
 </script>
