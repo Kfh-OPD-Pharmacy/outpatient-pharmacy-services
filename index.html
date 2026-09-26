@@ -17,9 +17,36 @@ body{font-family:Arial,sans-serif;background:#f3f4f6;margin:0;padding:16px;color
 .official-header{width:fit-content;max-width:100%;text-align:right;transform:translateY(14px);padding-left:8px;border-left:4px solid #168fb3;direction:rtl}
 .official-header h2,.official-header h3{margin:2px 0;font-size:13px;line-height:1.4;color:#168fb3}
 hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
-.meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;direction:ltr}
-.date-box{color:#168fb3;padding:4px 0;font-size:13px;font-weight:bold;text-align:center}
-.language-chip{color:#168fb3;font-size:13px;font-weight:bold;padding:4px 0;white-space:nowrap;background:transparent;border:0;cursor:pointer;font-family:inherit}
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+  direction:ltr
+}
+.date-box{
+  grid-column:1;
+  justify-self:start;
+  color:#168fb3;
+  padding:4px 0;
+  font-size:13px;
+  font-weight:bold;
+  text-align:center
+}
+.language-chip{
+  grid-column:3;
+  justify-self:end;
+  color:#168fb3;
+  font-size:13px;
+  font-weight:bold;
+  padding:4px 0;
+  white-space:nowrap;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  font-family:inherit
+}
 .page-title{text-align:center;font-size:24px;font-weight:bold;margin:20px 0 10px;color:#168fb3}
 .subtitle{text-align:center;color:#334155;font-size:15px;line-height:1.7;margin:0 auto 24px;max-width:620px}
 .portal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,240px));justify-content:center;gap:16px;max-width:520px;margin:0 auto}
@@ -200,13 +227,15 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   height:42px;
   gap:6px;
   padding:4px 6px;
-  margin:0 auto 22px;
+  margin:0;
   background:#fff;
   border:1px solid #e5e7eb;
   border-radius:10px;
   box-shadow:0 2px 6px rgba(0,0,0,.06);
   color:#168fb3;
-  direction:ltr
+  direction:ltr;
+  grid-column:2;
+  justify-self:center
 }
 .portal-user-name{
   min-width:0;
@@ -265,6 +294,17 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   font-size:13px
 }
 @media (max-width:760px){
+.meta-row{
+  grid-template-columns:minmax(70px,1fr) minmax(150px,246px) minmax(54px,1fr);
+  gap:8px
+}
+.portal-session{
+  width:100%;
+  max-width:246px
+}
+.portal-user-name{
+  font-size:14px
+}
 body{padding:10px;background:#fff}
 .container{padding:14px;border-radius:0;box-shadow:none;min-height:100vh}
 .logo{width:84px;height:84px}
@@ -482,6 +522,28 @@ body{padding:10px;background:#fff}
 
   <div class="meta-row">
     <div class="date-box" id="dateBox"></div>
+
+    <div class="portal-session" id="portalSession" style="display:none">
+      <button
+        type="button"
+        class="logout-btn"
+        id="logoutBtn"
+        onclick="logoutPortal()"
+        title="Logout"
+        aria-label="Logout">
+        <svg
+          class="power-svg"
+          viewBox="0 0 24 24"
+          aria-hidden="true">
+          <path d="M12 3v9"></path>
+          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        </svg>
+      </button>
+
+      <span id="portalUserName" class="portal-user-name"></span>
+      <span class="portal-session-spacer" aria-hidden="true"></span>
+    </div>
+
     <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
   </div>
 
@@ -555,27 +617,6 @@ body{padding:10px;background:#fff}
   </div>
 
   <div id="portalView" style="display:none">
-    <div class="portal-session">
-      <button
-        type="button"
-        class="logout-btn"
-        id="logoutBtn"
-        onclick="logoutPortal()"
-        title="Logout"
-        aria-label="Logout">
-        <svg
-          class="power-svg"
-          viewBox="0 0 24 24"
-          aria-hidden="true">
-          <path d="M12 3v9"></path>
-          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
-        </svg>
-      </button>
-
-      <span id="portalUserName" class="portal-user-name"></span>
-      <span class="portal-session-spacer" aria-hidden="true"></span>
-    </div>
-
     <div class="portal-grid">
       <a class="portal-card" id="outpatientCard" href="outpatient-pharmacy.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
         <div class="card-icon">🏥</div>
@@ -1235,6 +1276,11 @@ function showLoginView() {
   ).style.display =
     "block";
 
+  document.getElementById(
+    "portalSession"
+  ).style.display =
+    "none";
+
   hideAllPortalCards();
 }
 
@@ -1252,6 +1298,11 @@ function showPortalView(user) {
     "portalView"
   ).style.display =
     "block";
+
+  document.getElementById(
+    "portalSession"
+  ).style.display =
+    "grid";
 
   document.getElementById(
     "portalUserName"
