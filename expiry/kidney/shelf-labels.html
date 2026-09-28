@@ -1300,6 +1300,17 @@ input[type="number"]{
   }
 }
 
+
+/* Optional per-label location and classification controls. */
+.selection-head{flex-wrap:wrap}
+#selectionMode{width:auto;max-width:100%;margin:0}
+.shelf-location-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+.shelf-location-controls span{font-size:12px;color:#168fb3}
+.shelf-location-controls select{width:64px;min-width:0;margin:0;padding:5px;font-size:12px}
+.label-location{flex:0 0 auto;font-size:9px;line-height:1.1;text-align:center;direction:ltr;font-weight:600}
+.refrigerated-badge{flex:0 0 auto;font-size:8px;line-height:1.1;font-weight:800;white-space:nowrap;text-align:center}
+.label-with-details .high-alert-badge{position:static;transform:none;padding:.6mm 1mm}
+.label-with-details .label-main{gap:.5mm}
 </style>
 </head>
 
@@ -1382,8 +1393,14 @@ input[type="number"]{
       </section>
 
       <section class="panel">
+        <div id="classificationStatus" class="status error" role="alert" style="display:none"></div>
         <div class="selection-head">
           <div class="selection-count" id="selectedCount">Selected Labels: 0</div>
+          <select id="selectionMode" aria-label="Selection Mode" onchange="updateSelectAllState()">
+            <option value="all">All</option>
+            <option value="highAlert">High Alert Only</option>
+            <option value="refrigerated">Refrigerated Only</option>
+          </select>
           <label class="select-all-control" for="selectAllBtn">
             <input type="checkbox" id="selectAllBtn" onchange="handleSelectAllChange(this)">
             <span id="selectAllText">Select All</span>
@@ -1405,6 +1422,7 @@ input[type="number"]{
   </div>
 </div>
 
+<script src="medication-classification.js"></script>
 <script>
 
 function navigateFresh(target, replaceHistory = false){
@@ -1647,48 +1665,6 @@ const TALL_MAN_INGREDIENTS =
     }
   );
 
-// Add only hospital-approved, exact central medication names here.
-const HIGH_ALERT_MEDICATION_NAMES = [
-  "Apixaban 2.5mg Tablet",
-  "Enoxaparin 6000 IU (60mg) inj",
-  "Promethazine inj",
-  "Labetalol 100mg inj",
-  "Noradrenaline vial",
-  "Adrenaline vial",
-  "Adenosine vial",
-  "Procainamide vial",
-  "Dobutamine vial",
-  "Warfarine 5mg Tab",
-  "Magnisium Sulphate vial",
-  "Lidocaine 1% vial",
-  "Amiodarone inj",
-  "Warfarine 2mg Tab",
-  "Potassium Chloride 15% amp",
-  "Lidocaine 2% syrinje",
-  "Calcium Gluconate 10% amp",
-  "Warfarine 1mg Tab",
-  "Heparin Sodium 25,000 IU/5ml in 5ml vial",
-  "Lidocaine 2% vial",
-  "Reteplase inj 18mg",
-  "Enoxaparin 2000 IU (20mg) inj",
-  "Enoxaparin 4000 IU (40mg) inj",
-  "Metoprolol inj",
-  "Digoxin 250mcg inj",
-  "Apixaban 5mg Tablet",
-  "Enoxaparin 8000 IU (80mg) inj",
-  "Vasopressin inj",
-  "Calcium chloride inj 10%"
-];
-
-const HIGH_ALERT_MEDICATIONS =
-  new Set(
-    HIGH_ALERT_MEDICATION_NAMES.map(
-      function(name){
-        return normalizeMedicationKey(name);
-      }
-    )
-  );
-
 let currentLang =
   "en";
 
@@ -1724,6 +1700,12 @@ const INACTIVITY_LIMIT_MS =
 
 const text = {
   en:{
+    shelfLocation:"Shelf Location",
+    selectionMode:"Selection Mode",
+    all:"All",
+    highAlertOnly:"High Alert Only",
+    refrigeratedOnly:"Refrigerated Only",
+    classificationUnavailable:"Medication classification could not load. Reload before selecting or printing.",
     title:"Shelf Labels",
     officialLine1:"Madinah Health Cluster",
     officialLine2:"King Fahad Hospital - Madinah",
@@ -1762,6 +1744,12 @@ const text = {
     expPrefix:"EXP:"
   },
   ar:{
+    shelfLocation:"موقع الرف",
+    selectionMode:"نطاق الاختيار",
+    all:"الكل",
+    highAlertOnly:"الأدوية عالية الخطورة فقط",
+    refrigeratedOnly:"أدوية الثلاجة فقط",
+    classificationUnavailable:"تعذر تحميل تصنيف الأدوية. أعد تحميل الصفحة قبل الاختيار أو الطباعة.",
     title:"Shelf Labels",
     officialLine1:"تجمع المدينة المنورة الصحي",
     officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
@@ -2433,9 +2421,55 @@ function normalizeMedicationKey(value){
 }
 
 function isHighAlertMedication(name){
-  return HIGH_ALERT_MEDICATIONS.has(
-    normalizeMedicationKey(name)
-  );
+  return window.KidneyMedicationClassification.isHighAlertMedication(name);
+}
+
+function isRefrigeratedMedication(name){
+  return window.KidneyMedicationClassification.isRefrigeratedMedication(name);
+}
+
+function classificationReady(){
+  const ready = Boolean(window.KidneyMedicationClassification);
+  const status = document.getElementById("classificationStatus");
+  status.textContent = ready ? "" : text[currentLang].classificationUnavailable;
+  status.style.display = ready ? "none" : "block";
+  document.getElementById("printAllBtn").disabled = !ready;
+  document.getElementById("selectionMode").disabled = !ready;
+  document.getElementById("selectAllBtn").disabled = !ready;
+  return ready;
+}
+
+function getSelectionCandidates(){
+  if (!classificationReady()) return [];
+  const mode = document.getElementById("selectionMode").value;
+  return centralMedicationList.filter(function(name){
+    return mode === "highAlert" ? isHighAlertMedication(name) :
+      mode === "refrigerated" ? isRefrigeratedMedication(name) : true;
+  });
+}
+
+function shelfLocationText(item){
+  return /^[A-Z]$/.test(item.shelfLetter || "") &&
+    /^(0[1-9]|10)$/.test(item.shelfSection || "") &&
+    /^(0[1-9]|[1-4][0-9]|50)$/.test(item.shelfPosition || "")
+      ? [item.shelfLetter, item.shelfSection, item.shelfPosition].join("-") : "";
+}
+
+function renderShelfLocationControls(item){
+  return '<div class="shelf-location-controls"><span>' +
+    escapeHtml(text[currentLang].shelfLocation) + '</span>' +
+    [["shelfLetter",26],["shelfSection",10],["shelfPosition",50]].map(function(definition, part){
+      const key = definition[0];
+      let options = '<option value="">—</option>';
+      for (let i = 1; i <= definition[1]; i++){
+        const value = part === 0 ? String.fromCharCode(64 + i) : String(i).padStart(2,"0");
+        options += '<option value="' + value + '"' +
+          (item[key] === value ? ' selected' : '') + '>' + value + '</option>';
+      }
+      return '<select aria-label="' + escapeHtml(text[currentLang].shelfLocation) +
+        ' ' + (part + 1) + '" data-action="location" data-field="' + key +
+        '" data-id="' + escapeHtml(item.id) + '">' + options + '</select>';
+    }).join("") + '</div>';
 }
 
 function getMedicationIdForName(name){
@@ -2611,6 +2645,9 @@ function addMedicationToBatch(name){
     printMedicationName:formatMedicationPrintName(name),
     expiryDates:dates,
     selectedExpiry:dates[0] || "",
+    shelfLetter:"",
+    shelfSection:"",
+    shelfPosition:"",
     copies:1
   });
 
@@ -2621,7 +2658,7 @@ function addMedicationToBatch(name){
 }
 
 function selectAllMedications(){
-  centralMedicationList.forEach(
+  getSelectionCandidates().forEach(
     function(name){
       const exists =
         selectedLabels.some(
@@ -2646,6 +2683,9 @@ function selectAllMedications(){
           printMedicationName:formatMedicationPrintName(name),
           expiryDates:dates,
           selectedExpiry:dates[0] || "",
+          shelfLetter:"",
+          shelfSection:"",
+          shelfPosition:"",
           copies:1
         });
       }
@@ -2662,7 +2702,14 @@ function handleSelectAllChange(checkbox){
   if (checkbox.checked){
     selectAllMedications();
   }else{
-    clearAll();
+    if (document.getElementById("selectionMode").value === "all"){
+      clearAll();
+    } else {
+      const candidates = new Set(getSelectionCandidates());
+      selectedLabels = selectedLabels.filter(function(item){ return !candidates.has(item.sourceName); });
+      renderBatchList();
+      renderPreview();
+    }
   }
 }
 
@@ -2675,8 +2722,8 @@ function updateSelectAllState(){
   }
 
   checkbox.checked =
-    centralMedicationList.length > 0 &&
-    centralMedicationList.every(
+    getSelectionCandidates().length > 0 &&
+    getSelectionCandidates().every(
       function(name){
         return selectedLabels.some(
           function(item){
@@ -2857,7 +2904,7 @@ function renderBatchList(){
             "<input type=\"number\" min=\"1\" step=\"1\" value=\"" + escapeHtml(String(item.copies)) + "\" data-action=\"copies\" data-id=\"" + item.id + "\">" +
           "</div>" +
           "<button class=\"danger-btn icon-btn\" type=\"button\" data-action=\"remove\" data-id=\"" + item.id + "\" title=\"" + escapeHtml(text[currentLang].removeTitle) + "\" aria-label=\"" + escapeHtml(text[currentLang].removeTitle) + "\">" + text[currentLang].remove + "</button>" +
-        "</div>";
+        "</div>" + renderShelfLocationControls(item);
 
       list.appendChild(card);
     }
@@ -2924,6 +2971,8 @@ function renderPreview(){
   sheet.innerHTML =
     "";
 
+  if (!classificationReady()) return;
+
   selectedLabels.forEach(
     function(item){
       const copies =
@@ -2961,6 +3010,8 @@ function createLabelElement(item){
     isHighAlertMedication(
       item.originalMedicationName || item.sourceName
     );
+  const refrigerated = isRefrigeratedMedication(item.originalMedicationName || item.sourceName);
+  const location = shelfLocationText(item);
   const qrImageUrl =
     buildMedicationQrImageUrl(
       item.medicationId,
@@ -2978,6 +3029,9 @@ function createLabelElement(item){
       (highAlert
         ? "<div class=\"high-alert-badge\">HIGH ALERT</div>"
         : "") +
+      (refrigerated
+        ? "<div class=\"refrigerated-badge\">REFRIGERATED</div>"
+        : "") +
       "<div class=\"label-name\">" +
         "<span class=\"medication-primary\">" +
           formatTallManNameHtml(
@@ -2991,6 +3045,7 @@ function createLabelElement(item){
             "</span>"
           : "") +
       "</div>" +
+      (location ? "<div class=\"label-location\">" + escapeHtml(location) + "</div>" : "") +
     "</div>" +
     "<div class=\"label-exp\">" +
       (qrImageUrl
@@ -3002,6 +3057,9 @@ function createLabelElement(item){
       "<img class=\"label-logo\" src=\"../../logo.png\" alt=\"Logo\">" +
     "</div>";
 
+  if (refrigerated || location){
+    label.classList.add("label-with-details");
+  }
   return label;
 }
 
@@ -3075,8 +3133,10 @@ function fitLabelName(element){
       Math.ceil(lineHeight * maxLines) + 1;
     const badgeHeight =
       badge ? badge.offsetHeight + rowGap : 0;
+    const extraHeight = Array.from(parent.querySelectorAll(".refrigerated-badge, .label-location"))
+      .reduce(function(total, extra){ return total + extra.offsetHeight + rowGap; }, 0);
     const availableNameHeight =
-      Math.max(0, parent.clientHeight - badgeHeight);
+      Math.max(0, parent.clientHeight - badgeHeight - extraHeight);
     const fitsWidth =
       element.scrollWidth <= parent.clientWidth + 1;
     const fitsHeight =
@@ -3194,6 +3254,7 @@ function handleSizeChange(){
 }
 
 function printAll(){
+  if (!classificationReady()) return;
   if (!selectedLabels.length){
     setStatus(text[currentLang].needSelection, "error");
     return;
@@ -3261,6 +3322,12 @@ function setLanguage(lang){
     "aria-label",
     text[lang].clearAllTitle
   );
+  const mode = document.getElementById("selectionMode");
+  mode.setAttribute("aria-label", text[lang].selectionMode);
+  ["all","highAlertOnly","refrigeratedOnly"].forEach(function(key, index){
+    mode.options[index].textContent = text[lang][key];
+  });
+  classificationReady();
   document.getElementById("selectAllText").innerText =
     text[lang].selectAll;
 
@@ -3340,6 +3407,13 @@ document.addEventListener(
       event.target.getAttribute("data-action");
     const id =
       event.target.getAttribute("data-id");
+
+    if (action === "location" && id){
+      const field = event.target.getAttribute("data-field");
+      if (["shelfLetter", "shelfSection", "shelfPosition"].includes(field)){
+        updateItem(id, field, event.target.value);
+      }
+    }
 
     if (action === "expiry" && id){
       updateItem(id, "selectedExpiry", event.target.value);
