@@ -1298,6 +1298,15 @@ tr:has(.date-ok) td{
   }
 }
 
+
+.medication-filter-group{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;width:max-content;max-width:100%}
+.medication-filter-group .combo-wrap{min-width:0}
+@media(max-width:768px){.medication-filter-group{flex-wrap:wrap}}
+.classification-filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;max-width:100%}
+.classification-filters label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:13px;color:#168fb3;margin:0}
+.classification-filters input[type="checkbox"]{width:16px;height:16px;min-height:0;margin:0;padding:0}
+#classificationStatus{color:#b91c1c;margin:8px 0}
+@media print{.classification-filters,#classificationStatus{display:none!important}}
 </style>
 </head>
 
@@ -1499,6 +1508,7 @@ tr:has(.date-ok) td{
 
     </div>
 
+    <div class="medication-filter-group">
     <div class="combo-wrap">
 
       <input
@@ -1516,6 +1526,12 @@ tr:has(.date-ok) td{
 
     </div>
 
+    <div class="classification-filters">
+      <label><input type="checkbox" id="highAlertFilter" onchange="renderTable()"><span id="highAlertFilterText">High Alert</span></label>
+      <label><input type="checkbox" id="refrigeratedFilter" onchange="renderTable()"><span id="refrigeratedFilterText">Refrigerated</span></label>
+    </div>
+    </div>
+
     <div class="action-right">
 
     <button
@@ -1531,6 +1547,8 @@ tr:has(.date-ok) td{
     </div>
 
   </div>
+
+  <div id="classificationStatus" role="alert" style="display:none"></div>
 
   <div class="table-wrap">
 
@@ -1567,6 +1585,7 @@ tr:has(.date-ok) td{
 
 <div id="printPages"></div>
 
+<script src="medication-classification.js"></script>
 <script>
 
 function navigateFresh(target, replaceHistory = false){
@@ -1885,6 +1904,12 @@ function setLanguage(lang){
     text[lang].colStatus;
 document.getElementById("refreshNote").innerText =
     text[lang].refreshNote;
+
+  document.getElementById("highAlertFilterText").textContent =
+    lang === "ar" ? "عالي الخطورة" : "High Alert";
+  document.getElementById("refrigeratedFilterText").textContent =
+    lang === "ar" ? "ثلاجة" : "Refrigerated";
+  classificationReady();
 
   document.getElementById("medicineSearch").placeholder =
     text[lang].searchPlaceholder;
@@ -2688,6 +2713,28 @@ function pillClass(item){
    VISIBLE ITEMS
 ========================================================= */
 
+function classificationReady(){
+  const ready = Boolean(window.KidneyMedicationClassification);
+  const status = document.getElementById("classificationStatus");
+  status.textContent = ready ? "" : (currentLang === "ar"
+    ? "تعذر تحميل تصنيف الأدوية. أعد تحميل الصفحة قبل التصفية أو الطباعة."
+    : "Medication classification could not load. Reload before filtering or printing.");
+  status.style.display = ready ? "none" : "block";
+  document.getElementById("highAlertFilter").disabled = !ready;
+  document.getElementById("refrigeratedFilter").disabled = !ready;
+  return ready;
+}
+
+function matchesClassification(item){
+  const highAlert = document.getElementById("highAlertFilter").checked;
+  const refrigerated = document.getElementById("refrigeratedFilter").checked;
+  if (!highAlert && !refrigerated) return true;
+  if (!classificationReady()) return false;
+  const classification = window.KidneyMedicationClassification;
+  return (!highAlert || classification.isHighAlertMedication(item.name)) &&
+    (!refrigerated || classification.isRefrigeratedMedication(item.name));
+}
+
 function getVisibleItems(){
 
   return reportBaseItems().filter(
@@ -2701,6 +2748,7 @@ function getVisibleItems(){
 
       return (
         statusMatch &&
+        matchesClassification(item) &&
         matchesMedicineSearch(
           item
         )
@@ -2870,6 +2918,8 @@ function renderRows(items){
 ========================================================= */
 
 function printReport(){
+
+  if (!classificationReady()) return;
 
   buildPrintPages();
 
