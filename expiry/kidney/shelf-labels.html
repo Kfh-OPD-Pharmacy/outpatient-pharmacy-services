@@ -1307,7 +1307,7 @@ input[type="number"]{
 .shelf-location-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
 .shelf-location-controls span{font-size:12px;color:#168fb3}
 .shelf-location-controls select{width:64px;min-width:0;margin:0;padding:5px;font-size:12px}
-.label-location{flex:0 0 auto;font-size:9px;line-height:1.1;text-align:center;direction:ltr;font-weight:600}
+.label-location{position:absolute;bottom:1.5mm;left:50%;transform:translateX(-50%);font-size:9px;line-height:1.1;text-align:center;direction:ltr;font-weight:600}
 .refrigerated-badge{flex:0 0 auto;font-size:8px;line-height:1.1;font-weight:800;white-space:nowrap;text-align:center}
 .label-with-details .high-alert-badge{position:static;transform:none;padding:.6mm 1mm}
 .label-with-details .label-main{gap:.5mm}
@@ -3057,7 +3057,7 @@ function createLabelElement(item){
       "<img class=\"label-logo\" src=\"../../logo.png\" alt=\"Logo\">" +
     "</div>";
 
-  if (refrigerated || location){
+  if (refrigerated){
     label.classList.add("label-with-details");
   }
   return label;
@@ -3133,7 +3133,7 @@ function fitLabelName(element){
       Math.ceil(lineHeight * maxLines) + 1;
     const badgeHeight =
       badge ? badge.offsetHeight + rowGap : 0;
-    const extraHeight = Array.from(parent.querySelectorAll(".refrigerated-badge, .label-location"))
+    const extraHeight = Array.from(parent.querySelectorAll(".refrigerated-badge"))
       .reduce(function(total, extra){ return total + extra.offsetHeight + rowGap; }, 0);
     const availableNameHeight =
       Math.max(0, parent.clientHeight - badgeHeight - extraHeight);
@@ -3143,7 +3143,11 @@ function fitLabelName(element){
       element.scrollHeight <=
         Math.min(availableNameHeight, allowedLineHeight) + 1;
 
-    return fitsWidth && fitsHeight;
+    const location = parent.querySelector(".label-location");
+    const clearsLocation = !location ||
+      element.getBoundingClientRect().bottom + rowGap <= location.getBoundingClientRect().top;
+
+    return fitsWidth && fitsHeight && clearsLocation;
   }
 
   applyFontSize();
