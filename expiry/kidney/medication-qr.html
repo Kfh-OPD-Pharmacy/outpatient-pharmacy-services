@@ -269,7 +269,7 @@ hr{
 
   <hr>
 
-  <h1 class="page-title">Medication Live Expiry</h1>
+  <h1 class="page-title">Expiry Date</h1>
 
   <main class="card" id="contentCard">
     <p class="message" id="messageBox">Loading medication data...</p>
@@ -529,8 +529,7 @@ function renderMedication(name, dates){
     (highAlert
       ? "<div class=\"high-alert-badge\">HIGH ALERT</div>"
       : "") +
-    "<h2 class=\"med-name" + (highAlert ? " high-alert" : "") + "\">" + escapeHtml(name) + "</h2>" +
-    "<h3 class=\"section-title\">Expiry Dates</h3>";
+    "<h2 class=\"med-name" + (highAlert ? " high-alert" : "") + "\">" + escapeHtml(name) + "</h2>";
 
   if (!dates.length){
     html +=
@@ -551,7 +550,7 @@ function renderMedication(name, dates){
   }
 
   html +=
-    "<p class=\"meta\">Live read-only view</p>";
+    "<p class=\"meta\">only view</p>";
 
   card.innerHTML =
     html;
