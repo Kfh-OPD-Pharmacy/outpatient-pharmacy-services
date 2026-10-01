@@ -1306,7 +1306,10 @@ tr:has(.date-ok) td{
 .classification-filters label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:13px;color:#168fb3;margin:0}
 .classification-filters input[type="checkbox"]{width:16px;height:16px;min-height:0;margin:0;padding:0}
 #classificationStatus{color:#b91c1c;margin:8px 0}
-@media print{.classification-filters,#classificationStatus{display:none!important}}
+.print-selection{width:32px;padding:6px;text-align:center}
+.print-selection input{width:16px;height:16px;margin:0;vertical-align:middle}
+.session-control[hidden]{display:none!important}
+@media print{.classification-filters,#classificationStatus,.print-selection{display:none!important}}
 </style>
 </head>
 
@@ -1340,7 +1343,7 @@ tr:has(.date-ok) td{
 
     <div class="employee-toolbar kidney-user-toolbar">
 
-      <button type="button" class="logout-icon kidney-toolbar-button" id="logoutBtn"
+      <button type="button" class="logout-icon kidney-toolbar-button session-control" id="logoutBtn" hidden
         onclick="logoutDashboard()" title="Logout" aria-label="Logout"><svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 3v9"></path>
           <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
@@ -1352,7 +1355,8 @@ tr:has(.date-ok) td{
 
       <button
         type="button"
-        class="portal-back-button kidney-toolbar-button"
+        class="portal-back-button kidney-toolbar-button session-control"
+        hidden
         id="portalBackBtn"
         onclick="navigateFresh('index.html'); return false;"
         title="Back"
@@ -1556,6 +1560,7 @@ tr:has(.date-ok) td{
 
       <thead>
         <tr>
+          <th class="print-selection"><input type="checkbox" id="selectVisiblePrintRows" aria-label="Select visible rows for printing" onchange="selectVisibleRowsForPrint(this.checked)"></th>
           <th id="colName">Medication Name</th>
           <th id="colExpiry">Expiry Date</th>
           <th id="colStatus">Status</th>
@@ -1778,6 +1783,10 @@ let currentLang =
 
 let lastItems =
   [];
+
+const selectedPrintRows = new Set();
+let printRowKeys = new Map();
+let verifiedToolbarToken = "";
 
 let activeFilter =
   null;
@@ -2764,6 +2773,54 @@ function getVisibleItems(){
    TABLE
 ========================================================= */
 
+function rebuildPrintRowKeys(){
+  const counts = new Map();
+  const previousCounts = new Map();
+  printRowKeys.forEach(function(key){
+    const identity = JSON.parse(key)[0];
+    previousCounts.set(identity, (previousCounts.get(identity) || 0) + 1);
+  });
+  printRowKeys = new Map();
+  lastItems.forEach(function(item){
+    const identity = JSON.stringify([item.name, item.expiry, item.registeredBy || ""]);
+    const occurrence = counts.get(identity) || 0;
+    counts.set(identity, occurrence + 1);
+    printRowKeys.set(item, JSON.stringify([identity, occurrence]));
+  });
+  const available = new Set(printRowKeys.values());
+  selectedPrintRows.forEach(function(key){
+    const identity = JSON.parse(key)[0];
+    if (!available.has(key) || counts.get(identity) !== previousCounts.get(identity)){
+      selectedPrintRows.delete(key);
+    }
+  });
+}
+
+function updatePrintSelectionHeader(){
+  const visible = getVisibleItems();
+  const count = visible.filter(function(item){ return selectedPrintRows.has(printRowKeys.get(item)); }).length;
+  const checkbox = document.getElementById("selectVisiblePrintRows");
+  checkbox.checked = visible.length > 0 && count === visible.length;
+  checkbox.indeterminate = count > 0 && count < visible.length;
+  checkbox.disabled = visible.length === 0;
+  checkbox.setAttribute("aria-label", currentLang === "ar" ? "تحديد الصفوف الظاهرة للطباعة" : "Select visible rows for printing");
+}
+
+function selectVisibleRowsForPrint(checked){
+  getVisibleItems().forEach(function(item){
+    const key = printRowKeys.get(item);
+    if (checked) selectedPrintRows.add(key);
+    else selectedPrintRows.delete(key);
+  });
+  renderTable();
+}
+
+function getPrintableItems(){
+  const visible = getVisibleItems();
+  const selected = visible.filter(function(item){ return selectedPrintRows.has(printRowKeys.get(item)); });
+  return selected.length ? selected : visible;
+}
+
 function renderTable(){
 
   const tbody =
@@ -2831,6 +2888,21 @@ function renderTable(){
         ) +
         "</td>";
 
+      const selectionCell = document.createElement("td");
+      selectionCell.className = "print-selection";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selectedPrintRows.has(printRowKeys.get(m));
+      checkbox.setAttribute("aria-label", (currentLang === "ar" ? "طباعة: " : "Print: ") + m.name + " — " + m.expiry);
+      checkbox.addEventListener("change", function(){
+        const key = printRowKeys.get(m);
+        if (checkbox.checked) selectedPrintRows.add(key);
+        else selectedPrintRows.delete(key);
+        updatePrintSelectionHeader();
+      });
+      selectionCell.appendChild(checkbox);
+      tr.insertBefore(selectionCell, tr.firstChild);
+
       tbody.appendChild(
         tr
       );
@@ -2846,6 +2918,8 @@ function renderTable(){
   emptyNote.innerText =
     text[currentLang].emptyNote;
 
+  updatePrintSelectionHeader();
+
 }
 
 
@@ -2854,6 +2928,8 @@ function renderRows(items){
   lastItems =
     items ||
     [];
+
+  rebuildPrintRowKeys();
 
   let expired =
     0;
@@ -2939,7 +3015,7 @@ function buildPrintPages(){
     "";
 
   const items =
-    getVisibleItems();
+    getPrintableItems();
 
   const ROWS_PER_PAGE =
     28;
@@ -3395,12 +3471,23 @@ async function loadData(){
 }
 
 
+function updateSessionControls(token){
+  verifiedToolbarToken = token;
+  const visible = Boolean(token) && token === sessionStorage.getItem("unifiedPortalSessionToken");
+  document.getElementById("portalBackBtn").hidden = !visible;
+  document.getElementById("logoutBtn").hidden = !visible;
+}
+
 async function loadDashboardData(){
 
   const sessionToken =
     sessionStorage.getItem(
       "unifiedPortalSessionToken"
     ) || "";
+
+  if (!sessionToken || sessionToken !== verifiedToolbarToken){
+    updateSessionControls("");
+  }
 
   if (sessionToken){
     try{
@@ -3433,10 +3520,17 @@ async function loadDashboardData(){
           protectedData &&
           protectedData.success
         ){
+          if (sessionToken === sessionStorage.getItem("unifiedPortalSessionToken")){
+            updateSessionControls(sessionToken);
+          }
           return protectedData;
         }
       }
     }catch(error){}
+  }
+
+  if (sessionToken === (sessionStorage.getItem("unifiedPortalSessionToken") || "")){
+    updateSessionControls("");
   }
 
   const publicResponse =
