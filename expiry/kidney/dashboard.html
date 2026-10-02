@@ -777,9 +777,10 @@ tr:has(.date-ok) td{
 .high-alert-indicator{
   display:inline-block;
   padding:1px 4px;
-  border:1px solid #9f1239;
+  border:1px solid #b91c1c;
   border-radius:3px;
-  color:#9f1239;
+  background:#b91c1c;
+  color:#fff;
   font-size:10px;
   font-weight:700;
   line-height:1.2;
@@ -802,15 +803,20 @@ tr:has(.date-ok) td{
 
 @media print{
   .high-alert-indicator{
-    border-color:#111827 !important;
-    color:#111827 !important;
-    font-size:9px
+    border-color:#b91c1c !important;
+    background:#b91c1c !important;
+    color:#fff !important;
+    font-size:9px;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
   }
 
   .refrigerated-indicator{
     width:13px;
     height:13px;
-    color:#111827 !important
+    color:#0f7592 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
   }
 }
 
@@ -1614,7 +1620,7 @@ tr:has(.date-ok) td{
       <thead>
         <tr>
           <th class="print-selection"><input type="checkbox" id="selectVisiblePrintRows" aria-label="Select visible rows for printing" onchange="selectVisibleRowsForPrint(this.checked)"></th>
-          <th id="colName">Medicatio</th>
+          <th id="colName">Medication</th>
           <th id="colType">Type</th>
           <th id="colExpiry">Expiry Date</th>
           <th id="colStatus">Status</th>
@@ -1896,7 +1902,7 @@ const text = {
     labelOk:"Within Safe Range",
     searchPlaceholder:"Search by medication name",
     noMatches:"No matching medication in the list.",
-    colName:"Medicatio",
+    colName:"Medication",
     colType:"Type",
     colExpiry:"Expiry Date",
     colEmployee:"By",
