@@ -801,6 +801,23 @@ tr:has(.date-ok) td{
   stroke-linecap:round
 }
 
+.sortable-header{
+  cursor:pointer;
+  user-select:none
+}
+
+.sort-indicator{
+  margin-left:3px;
+  font-size:10px;
+  font-weight:700
+}
+
+.high-alert-medication-name{
+  color:#ff0000;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
 @media print{
   .high-alert-indicator{
     border-color:#b91c1c !important;
@@ -1733,9 +1750,9 @@ tr:has(.date-ok) td{
       <thead>
         <tr>
           <th class="print-selection"><input type="checkbox" id="selectVisiblePrintRows" aria-label="Select visible rows for printing" onchange="selectVisibleRowsForPrint(this.checked)"></th>
-          <th id="colName">Medication</th>
+          <th id="colName" class="sortable-header" role="button" tabindex="0" aria-sort="none" onclick="toggleSort('name')" onkeydown="handleSortHeaderKey(event,'name')">Medication</th>
           <th id="colType">Type</th>
-          <th id="colExpiry">Expiry Date</th>
+          <th id="colExpiry" class="sortable-header" role="button" tabindex="0" aria-sort="none" onclick="toggleSort('expiry')" onkeydown="handleSortHeaderKey(event,'expiry')">Expiry Date</th>
           <th id="colStatus">Status</th>
           <th id="colEmployee">By</th>
         </tr>
@@ -1967,6 +1984,12 @@ let activeFilter =
 let medicineSearchTerm =
   "";
 
+let activeSortColumn =
+  null;
+
+let activeSortDirection =
+  "asc";
+
 
 const text = {
 
@@ -2093,6 +2116,8 @@ function setLanguage(lang){
 
   document.getElementById("colStatus").innerText =
     text[lang].colStatus;
+
+  updateSortHeaders();
 document.getElementById("refreshNote").innerText =
     text[lang].refreshNote;
 
@@ -2978,7 +3003,8 @@ function matchesClassification(item){
 
 function getVisibleItems(){
 
-  return reportBaseItems().filter(
+  const visible =
+    reportBaseItems().filter(
     function(item){
 
       const statusMatch =
@@ -2996,6 +3022,187 @@ function getVisibleItems(){
       );
 
     }
+  );
+
+  return sortedVisibleItems(
+    visible
+  );
+
+}
+
+
+function sortedVisibleItems(items){
+
+  const sorted =
+    items.slice();
+
+  if (
+    !activeSortColumn
+  ){
+    return sorted;
+  }
+
+  sorted.sort(
+    function(a, b){
+
+      let result =
+        0;
+
+      if (
+        activeSortColumn === "name"
+      ){
+
+        result =
+          String(
+            a.name ||
+            ""
+          ).localeCompare(
+            String(
+              b.name ||
+              ""
+            ),
+            "en",
+            {
+              sensitivity:"base"
+            }
+          );
+
+      }else if (
+        activeSortColumn === "expiry"
+      ){
+
+        result =
+          String(
+            a.expiry ||
+            ""
+          ).localeCompare(
+            String(
+              b.expiry ||
+              ""
+            )
+          );
+
+      }
+
+      return activeSortDirection === "desc"
+        ? result * -1
+        : result;
+
+    }
+  );
+
+  return sorted;
+
+}
+
+
+function toggleSort(column){
+
+  if (
+    activeSortColumn === column
+  ){
+
+    activeSortDirection =
+      activeSortDirection === "asc"
+        ? "desc"
+        : "asc";
+
+  }else{
+
+    activeSortColumn =
+      column;
+
+    activeSortDirection =
+      "asc";
+
+  }
+
+  updateSortHeaders();
+  renderTable();
+
+}
+
+
+function handleSortHeaderKey(event, column){
+
+  if (
+    event.key === "Enter" ||
+    event.key === " "
+  ){
+
+    event.preventDefault();
+    toggleSort(column);
+
+  }
+
+}
+
+
+function updateSortHeaders(){
+
+  const nameHeader =
+    document.getElementById(
+      "colName"
+    );
+
+  const expiryHeader =
+    document.getElementById(
+      "colExpiry"
+    );
+
+  if (
+    !nameHeader ||
+    !expiryHeader
+  ){
+    return;
+  }
+
+  updateSortHeader(
+    nameHeader,
+    text[currentLang].colName,
+    "name"
+  );
+
+  updateSortHeader(
+    expiryHeader,
+    text[currentLang].colExpiry,
+    "expiry"
+  );
+
+}
+
+
+function updateSortHeader(header, label, column){
+
+  const active =
+    activeSortColumn === column;
+
+  const indicator =
+    active
+      ? (
+          activeSortDirection === "asc"
+            ? "↑"
+            : "↓"
+        )
+      : "↕";
+
+  header.innerHTML =
+    escapeHtml(
+      label
+    ) +
+    '<span class="sort-indicator">' +
+    indicator +
+    '</span>';
+
+  header.setAttribute(
+    "aria-sort",
+    active
+      ? (
+          activeSortDirection === "asc"
+            ? "ascending"
+            : "descending"
+        )
+      : "none"
   );
 
 }
@@ -3067,6 +3274,32 @@ function medicationTypeMarkup(name){
   return '<span class="medication-type">' + markup + '</span>';
 }
 
+
+function medicationNameMarkup(name){
+
+  const classification =
+    window.KidneyMedicationClassification;
+
+  const highAlert =
+    classification &&
+    classification.isHighAlertMedication(
+      name
+    );
+
+  return '<span' +
+    (
+      highAlert
+        ? ' class="high-alert-medication-name"'
+        : ""
+    ) +
+    '>' +
+    escapeHtml(
+      name
+    ) +
+    '</span>';
+
+}
+
 function renderTable(){
 
   const tbody =
@@ -3100,7 +3333,7 @@ function renderTable(){
 
       tr.innerHTML =
         "<td>" +
-        escapeHtml(m.name) +
+        medicationNameMarkup(m.name) +
         "</td>" +
 
         "<td>" +
@@ -3508,7 +3741,7 @@ function createPrintPage(
 
         tr.innerHTML =
           "<td>" +
-          escapeHtml(item.name) +
+          medicationNameMarkup(item.name) +
           "</td>" +
 
           "<td>" +
