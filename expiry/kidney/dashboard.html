@@ -1461,6 +1461,14 @@ tr:has(.date-ok) td{
         Nearly Expire Date
       </option>
 
+      <option value="highAlertInspection">
+        High Alert Inspection
+      </option>
+
+      <option value="refrigeratorInspection">
+        Refrigerator Inspection
+      </option>
+
     </select>
 
     <select
@@ -1862,6 +1870,8 @@ const text = {
     inspectionReport:"تقرير التفتيش",
     removalReport:"تقرير الاستبعاد",
     nearlyExpireReport:"الأدوية قريبة الانتهاء",
+    highAlertInspection:"High Alert Inspection",
+    refrigeratorInspection:"Refrigerator Inspection",
     officialLine1:"تجمع المدينة المنورة الصحي",
     officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
     officialLine3:"إدارة الرعاية الصيدلانية",
@@ -1894,6 +1904,8 @@ const text = {
     inspectionReport:"Inspection Report",
     removalReport:"Expiry Removal Report",
     nearlyExpireReport:"Nearly Expire Date",
+    highAlertInspection:"High Alert Inspection",
+    refrigeratorInspection:"Refrigerator Inspection",
     officialLine1:"Madinah Health Cluster",
     officialLine2:"King Fahad Hospital - Madinah",
     officialLine3:"Pharmaceutical Care Administration",
@@ -1996,6 +2008,12 @@ document.getElementById("refreshNote").innerText =
 
   document.getElementById("reportType").options[2].textContent =
     text[lang].nearlyExpireReport;
+
+  document.getElementById("reportType").options[3].textContent =
+    text[lang].highAlertInspection;
+
+  document.getElementById("reportType").options[4].textContent =
+    text[lang].refrigeratorInspection;
 
 document.getElementById("printBtn").title =
     text[lang].printBtnText;
@@ -2270,7 +2288,11 @@ function updateReportTitle(){
       ? text[currentLang].removalReport
       : reportType === "nearlyExpire"
         ? text[currentLang].nearlyExpireReport
-        : text[currentLang].inspectionReport;
+        : reportType === "highAlertInspection"
+          ? text[currentLang].highAlertInspection
+          : reportType === "refrigeratorInspection"
+            ? text[currentLang].refrigeratorInspection
+            : text[currentLang].inspectionReport;
 
   document.getElementById(
     "pageTitle"
@@ -2367,6 +2389,46 @@ function reportBaseItems(){
         return (
           distance > 0 &&
           distance <= 3
+        );
+
+      }
+
+      if (
+        reportType === "highAlertInspection"
+      ){
+
+        if (
+          !classificationReady()
+        ){
+          return false;
+        }
+
+        return (
+          itemMonth >=
+          month &&
+          window.KidneyMedicationClassification.isHighAlertMedication(
+            item.name
+          )
+        );
+
+      }
+
+      if (
+        reportType === "refrigeratorInspection"
+      ){
+
+        if (
+          !classificationReady()
+        ){
+          return false;
+        }
+
+        return (
+          itemMonth >=
+          month &&
+          window.KidneyMedicationClassification.isRefrigeratedMedication(
+            item.name
+          )
         );
 
       }
