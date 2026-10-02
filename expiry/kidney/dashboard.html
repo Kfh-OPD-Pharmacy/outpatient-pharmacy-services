@@ -695,24 +695,29 @@ tr:has(.date-ok) td{
   print-color-adjust:exact
 }
 
-.print-table th:nth-child(3),
-.print-table td:nth-child(3){
+.print-table th:nth-child(4),
+.print-table td:nth-child(4){
   display:none !important
 }
 
 .print-table th:nth-child(1),
 .print-table td:nth-child(1){
-  width:40%
+  width:34%
 }
 
 .print-table th:nth-child(2),
 .print-table td:nth-child(2){
-  width:22%
+  width:20%
 }
 
-.print-table th:nth-child(4),
-.print-table td:nth-child(4){
-  width:30%
+.print-table th:nth-child(3),
+.print-table td:nth-child(3){
+  width:18%
+}
+
+.print-table th:nth-child(5),
+.print-table td:nth-child(5){
+  width:20%
 }
 
 
@@ -761,7 +766,7 @@ tr:has(.date-ok) td{
   color:#0b5f78 !important
 }
 
-.medication-name-cell{
+.medication-type{
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -1609,10 +1614,11 @@ tr:has(.date-ok) td{
       <thead>
         <tr>
           <th class="print-selection"><input type="checkbox" id="selectVisiblePrintRows" aria-label="Select visible rows for printing" onchange="selectVisibleRowsForPrint(this.checked)"></th>
-          <th id="colName">Medication Name</th>
+          <th id="colName">Medicatio</th>
+          <th id="colType">Type</th>
           <th id="colExpiry">Expiry Date</th>
           <th id="colStatus">Status</th>
-          <th id="colEmployee">Employee Name</th>
+          <th id="colEmployee">By</th>
         </tr>
       </thead>
 
@@ -1859,8 +1865,9 @@ const text = {
     searchPlaceholder:"البحث باسم الدواء",
     noMatches:"لا يوجد دواء مطابق في القائمة.",
     colName:"اسم الدواء",
+    colType:"النوع",
     colExpiry:"تاريخ الانتهاء",
-    colEmployee:"اسم الموظف",
+    colEmployee:"بواسطة",
     colStatus:"الحالة",
     printBtnText:"طباعة",
     removeBtnText:"حذف",
@@ -1889,9 +1896,10 @@ const text = {
     labelOk:"Within Safe Range",
     searchPlaceholder:"Search by medication name",
     noMatches:"No matching medication in the list.",
-    colName:"Medication Name",
+    colName:"Medicatio",
+    colType:"Type",
     colExpiry:"Expiry Date",
-    colEmployee:"Employee Name",
+    colEmployee:"By",
     colStatus:"Status",
     printBtnText:"Print",
     removeBtnText:"Remove",
@@ -1950,6 +1958,9 @@ function setLanguage(lang){
 
   document.getElementById("colName").innerText =
     text[lang].colName;
+
+  document.getElementById("colType").innerText =
+    text[lang].colType;
 
   document.getElementById("colExpiry").innerText =
     text[lang].colExpiry;
@@ -2869,17 +2880,18 @@ function getPrintableItems(){
   return selected.length ? selected : visible;
 }
 
-function medicationNameMarkup(name){
+function medicationTypeMarkup(name){
   const classification = window.KidneyMedicationClassification;
-  let markup = '<span>' + escapeHtml(name) + '</span>';
-  if (!classification) return markup;
-  if (classification.isHighAlertMedication(name)){
-    markup += '<span class="high-alert-indicator">HIGH ALERT</span>';
-  }
-  if (classification.isRefrigeratedMedication(name)){
+  if (!classification) return "";
+  const highAlert = classification.isHighAlertMedication(name);
+  const refrigerated = classification.isRefrigeratedMedication(name);
+  if (!highAlert && !refrigerated) return "";
+  let markup = highAlert ? '<span class="high-alert-indicator">HIGH ALERT</span>' : "";
+  if (highAlert && refrigerated) markup += '<span>+</span>';
+  if (refrigerated){
     markup += '<svg class="refrigerated-indicator" viewBox="0 0 24 24" role="img" aria-label="Refrigerated"><path d="M12 2v20M3.34 7l17.32 10M3.34 17L20.66 7M12 2l-2 2m2-2 2 2m-2 18-2-2m2 2 2-2M3.34 7l2.73-.73M3.34 7l.73 2.73M20.66 17l-2.73.73M20.66 17l-.73-2.73M3.34 17l2.73.73M3.34 17l.73-2.73M20.66 7l-2.73-.73M20.66 7l-.73 2.73"></path></svg>';
   }
-  return '<span class="medication-name-cell">' + markup + '</span>';
+  return '<span class="medication-type">' + markup + '</span>';
 }
 
 function renderTable(){
@@ -2915,7 +2927,11 @@ function renderTable(){
 
       tr.innerHTML =
         "<td>" +
-        medicationNameMarkup(m.name) +
+        escapeHtml(m.name) +
+        "</td>" +
+
+        "<td>" +
+        medicationTypeMarkup(m.name) +
         "</td>" +
 
         "<td class=\"" +
@@ -3249,6 +3265,12 @@ function createPrintPage(
 
         "<th>" +
         escapeHtml(
+          text[currentLang].colType
+        ) +
+        "</th>" +
+
+        "<th>" +
+        escapeHtml(
           text[currentLang].colExpiry
         ) +
         "</th>" +
@@ -3286,7 +3308,7 @@ function createPrintPage(
       );
 
     tr.innerHTML =
-      '<td colspan="4">' +
+      '<td colspan="5">' +
       escapeHtml(
         text[currentLang].emptyNote
       ) +
@@ -3313,7 +3335,11 @@ function createPrintPage(
 
         tr.innerHTML =
           "<td>" +
-          medicationNameMarkup(item.name) +
+          escapeHtml(item.name) +
+          "</td>" +
+
+          "<td>" +
+          medicationTypeMarkup(item.name) +
           "</td>" +
 
           "<td class=\"" +
