@@ -2446,6 +2446,8 @@ function refreshReportView(){
   activeFilter =
     null;
 
+  updateClassificationFilterVisibility();
+
   updateFilterCardsUI();
 
   updateReportTitle();
@@ -2455,6 +2457,52 @@ function refreshReportView(){
   renderRows(
     lastItems
   );
+
+}
+
+
+function updateClassificationFilterVisibility(){
+
+  const filters =
+    document.querySelector(
+      ".classification-filters"
+    );
+
+  const highAlert =
+    document.getElementById(
+      "highAlertFilter"
+    );
+
+  const refrigerated =
+    document.getElementById(
+      "refrigeratedFilter"
+    );
+
+  if (
+    !filters ||
+    !highAlert ||
+    !refrigerated
+  ){
+    return;
+  }
+
+  const show =
+    getReportType() === "inspection";
+
+  if (
+    !show
+  ){
+    highAlert.checked =
+      false;
+
+    refrigerated.checked =
+      false;
+  }
+
+  filters.style.display =
+    show
+      ? ""
+      : "none";
 
 }
 
@@ -4294,6 +4342,7 @@ function init(){
 
   buildReportMonthOptions();
   restorePortalIdentity();
+  updateClassificationFilterVisibility();
 
   setLanguage(
     "en"
