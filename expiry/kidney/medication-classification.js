@@ -43,6 +43,7 @@
   "Darbepoetin 60 inj",
   "Darbepoetin 80 inj",
   "Methoxy polyethylene glycol 100 mcg inj",
+  "Epoetin beta 2000 IU vial",
   "Alfacalcidol 1mcg inj",
   "Patiromer 8,4g powder",
   "Methoxy polyethylene glycol 50mcg inj",
