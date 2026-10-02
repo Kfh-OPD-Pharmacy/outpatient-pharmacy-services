@@ -623,14 +623,14 @@ tr:has(.date-ok) td{
 }
 
 .print-table tbody tr{
-  height:7.05mm
+  height:9mm
 }
 
 .print-table td{
   color:#111827;
-  font-size:9px;
+  font-size:10px;
   line-height:1.2;
-  padding:3px 5px;
+  padding:4px 6px;
   border-top:1px solid #d8e0e5;
   border-right:1px solid #d8e0e5;
   white-space:normal;
@@ -739,10 +739,10 @@ tr:has(.date-ok) td{
   display:table-cell;
   width:8%;
   color:#111827;
-  font-size:9px;
+  font-size:10px;
   line-height:1.2;
   font-weight:600;
-  padding:3px 5px;
+  padding:4px 6px;
   border-top:1px solid #d8e0e5;
   border-right:1px solid #d8e0e5;
   vertical-align:middle;
@@ -759,6 +759,54 @@ tr:has(.date-ok) td{
 
 .print-table tbody tr:has(.date-ok)::before{
   color:#0b5f78 !important
+}
+
+.medication-name-cell{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  flex-wrap:wrap
+}
+
+.high-alert-indicator{
+  display:inline-block;
+  padding:1px 4px;
+  border:1px solid #9f1239;
+  border-radius:3px;
+  color:#9f1239;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap
+}
+
+.refrigerated-indicator{
+  width:14px;
+  height:14px;
+  flex:0 0 auto;
+  color:#0f7592
+}
+
+.refrigerated-indicator path{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round
+}
+
+@media print{
+  .high-alert-indicator{
+    border-color:#111827 !important;
+    color:#111827 !important;
+    font-size:9px
+  }
+
+  .refrigerated-indicator{
+    width:13px;
+    height:13px;
+    color:#111827 !important
+  }
 }
 
 /* =========================================================
@@ -2821,6 +2869,19 @@ function getPrintableItems(){
   return selected.length ? selected : visible;
 }
 
+function medicationNameMarkup(name){
+  const classification = window.KidneyMedicationClassification;
+  let markup = '<span>' + escapeHtml(name) + '</span>';
+  if (!classification) return markup;
+  if (classification.isHighAlertMedication(name)){
+    markup += '<span class="high-alert-indicator">HIGH ALERT</span>';
+  }
+  if (classification.isRefrigeratedMedication(name)){
+    markup += '<svg class="refrigerated-indicator" viewBox="0 0 24 24" role="img" aria-label="Refrigerated"><path d="M12 2v20M3.34 7l17.32 10M3.34 17L20.66 7M12 2l-2 2m2-2 2 2m-2 18-2-2m2 2 2-2M3.34 7l2.73-.73M3.34 7l.73 2.73M20.66 17l-2.73.73M20.66 17l-.73-2.73M3.34 17l2.73.73M3.34 17l.73-2.73M20.66 7l-2.73-.73M20.66 7l-.73 2.73"></path></svg>';
+  }
+  return '<span class="medication-name-cell">' + markup + '</span>';
+}
+
 function renderTable(){
 
   const tbody =
@@ -2854,9 +2915,7 @@ function renderTable(){
 
       tr.innerHTML =
         "<td>" +
-        escapeHtml(
-          m.name
-        ) +
+        medicationNameMarkup(m.name) +
         "</td>" +
 
         "<td class=\"" +
@@ -3018,7 +3077,7 @@ function buildPrintPages(){
     getPrintableItems();
 
   const ROWS_PER_PAGE =
-    28;
+    20;
 
   const pageCount =
     Math.max(
@@ -3254,9 +3313,7 @@ function createPrintPage(
 
         tr.innerHTML =
           "<td>" +
-          escapeHtml(
-            item.name
-          ) +
+          medicationNameMarkup(item.name) +
           "</td>" +
 
           "<td class=\"" +
