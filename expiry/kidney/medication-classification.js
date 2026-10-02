@@ -54,6 +54,8 @@
   function normalizeMedicationKey(value){
   return String(value || "")
     .toLowerCase()
+    .replace(/\beprex\s*2000\b/g, "epoetin beta 2000iu vial")
+    .replace(/\beprex\s*4000\b/g, "epoetin beta 4000iu vial")
     .replace(/\s+/g, " ")
     .replace(/\s*([%/.,()+-])\s*/g, "$1")
     .replace(/(\d)\s+(mg|mcg|g|ml|l|iu|unit|units|%)/g, "$1$2")
