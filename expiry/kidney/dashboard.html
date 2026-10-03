@@ -826,6 +826,14 @@ tr:has(.date-ok) td{
   color:#eab308
 }
 
+#reportType.report-select-high-alert{
+  color:#ff0000
+}
+
+#reportType.report-select-nearly-expire{
+  color:#eab308
+}
+
 .high-alert-report-theme #pageTitle{
   color:#ff0000
 }
@@ -841,12 +849,7 @@ tr:has(.date-ok) td{
 
 .high-alert-report-theme th,
 .high-alert-report-theme td{
-  border-bottom-color:#ff0000
-}
-
-.high-alert-report-theme table th,
-.high-alert-report-theme table td{
-  border-color:#ff0000
+  border-bottom-color:#e5e7eb
 }
 
 @media print{
@@ -882,13 +885,12 @@ tr:has(.date-ok) td{
   .print-page.high-alert-report-theme .print-table th{
     background:#ff0000 !important;
     color:#fff !important;
-    border-color:#ff0000 !important;
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact
   }
 
   .print-page.high-alert-report-theme .print-table td{
-    border-color:#ff0000 !important;
+    border-color:#d8e0e5 !important;
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact
   }
@@ -896,13 +898,12 @@ tr:has(.date-ok) td{
   .print-page.high-alert-report-theme .print-table thead tr::before{
     background:#ff0000 !important;
     color:#fff !important;
-    border-color:#ff0000 !important;
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact
   }
 
   .print-page.high-alert-report-theme .print-table tbody tr::before{
-    border-color:#ff0000 !important
+    border-color:#d8e0e5 !important
   }
 }
 
@@ -2515,6 +2516,8 @@ function refreshReportView(){
   activeFilter =
     null;
 
+  updateReportSelectColor();
+
   updateHighAlertReportTheme();
 
   updateClassificationFilterVisibility();
@@ -2527,6 +2530,32 @@ function refreshReportView(){
 
   renderRows(
     lastItems
+  );
+
+}
+
+
+function updateReportSelectColor(){
+
+  const select =
+    document.getElementById(
+      "reportType"
+    );
+
+  if (
+    !select
+  ){
+    return;
+  }
+
+  select.classList.toggle(
+    "report-select-high-alert",
+    getReportType() === "highAlertInspection"
+  );
+
+  select.classList.toggle(
+    "report-select-nearly-expire",
+    getReportType() === "nearlyExpire"
   );
 
 }
@@ -4439,6 +4468,7 @@ function init(){
 
   buildReportMonthOptions();
   restorePortalIdentity();
+  updateReportSelectColor();
   updateHighAlertReportTheme();
   updateClassificationFilterVisibility();
 
