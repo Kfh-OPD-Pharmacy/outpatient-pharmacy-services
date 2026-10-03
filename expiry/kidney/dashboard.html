@@ -862,6 +862,24 @@ tr:has(.date-ok) td{
   border-bottom-color:#e5e7eb
 }
 
+.nearly-expire-report-theme #pageTitle{
+  color:#eab308
+}
+
+.nearly-expire-report-theme .table-wrap{
+  border-color:#eab308
+}
+
+.nearly-expire-report-theme th{
+  background:#eab308;
+  color:#fff
+}
+
+.nearly-expire-report-theme th,
+.nearly-expire-report-theme td{
+  border-bottom-color:#e5e7eb
+}
+
 @media print{
   .high-alert-indicator{
     border-color:#b91c1c !important;
@@ -913,6 +931,42 @@ tr:has(.date-ok) td{
   }
 
   .print-page.high-alert-report-theme .print-table tbody tr::before{
+    border-color:#d8e0e5 !important
+  }
+
+  .print-page.nearly-expire-report-theme .print-title{
+    color:#eab308 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table-wrap{
+    border-color:#eab308 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table th{
+    background:#eab308 !important;
+    color:#fff !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table td{
+    border-color:#d8e0e5 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table thead tr::before{
+    background:#eab308 !important;
+    color:#fff !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table tbody tr::before{
     border-color:#d8e0e5 !important
   }
 }
@@ -2589,6 +2643,11 @@ function updateHighAlertReportTheme(){
     getReportType() === "highAlertInspection"
   );
 
+  container.classList.toggle(
+    "nearly-expire-report-theme",
+    getReportType() === "nearlyExpire"
+  );
+
 }
 
 
@@ -3743,6 +3802,11 @@ function createPrintPage(
   page.classList.toggle(
     "high-alert-report-theme",
     getReportType() === "highAlertInspection"
+  );
+
+  page.classList.toggle(
+    "nearly-expire-report-theme",
+    getReportType() === "nearlyExpire"
   );
 
 
