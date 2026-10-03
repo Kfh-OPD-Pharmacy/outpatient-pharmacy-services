@@ -818,6 +818,33 @@ tr:has(.date-ok) td{
   print-color-adjust:exact
 }
 
+.high-alert-report-theme #reportType{
+  color:#ff0000
+}
+
+.high-alert-report-theme #pageTitle{
+  color:#ff0000
+}
+
+.high-alert-report-theme .table-wrap{
+  border-color:#ff0000
+}
+
+.high-alert-report-theme th{
+  background:#ff0000;
+  color:#fff
+}
+
+.high-alert-report-theme th,
+.high-alert-report-theme td{
+  border-bottom-color:#ff0000
+}
+
+.high-alert-report-theme table th,
+.high-alert-report-theme table td{
+  border-color:#ff0000
+}
+
 @media print{
   .high-alert-indicator{
     border-color:#b91c1c !important;
@@ -834,6 +861,44 @@ tr:has(.date-ok) td{
     color:#0f7592 !important;
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-title{
+    color:#ff0000 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table-wrap{
+    border-color:#ff0000 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table th{
+    background:#ff0000 !important;
+    color:#fff !important;
+    border-color:#ff0000 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table td{
+    border-color:#ff0000 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table thead tr::before{
+    background:#ff0000 !important;
+    color:#fff !important;
+    border-color:#ff0000 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table tbody tr::before{
+    border-color:#ff0000 !important
   }
 }
 
@@ -2446,6 +2511,8 @@ function refreshReportView(){
   activeFilter =
     null;
 
+  updateHighAlertReportTheme();
+
   updateClassificationFilterVisibility();
 
   updateFilterCardsUI();
@@ -2456,6 +2523,27 @@ function refreshReportView(){
 
   renderRows(
     lastItems
+  );
+
+}
+
+
+function updateHighAlertReportTheme(){
+
+  const container =
+    document.getElementById(
+      "dashboardContainer"
+    );
+
+  if (
+    !container
+  ){
+    return;
+  }
+
+  container.classList.toggle(
+    "high-alert-report-theme",
+    getReportType() === "highAlertInspection"
   );
 
 }
@@ -3609,6 +3697,11 @@ function createPrintPage(
   page.className =
     "print-page";
 
+  page.classList.toggle(
+    "high-alert-report-theme",
+    getReportType() === "highAlertInspection"
+  );
+
 
   const header =
     document.createElement(
@@ -4342,6 +4435,7 @@ function init(){
 
   buildReportMonthOptions();
   restorePortalIdentity();
+  updateHighAlertReportTheme();
   updateClassificationFilterVisibility();
 
   setLanguage(
