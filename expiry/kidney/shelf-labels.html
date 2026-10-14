@@ -558,12 +558,12 @@ input[type="number"]{
 .lasa-badge{
   position:absolute;
   left:50%;
-  bottom:-6mm;
+  bottom:7mm;
   transform:translateX(-50%);
   max-width:100%;
   padding:1mm 2mm;
   border-radius:2mm;
-  background:#fbcfe8;
+  background:#FFD600;
   color:#000;
   font-size:7pt;
   line-height:1;
@@ -3074,12 +3074,12 @@ function createLabelElement(item){
           : "") +
       "</div>" +
       (location ? "<div class=\"label-location\">" + escapeHtml(location) + "</div>" : "") +
+      (lasa ? "<div class=\"lasa-badge\">LASA</div>" : "") +
     "</div>" +
     "<div class=\"label-exp\">" +
       (qrImageUrl
         ? "<img class=\"label-qr\" src=\"" + escapeHtml(qrImageUrl) + "\" alt=\"Medication QR\">" +
-          "<span class=\"label-exp-caption\">EXP.</span>" +
-          (lasa ? "<span class=\"lasa-badge\">LASA</span>" : "")
+          "<span class=\"label-exp-caption\">EXP.</span>"
         : "") +
     "</div>" +
     "<div class=\"label-logo-wrap\">" +
