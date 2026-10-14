@@ -793,6 +793,19 @@ tr:has(.date-ok) td{
   white-space:nowrap
 }
 
+.lasa-indicator{
+  display:inline-block;
+  padding:1px 4px;
+  border:1px solid #f9a8d4;
+  border-radius:3px;
+  background:#fbcfe8;
+  color:#000;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap
+}
+
 .refrigerated-indicator{
   width:14px;
   height:14px;
@@ -894,6 +907,14 @@ tr:has(.date-ok) td{
     width:13px;
     height:13px;
     color:#0f7592 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .lasa-indicator{
+    border-color:#f9a8d4 !important;
+    background:#fbcfe8 !important;
+    color:#000 !important;
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact
   }
@@ -1181,7 +1202,8 @@ tr:has(.date-ok) td{
     font-size:8px
   }
 
-  .table-wrap .high-alert-indicator{
+  .table-wrap .high-alert-indicator,
+  .table-wrap .lasa-indicator{
     padding:1px 2px;
     font-size:7px;
     line-height:1.1
@@ -1921,7 +1943,7 @@ tr:has(.date-ok) td{
 
 <div id="printPages"></div>
 
-<script src="medication-classification.js?v=20261002"></script>
+<script src="medication-classification.js?v=20261014-lasa"></script>
 <script>
 
 function navigateFresh(target, replaceHistory = false){
@@ -3510,13 +3532,15 @@ function medicationTypeMarkup(name){
   if (!classification) return "";
   const highAlert = classification.isHighAlertMedication(name);
   const refrigerated = classification.isRefrigeratedMedication(name);
-  if (!highAlert && !refrigerated) return "";
-  let markup = highAlert ? '<span class="high-alert-indicator">HIGH ALERT</span>' : "";
-  if (highAlert && refrigerated) markup += '<span>+</span>';
+  const lasa = classification.isLasaMedication(name);
+  if (!highAlert && !refrigerated && !lasa) return "";
+  const parts = [];
+  if (highAlert) parts.push('<span class="high-alert-indicator">HIGH ALERT</span>');
+  if (lasa) parts.push('<span class="lasa-indicator">LASA</span>');
   if (refrigerated){
-    markup += '<svg class="refrigerated-indicator" viewBox="0 0 24 24" role="img" aria-label="Refrigerated"><path d="M12 2v20M3.34 7l17.32 10M3.34 17L20.66 7M12 2l-2 2m2-2 2 2m-2 18-2-2m2 2 2-2M3.34 7l2.73-.73M3.34 7l.73 2.73M20.66 17l-2.73.73M20.66 17l-.73-2.73M3.34 17l2.73.73M3.34 17l.73-2.73M20.66 7l-2.73-.73M20.66 7l-.73 2.73"></path></svg>';
+    parts.push('<svg class="refrigerated-indicator" viewBox="0 0 24 24" role="img" aria-label="Refrigerated"><path d="M12 2v20M3.34 7l17.32 10M3.34 17L20.66 7M12 2l-2 2m2-2 2 2m-2 18-2-2m2 2 2-2M3.34 7l2.73-.73M3.34 7l.73 2.73M20.66 17l-2.73.73M20.66 17l-.73-2.73M3.34 17l2.73.73M3.34 17l.73-2.73M20.66 7l-2.73-.73M20.66 7l-.73 2.73"></path></svg>');
   }
-  return '<span class="medication-type">' + markup + '</span>';
+  return '<span class="medication-type">' + parts.join('<span>+</span>') + '</span>';
 }
 
 
