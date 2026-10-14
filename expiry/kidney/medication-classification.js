@@ -1,6 +1,6 @@
 /* Frontend classification from ADMINSTAION DATABASE.xlsx, Medication Database.
  * User-defined fills: red = High Alert; green = Refrigerated; yellow = both.
- * High Alert: 29 names (28 red + 1 yellow); Refrigerated: 11 (10 green + 1 yellow).
+ * High Alert: 29 names (2026 list reviewed); Refrigerated: 12 names; LASA: approved 2026 matches.
  * Exact normalized-name matching only; no clinical inference or fuzzy matching.
  * Keep both pages on this single source. No medication IDs or QR data are changed.
  */
@@ -51,6 +51,66 @@
   "Epoetin beta 4000 IU vial",
   "Reteplase inj 18mg"
 ];
+  const lasaNames = [
+  "Atorvastatin 20mg Tablet",
+  "Captopril 25mg Tablet",
+  "Atenolol 50mg Tablet",
+  "Cetirizine 10mg Tablet",
+  "Clopidogrel 75mg Tablet",
+  "Gliclazide MR 60mg Tab",
+  "Levetiracetam 500mg Tablet",
+  "Carvedilol 6.25mg Tablet",
+  "Carvedilol 25mg Tablet",
+  "Cinacalcet 30mg Tablet",
+  "Cinacalcet 60mg Tablet",
+  "Nifedipine 30mg LA Tablet",
+  "Nifedipine 60mg LA Tablet",
+  "Rosuvastatin 10mg Tab",
+  "Telmisartan 40mg Tablet",
+  "Telmisartan 80mg Tablet",
+  "L.Thyroxine 25mcg Tablet",
+  "L.Thyroxine 50mcg Tablet",
+  "L.Thyroxine 100mcg Tablet",
+  "Loperamide 2mg Cap",
+  "Ceftazidime 1g inj",
+  "Cefazolin 1g inj",
+  "Darbepoetin 40 inj",
+  "Darbepoetin 60 inj",
+  "Darbepoetin 80 inj",
+  "Enoxaparin 2000 IU (20mg) inj",
+  "Enoxaparin 4000 IU (40mg) inj",
+  "Enoxaparin 8000 IU (80mg) inj",
+  "Lidocaine 1% vial",
+  "Lidocaine 2% vial",
+  "Lidocaine 2% syrinje",
+  "Calcium chloride inj 10%",
+  "Calcium Gluconate 10% amp",
+  "Atropine amp",
+  "Atrovent Solution",
+  "Metoclopramide 10mg Tablet",
+  "Metoclopramide 10mg inj",
+  "Metoprolol 50mg Tablet",
+  "Metoprolol inj",
+  "Furosemide 40mg Tablet",
+  "Furosemide 40mg  inj",
+  "Omeprazole 20mg Cap",
+  "Omeprazole inj",
+  "Chlorpheniramine 4mg Tablet",
+  "Reteplase inj 18mg",
+  "Dobutamine vial",
+  "Noradrenaline vial",
+  "Amiodarone inj",
+  "Folic Acid 1mg Tablet",
+  "Meloxicam 7.5mg Tablet",
+  "Hydralazine 25mg Tablet",
+  "Hydralazine 20mg inj",
+  "Prednisolone 5mg Tablet",
+  "Hydrocortisone inj",
+  "Hydrocortisone Cream",
+  "Metronidazole 500mg Tablet",
+  "Azithromycine 250mg Cap",
+  "Hydroxychloroquine 200mg Tablet"
+];
   function normalizeMedicationKey(value){
   return String(value || "")
     .toLowerCase()
@@ -78,12 +138,16 @@
 }
   const highAlert = new Set(highAlertNames.map(normalizeMedicationKey));
   const refrigerated = new Set(refrigeratedNames.map(normalizeMedicationKey));
+  const lasa = new Set(lasaNames.map(normalizeMedicationKey));
   window.KidneyMedicationClassification = Object.freeze({
     isHighAlertMedication:function(name){
       return highAlert.has(normalizeMedicationKey(name));
     },
     isRefrigeratedMedication:function(name){
       return refrigerated.has(normalizeMedicationKey(name));
+    },
+    isLasaMedication:function(name){
+      return lasa.has(normalizeMedicationKey(name));
     }
   });
 })();
