@@ -576,7 +576,7 @@ input[type="number"]{
 }
 
 .label-exp{
-  grid-column:1;
+  grid-column:3;
   grid-row:1;
   align-self:center;
   justify-self:center;
@@ -619,7 +619,7 @@ input[type="number"]{
 }
 
 .label-logo-wrap{
-  grid-column:3;
+  grid-column:1;
   grid-row:1;
   display:flex;
   align-items:center;
@@ -636,6 +636,14 @@ input[type="number"]{
   max-height:100%;
   object-fit:contain
 }
+.traditional-grid{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;border:1px solid #168fb3;background:#fff;color:#111;font-size:clamp(6px,1.25vw,9px);line-height:1;font-weight:700;text-align:center}
+.traditional-grid span{display:flex;align-items:center;justify-content:center;min-width:0;border-right:1px solid #168fb3;border-bottom:1px solid #168fb3}
+.traditional-grid span:nth-child(6n){border-right:0}
+.traditional-grid span:nth-last-child(-n+6){border-bottom:0;background:#e0f2fe}
+.shelf-label.exp-traditional .label-exp{padding:1mm}
+.shelf-label.exp-both .label-logo-wrap{flex-direction:column;gap:1mm}
+.shelf-label.exp-both .label-logo-wrap .label-logo{flex:0 0 45%;height:45%}
+.shelf-label.exp-both .traditional-grid{height:50%;flex:0 0 50%}
 
 .login-result{
   min-height:22px;
@@ -1397,6 +1405,14 @@ input[type="number"]{
         <label id="labelSizeLabel" for="labelSize">Label Size</label>
         <select id="labelSize" onchange="handleSizeChange()"></select>
       </div>
+      <div>
+        <label id="expTypeLabel" for="expType">Exp. Type</label>
+        <select id="expType" onchange="handleExpTypeChange()">
+          <option value="qr">QR</option>
+          <option value="traditional">Traditional</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
       <div class="actions">
         <button class="primary-btn icon-btn" type="button" id="printAllBtn" onclick="printAll()" title="Print All" aria-label="Print All">🖨️</button>
         <button class="secondary-btn icon-btn" type="button" id="clearAllBtn" onclick="clearAll()" title="Clear All" aria-label="Clear All">🗑️</button>
@@ -1709,6 +1725,8 @@ let expiryRecords =
 
 let selectedLabels =
   [];
+let expType =
+  "qr";
 
 let inactivityTimer =
   null;
@@ -1738,6 +1756,7 @@ const text = {
     sessionExpired:"Session expired. Please sign in again.",
     logout:"Logout",
     labelSize:"Label Size",
+    expType:"Exp. Type",
     search:"Search Medication",
     searchPlaceholder:"Search Medication",
     selected:"Selected Labels",
@@ -1782,6 +1801,7 @@ const text = {
     sessionExpired:"انتهت الجلسة. سجّل الدخول مرة أخرى.",
     logout:"تسجيل الخروج",
     labelSize:"مقاس الليبل",
+    expType:"نوع الانتهاء",
     search:"بحث الدواء",
     searchPlaceholder:"Search Medication",
     selected:"الليبلات المحددة",
@@ -3040,17 +3060,20 @@ function createLabelElement(item){
   const refrigerated = isRefrigeratedMedication(classificationName);
   const lasa = isLasaMedication(classificationName);
   const location = shelfLocationText(item);
-  const qrImageUrl =
-    buildMedicationQrImageUrl(
-      item.medicationId,
-      highAlert
-    );
+  const qrImageUrl = expType === "traditional" ? "" : buildMedicationQrImageUrl(item.medicationId, highAlert);
+  const showTraditional = expType === "traditional" || expType === "both";
 
   if (highAlert){
     label.classList.add(
       "high-alert-label"
     );
   }
+  label.classList.add("exp-" + expType);
+  const traditionalGrid = showTraditional
+    ? '<div class="traditional-grid" aria-label="Traditional expiry grid">' +
+      ["1","2","3","4","5","6","7","8","9","10","11","12","2026","2027","2028","2029","2030","2031"].map(function(value){ return "<span>" + value + "</span>"; }).join("") +
+      "</div>"
+    : "";
 
   label.innerHTML =
     "<div class=\"label-main\">" +
@@ -3084,6 +3107,7 @@ function createLabelElement(item){
     "</div>" +
     "<div class=\"label-logo-wrap\">" +
       "<img class=\"label-logo\" src=\"../../logo.png\" alt=\"Logo\">" +
+      (expType === "both" ? traditionalGrid : "") +
     "</div>";
 
   if (refrigerated){
@@ -3286,6 +3310,11 @@ function handleSizeChange(){
   renderPreview();
 }
 
+function handleExpTypeChange(){
+  expType = document.getElementById("expType").value || "qr";
+  renderPreview();
+}
+
 function printAll(){
   if (!classificationReady()) return;
   if (!selectedLabels.length){
@@ -3333,6 +3362,8 @@ function setLanguage(lang){
     text[lang].login;
   document.getElementById("labelSizeLabel").innerText =
     text[lang].labelSize;
+  document.getElementById("expTypeLabel").innerText =
+    text[lang].expType;
   document.getElementById("searchLabel").innerText =
     text[lang].search;
   document.getElementById("medSearch").placeholder =
