@@ -858,7 +858,7 @@ async function changeLoginPin() {
           currentPin,
           newPin
         },
-        false
+        true
       );
 
     if (
