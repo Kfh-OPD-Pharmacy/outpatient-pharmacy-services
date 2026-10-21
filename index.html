@@ -571,28 +571,23 @@ body{padding:10px;background:#fff}
         </svg>
       </button>
 
-      <button
-        type="button"
-        class="login-icon-btn secondary"
-        id="changePinBtn"
-        onclick="togglePinChangePanel()"
-        title="Change PIN"
-        aria-label="Change PIN">
-        <svg class="login-action-svg" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="8" cy="15" r="3"></circle>
-          <path d="M10.5 13.5 20 4"></path>
-          <path d="M17 4h3v3"></path>
-          <path d="M13 11l2 2"></path>
-        </svg>
-      </button>
     </div>
 
     <div id="loginResult" class="login-result"></div>
+  </div>
+
+  <div id="portalView" style="display:none">
+    <div class="pin-change-actions">
+      <button
+        type="button"
+        class="pin-change-btn"
+        id="changePinBtn"
+        onclick="togglePinChangePanel()">
+        Change PIN
+      </button>
+    </div>
 
     <div id="pinChangePanel" class="pin-change-panel" aria-hidden="true">
-      <label id="changeUsernameLabel" for="changeUsername">Username</label>
-      <input type="text" id="changeUsername" autocomplete="username">
-
       <label id="currentPinLabel" for="currentPin">Current PIN</label>
       <input type="password" id="currentPin" inputmode="numeric" autocomplete="current-password">
 
@@ -614,9 +609,7 @@ body{padding:10px;background:#fff}
 
       <div id="pinChangeResult" class="pin-change-result"></div>
     </div>
-  </div>
 
-  <div id="portalView" style="display:none">
     <div class="portal-grid">
       <a class="portal-card" id="outpatientCard" href="outpatient-pharmacy.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
         <div class="card-icon">🏥</div>
@@ -681,6 +674,7 @@ const text = {
     invalidCurrentPin: "اسم المستخدم أو PIN الحالي غير صحيح.",
     userNotFound: "المستخدم غير موجود.",
     networkError: "تعذر الاتصال بالخدمة. حاول مرة أخرى.",
+    sessionExpired: "انتهت الجلسة. سجّل الدخول مجددًا.",
     logout: "تسجيل الخروج",
     invalidLogin: "اسم المستخدم أو PIN غير صحيح، أو لا توجد لديك صلاحية دخول.",
     outpatientTitle: "صيدلية العيادات الخارجية",
@@ -713,6 +707,7 @@ const text = {
     invalidCurrentPin: "Invalid username or current PIN.",
     userNotFound: "User not found.",
     networkError: "Could not connect to the service. Please try again.",
+    sessionExpired: "Your session has expired. Please log in again.",
     logout: "Logout",
     invalidLogin: "Invalid username/PIN or no portal permission.",
     outpatientTitle: "Outpatient Pharmacy",
@@ -803,14 +798,7 @@ function setLanguage(lang) {
     text[lang].changePin
   );
 
-  document.getElementById(
-    "changeUsernameLabel"
-  ).innerText =
-    text[lang].username;
-
-  document.getElementById(
-    "currentPinLabel"
-  ).innerText =
+  document.getElementById("currentPinLabel").innerText =
     text[lang].currentPin;
 
   document.getElementById(
@@ -1069,6 +1057,10 @@ function closePinChangePanel() {
 
 
 function togglePinChangePanel() {
+  if (!portalSessionToken || !portalUsername) {
+    return;
+  }
+
   const panel =
     document.getElementById(
       "pinChangePanel"
@@ -1083,13 +1075,6 @@ function togglePinChangePanel() {
     closePinChangePanel();
     return;
   }
-
-  document.getElementById(
-    "changeUsername"
-  ).value =
-    document.getElementById(
-      "portalUsername"
-    ).value.trim();
 
   clearPinChangeFields();
   showPinChangeResult(
@@ -1110,9 +1095,15 @@ function togglePinChangePanel() {
 
 async function changePortalPin() {
   const username =
-    document.getElementById(
-      "changeUsername"
-    ).value.trim();
+    portalUsername.trim();
+
+  if (!portalSessionToken || !username) {
+    showPinChangeResult(
+      text[currentLang].sessionExpired,
+      true
+    );
+    return;
+  }
 
   const currentPin =
     document.getElementById(
@@ -1180,13 +1171,15 @@ async function changePortalPin() {
     const result =
       await unifiedApi({
         action:
-          "changeEmployeePassword",
+          "changeLoginPin",
         username:
           username,
-        oldPassword:
+        currentPin:
           currentPin,
-        newPassword:
-          newPin
+        newPin:
+          newPin,
+        sessionToken:
+          portalSessionToken
       });
 
     if (
@@ -1281,6 +1274,7 @@ function showLoginView() {
   ).style.display =
     "none";
 
+  closePinChangePanel();
   hideAllPortalCards();
 }
 
