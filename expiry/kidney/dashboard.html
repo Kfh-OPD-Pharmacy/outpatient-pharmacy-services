@@ -4129,7 +4129,7 @@ async function logoutDashboard(){
   const token = sessionStorage.getItem("unifiedPortalSessionToken") || "";
   if (token){
     try {
-      await fetch("https://script.google.com/macros/s/AKfycbxdYdIiVRYwqXYj7TIg-vPrg1hCGiJOnfusGEXF6ughJdUNEFayU3g5HyWFY9u0SO-U/exec", {
+      await fetch("https://script.google.com/macros/s/AKfycbzg9PCeoJQl0ifbng_aam6u5mTePD0872wqZ5ilZYqcFV9QypiyopulgPPyO3nqLpez/exec", {
         method:"POST",
         headers:{"Content-Type":"text/plain;charset=utf-8"},
         body:JSON.stringify({action:"revokeSession", sessionToken:token})
