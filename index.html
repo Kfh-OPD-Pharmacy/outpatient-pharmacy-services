@@ -228,8 +228,7 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   color:#065f46
 }
 .portal-session{
-  display:grid;
-  grid-template-columns:30px minmax(0,1fr) 30px;
+  display:flex;
   align-items:center;
   justify-content:center;
   box-sizing:border-box;
@@ -244,10 +243,14 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   border-radius:10px;
   box-shadow:0 2px 6px rgba(0,0,0,.06);
   color:#168fb3;
-  direction:ltr;
-  grid-column:2;
-  justify-self:center
+  direction:ltr
 }
+.portal-user-group{display:flex;align-items:center;justify-content:center;gap:8px;grid-column:2;min-width:0;direction:ltr}
+.portal-user-group .portal-session{flex:0 1 auto}
+.portal-back-btn,.logout-btn{width:30px;height:30px;min-height:0;padding:0;margin:0;border:0;background:transparent;color:#168fb3;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.portal-back-btn{font-size:22px}
+.portal-user-name{flex:1 1 auto;max-width:calc(100% - 60px);overflow:visible;text-overflow:clip;white-space:nowrap}
+.portal-pin-outside{width:34px;height:34px;min-height:34px;padding:0;border:1px solid #e5e7eb;border-radius:50%;background:#fff;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;font-size:18px}
 .portal-user-name{
   min-width:0;
   overflow:hidden;
@@ -273,14 +276,7 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  grid-column:1;
-  grid-row:1
-}
-.portal-session-spacer{
-  width:30px;
-  height:30px;
-  grid-column:3;
-  grid-row:1
+  flex:0 0 auto
 }
 .power-svg{
   width:25px;
@@ -309,7 +305,7 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   grid-template-columns:minmax(70px,1fr) minmax(150px,246px) minmax(54px,1fr);
   gap:8px
 }
-.portal-session{
+  .portal-session{
   width:100%;
   max-width:246px
 }
@@ -337,6 +333,9 @@ body{padding:10px;background:#fff}
   body{
     background:#f3f4f6;
   }
+  .portal-user-group{gap:5px;max-width:calc(100vw - 20px)}
+  .portal-session{width:min(246px,calc(100vw - 70px))}
+  .portal-pin-outside{width:32px;height:32px;min-height:32px}
 
   .container,
   .employee-shell{
@@ -534,7 +533,11 @@ body{padding:10px;background:#fff}
   <div class="meta-row">
     <div class="date-box" id="dateBox"></div>
 
-    <div class="portal-session" id="portalSession" style="display:none">
+    <div class="portal-user-group" id="portalUserGroup" style="display:none">
+      <button type="button" class="portal-pin-outside" id="changePinBtn" onclick="togglePinChangePanel()" title="Change PIN" aria-label="Change PIN">🔑</button>
+      <div class="portal-session" id="portalSession">
+      <button type="button" class="portal-back-btn" id="portalBackBtn" onclick="goBackPortal()" title="Back" aria-label="Back">↩</button>
+      <span id="portalUserName" class="portal-user-name"></span>
       <button
         type="button"
         class="logout-btn"
@@ -551,15 +554,7 @@ body{padding:10px;background:#fff}
         </svg>
       </button>
 
-      <button
-        type="button"
-        class="pin-change-btn pin-change-icon"
-        id="changePinBtn"
-        onclick="togglePinChangePanel()"
-        title="Change PIN"
-        aria-label="Change PIN">🔑</button>
-      <span id="portalUserName" class="portal-user-name"></span>
-      <span class="portal-session-spacer" aria-hidden="true"></span>
+      </div>
     </div>
 
     <button type="button" class="language-chip" id="languageToggle" onclick="toggleLanguage()">🌐 ع | E</button>
@@ -1278,7 +1273,7 @@ function showLoginView() {
     "block";
 
   document.getElementById(
-    "portalSession"
+    "portalUserGroup"
   ).style.display =
     "none";
 
@@ -1302,9 +1297,9 @@ function showPortalView(user) {
     "block";
 
   document.getElementById(
-    "portalSession"
+    "portalUserGroup"
   ).style.display =
-    "grid";
+    "flex";
 
   document.getElementById(
     "portalUserName"
@@ -1330,6 +1325,11 @@ function showPortalView(user) {
       }
     }, 0);
   }
+}
+
+function goBackPortal() {
+  if (window.history.length > 1) window.history.back();
+  else window.location.href = "control-panel.html";
 }
 
 
