@@ -67,7 +67,7 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
   <script src="upload.js?v=20260612-login-pin" defer></script>
-<style id="unified-user-toolbar-style">.employee-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;direction:rtl;min-width:0}.employee-toolbar .portal-back-button,.employee-toolbar .back-button{order:1}.employee-toolbar .employee-name,.employee-toolbar strong{order:2;min-width:0;max-width:min(48vw,300px);overflow:visible;text-overflow:clip;white-space:nowrap}.employee-toolbar .logout-icon{order:3}.employee-toolbar .employee-name,.employee-toolbar strong{font-size:clamp(15px,2vw,21px)}@media(max-width:700px){.employee-toolbar{gap:6px}.employee-toolbar .employee-name,.employee-toolbar strong{max-width:48vw;font-size:15px}}</style></head>
+<style id="unified-user-toolbar-style">.employee-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;direction:rtl;min-width:0}.employee-toolbar .portal-back-button,.employee-toolbar .back-button{order:1}.employee-toolbar .employee-name,.employee-toolbar strong{order:2;min-width:0;max-width:min(48vw,300px);overflow:visible;text-overflow:clip;white-space:nowrap}.employee-toolbar .logout-icon{order:3}.employee-toolbar .employee-name,.employee-toolbar strong{font-size:clamp(15px,2vw,21px)}@media(max-width:700px){.employee-toolbar{gap:6px}.employee-toolbar .employee-name,.employee-toolbar strong{max-width:48vw;font-size:15px}}</style><style id="toolbar-pin-layout">.unified-user-group{grid-column:2;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}.unified-user-group .employee-toolbar{flex:0 1 auto}.toolbar-pin-button{width:34px;height:34px;border:1px solid #e5e7eb;border-radius:50%;background:#fff;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex:0 0 auto}.toolbar-pin-button:hover{background:#f0f9fc}@media(max-width:700px){.unified-user-group{gap:5px}.toolbar-pin-button{width:32px;height:32px}}</style></head>
 <body class="upload-body">
   <main class="app-shell employee-shell upload-shell"><header class="official-top">
       <img class="official-logo" src="logo.png" alt="Logo">
@@ -83,13 +83,13 @@
     <div class="employee-meta">
       <div class="date-box" id="dateBox"></div>
 
-      <header class="topbar employee-toolbar upload-toolbar">
+      <div class="unified-user-group"><header class="topbar employee-toolbar upload-toolbar">
         <div class="user-chip">
           <a class="back-button" href="index.html" title="رجوع" aria-label="رجوع">↩</a>
           <strong id="currentUser"></strong>
           <button id="logoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج"><svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"></path><path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path></svg></button>
         </div>
-      </header>
+      </header><button type="button" class="toolbar-pin-button" onclick="changeLoginPin()" title="Change PIN" aria-label="Change PIN">🔑</button></div>
 
       <button type="button" class="language-chip" id="languageToggle">🌐 ع | E</button>
     </div>
@@ -106,7 +106,6 @@
 
         <div class="login-actions">
           <button id="loginBtn" class="primary-btn icon-action" type="submit" title="دخول" aria-label="دخول"><svg class="login-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"></path></svg></button>
-          <button id="changePinLoginBtn" class="ghost-btn icon-action" type="button" title="تغيير PIN" aria-label="تغيير PIN">🔑</button>
         </div>
         <p id="loginMessage" class="message" role="status"></p>
       </form>
@@ -126,7 +125,7 @@
       </section>
     </section>
 </main>
-</body>
+<script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[back,name,logout].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script></body>
 </html>
 
 

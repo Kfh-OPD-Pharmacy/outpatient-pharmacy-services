@@ -1041,7 +1041,7 @@ select{
 }
 
 </style>
-<style id="unified-user-toolbar-style">.kidney-user-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;direction:rtl;min-width:0}.kidney-user-toolbar .portal-back-button{order:1}.kidney-user-toolbar .employee-name{order:2;min-width:0;max-width:min(42vw,260px);overflow:visible;text-overflow:clip;white-space:nowrap}.kidney-user-toolbar .logout-icon{order:3}.kidney-user-toolbar .employee-name{font-size:clamp(15px,2vw,21px)}@media(max-width:700px){.kidney-user-toolbar{gap:6px}.kidney-user-toolbar .employee-name{max-width:45vw;font-size:15px}}</style></head>
+<style id="unified-user-toolbar-style">.kidney-user-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;direction:rtl;min-width:0}.kidney-user-toolbar .portal-back-button{order:1}.kidney-user-toolbar .employee-name{order:2;min-width:0;max-width:min(42vw,260px);overflow:visible;text-overflow:clip;white-space:nowrap}.kidney-user-toolbar .logout-icon{order:3}.kidney-user-toolbar .employee-name{font-size:clamp(15px,2vw,21px)}@media(max-width:700px){.kidney-user-toolbar{gap:6px}.kidney-user-toolbar .employee-name{max-width:45vw;font-size:15px}}</style><style id="toolbar-pin-layout">.unified-user-group{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}.unified-user-group .employee-toolbar{flex:0 1 auto}.toolbar-pin-button{width:34px;height:34px;border:1px solid #e5e7eb;border-radius:50%;background:#fff;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex:0 0 auto}.toolbar-pin-button:hover{background:#f0f9fc}.authenticated-pin-panel{display:block;position:relative;margin:12px auto;max-width:420px}@media(max-width:700px){.unified-user-group{gap:5px}.toolbar-pin-button{width:32px;height:32px}}</style></head>
 
 <body>
 
@@ -1067,7 +1067,7 @@ select{
 
       <div class="date-box" id="dateBox"></div>
 
-      <div class="employee-toolbar kidney-user-toolbar">
+      <div class="unified-user-group"><div class="employee-toolbar kidney-user-toolbar">
 
       <button
           type="button"
@@ -1104,7 +1104,7 @@ select{
           ↩
         </button>
 
-    </div>
+    </div><button type="button" class="toolbar-pin-button" onclick="openAuthenticatedPinPanel()" title="Change PIN" aria-label="Change PIN">🔑</button></div>
 
       <button
         type="button"
@@ -2408,6 +2408,8 @@ function togglePasswordPanel(){
 
 }
 
+
+function openAuthenticatedPinPanel(){ const panel=document.getElementById("changePasswordPanel"); const employeeView=document.getElementById("employeeView"); if(!panel || !employeeView || employeeView.style.display === "none") return; if(panel.parentElement !== employeeView) employeeView.appendChild(panel); panel.classList.add("authenticated-pin-panel"); panel.style.display=panel.style.display === "block" ? "none" : "block"; const username=document.getElementById("changeUsername"); if(username && !username.value) username.value=currentEmployeeUsername || ""; }
 
 async function changePassword(){
 
@@ -3988,5 +3990,5 @@ document.addEventListener(
 
 </script>
 
-</body>
+<script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[back,name,logout].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script></body>
 </html>

@@ -561,7 +561,7 @@ th,td{padding:5px 4px;font-size:11px}
   transform:translateX(-1px)
 }
 </style>
-<style id="unified-user-toolbar-style">.employee-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;direction:rtl;min-width:0}.employee-toolbar .portal-back-button,.employee-toolbar .back-button{order:1}.employee-toolbar .employee-name,.employee-toolbar strong{order:2;min-width:0;max-width:min(48vw,300px);overflow:visible;text-overflow:clip;white-space:nowrap}.employee-toolbar .logout-icon{order:3}.employee-toolbar .employee-name,.employee-toolbar strong{font-size:clamp(15px,2vw,21px)}@media(max-width:700px){.employee-toolbar{gap:6px}.employee-toolbar .employee-name,.employee-toolbar strong{max-width:48vw;font-size:15px}}</style></head>
+<style id="unified-user-toolbar-style">.employee-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;direction:rtl;min-width:0}.employee-toolbar .portal-back-button,.employee-toolbar .back-button{order:1}.employee-toolbar .employee-name,.employee-toolbar strong{order:2;min-width:0;max-width:min(48vw,300px);overflow:visible;text-overflow:clip;white-space:nowrap}.employee-toolbar .logout-icon{order:3}.employee-toolbar .employee-name,.employee-toolbar strong{font-size:clamp(15px,2vw,21px)}@media(max-width:700px){.employee-toolbar{gap:6px}.employee-toolbar .employee-name,.employee-toolbar strong{max-width:48vw;font-size:15px}}</style><style id="toolbar-pin-layout">.unified-user-group{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}.unified-user-group .employee-meta-tools{flex:0 1 auto}.employee-meta-tools .employee-name{max-width:min(48vw,300px);overflow:visible;text-overflow:clip;font-size:clamp(15px,2vw,21px)}.toolbar-pin-button{width:34px;height:34px;border:1px solid #e5e7eb;border-radius:50%;background:#fff;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex:0 0 auto}.toolbar-pin-button:hover{background:#f0f9fc}.authenticated-pin-panel{display:block;position:relative;margin:12px auto;max-width:420px}@media(max-width:700px){.unified-user-group{gap:5px}.toolbar-pin-button{width:32px;height:32px}}</style></head>
 
 <body>
 
@@ -584,6 +584,7 @@ th,td{padding:5px 4px;font-size:11px}
 
   <div class="date-box" id="dateBox"></div>
 
+  <div class="unified-user-group">
   <div class="employee-meta-tools">
     <a class="back-button" href="portal.html" title="رجوع" aria-label="رجوع">
         <svg class="back-svg" viewBox="0 0 24 24" aria-hidden="true">
@@ -604,6 +605,8 @@ th,td{padding:5px 4px;font-size:11px}
         <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
       </svg>
     </button>
+  </div>
+  <button type="button" class="toolbar-pin-button" onclick="openAuthenticatedPinPanel()" title="Change PIN" aria-label="Change PIN">🔑</button>
   </div>
 
   <button
@@ -1548,6 +1551,8 @@ function togglePasswordPanel() {
 
 }
 
+
+function openAuthenticatedPinPanel() { const panel=document.getElementById("changePasswordPanel"); const employeeView=document.getElementById("employeeView"); if(!panel || !employeeView || employeeView.style.display === "none") return; if(panel.parentElement !== employeeView) employeeView.appendChild(panel); panel.classList.add("authenticated-pin-panel"); panel.style.display=panel.style.display === "block" ? "none" : "block"; const username=document.getElementById("changeUsername"); if(username && !username.value) username.value=currentUsername || ""; }
 
 async function changePassword() {
 
@@ -2599,5 +2604,5 @@ window.addEventListener(
 
 </script>
 
-</body>
+<script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[back,name,logout].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script></body>
 </html>
