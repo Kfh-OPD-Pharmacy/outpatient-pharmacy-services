@@ -68,6 +68,9 @@ let dailyRows = [];
 let activeFilter = "all";
 let refreshTimer = null;
 let isLoadingSupervisorData = false;
+let refreshFailureCount = 0;
+let refreshRequestSequence = 0;
+let lastRenderedRowsKey = "";
 let inactivityTimer = null;
 let currentLang = "ar";
 let lastSummary = null;
@@ -215,6 +218,17 @@ async function initDashboard() {
   els.refreshSupervisorBtn.addEventListener(
     "click",
     loadSupervisorData
+  );
+
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (document.hidden) {
+        stopDashboardRefresh();
+      } else if (hasDashboardSession()) {
+        scheduleDashboardRefresh(0);
+      }
+    }
   );
 
   els.printReportBtn.addEventListener(
@@ -414,7 +428,7 @@ function clearLegacyDashboardSession() {
 
 function stopDashboardRefresh() {
   if (refreshTimer) {
-    clearInterval(
+    clearTimeout(
       refreshTimer
     );
 
@@ -962,13 +976,7 @@ function showDashboard() {
 
   loadSupervisorData();
 
-  if (!refreshTimer) {
-    refreshTimer =
-      setInterval(
-        loadSupervisorData,
-        30000
-      );
-  }
+  scheduleDashboardRefresh(1000);
 }
 
 
@@ -1264,6 +1272,9 @@ async function loadSupervisorData() {
   isLoadingSupervisorData =
     true;
 
+  const requestSequence =
+    ++refreshRequestSequence;
+
   els.refreshSupervisorBtn.disabled =
     true;
 
@@ -1292,6 +1303,14 @@ async function loadSupervisorData() {
         t("loadFailed")
       );
     }
+
+    if (
+      requestSequence !== refreshRequestSequence
+    ) {
+      return;
+    }
+
+    refreshFailureCount = 0;
 
     lastSummary =
       response.summary ||
@@ -1329,6 +1348,11 @@ async function loadSupervisorData() {
     );
 
   } catch (error) {
+    refreshFailureCount = Math.min(
+      refreshFailureCount + 1,
+      6
+    );
+
     setMessage(
       els.supervisorMessage,
       error.message,
@@ -1347,7 +1371,48 @@ async function loadSupervisorData() {
       .remove(
         "is-loading"
       );
+
+    if (
+      hasDashboardSession() &&
+      !document.hidden
+    ) {
+      const delay =
+        refreshFailureCount > 0
+          ? Math.min(
+              1000 * Math.pow(2, refreshFailureCount),
+              30000
+            )
+          : 1000;
+
+      scheduleDashboardRefresh(delay);
+    }
   }
+}
+
+
+function scheduleDashboardRefresh(
+  delay
+) {
+  if (refreshTimer) {
+    window.clearTimeout(refreshTimer);
+  }
+
+  if (
+    document.hidden ||
+    !hasDashboardSession()
+  ) {
+    refreshTimer = null;
+    return;
+  }
+
+  refreshTimer =
+    window.setTimeout(
+      () => {
+        refreshTimer = null;
+        loadSupervisorData();
+      },
+      Math.max(0, delay || 0)
+    );
 }
 
 
@@ -1534,6 +1599,23 @@ function renderPrintUsers(
 function renderDailyRows(
   rows
 ) {
+  const rowsKey = JSON.stringify({
+    language: currentLang,
+    filter: activeFilter,
+    search: els.fileSearchInput
+      ? els.fileSearchInput.value.trim()
+      : "",
+    rows
+  });
+
+  if (
+    rowsKey === lastRenderedRowsKey
+  ) {
+    return;
+  }
+
+  lastRenderedRowsKey = rowsKey;
+
   els.dailyListBody.innerHTML =
     "";
 
