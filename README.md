@@ -155,7 +155,7 @@ The exact file set may evolve, but the current portal commonly uses files such a
 - `home.html` — main portal.
 - `form.html` — kidney expiry registration.
 - `dashboard.html` — expiry dashboard / indicator.
-- `admin.html` — unified user administration.
+- User administration is performed through the protected Users Database Google Sheets interface.
 - `medications-admin.html` — central medication administration.
 - `Code.gs` — Google Apps Script backend in services that use the default Apps Script filename.
 
