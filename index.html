@@ -164,6 +164,17 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
   font-weight:bold;
   cursor:pointer
 }
+.pin-change-icon{
+  width:34px;
+  height:34px;
+  min-height:34px;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  font-size:18px
+}
 .pin-change-btn:disabled{
   background:#94a3b8;
   cursor:not-allowed
@@ -540,6 +551,13 @@ body{padding:10px;background:#fff}
         </svg>
       </button>
 
+      <button
+        type="button"
+        class="pin-change-btn pin-change-icon"
+        id="changePinBtn"
+        onclick="togglePinChangePanel()"
+        title="Change PIN"
+        aria-label="Change PIN">🔑</button>
       <span id="portalUserName" class="portal-user-name"></span>
       <span class="portal-session-spacer" aria-hidden="true"></span>
     </div>
@@ -577,16 +595,6 @@ body{padding:10px;background:#fff}
   </div>
 
   <div id="portalView" style="display:none">
-    <div class="pin-change-actions">
-      <button
-        type="button"
-        class="pin-change-btn"
-        id="changePinBtn"
-        onclick="togglePinChangePanel()">
-        Change PIN
-      </button>
-    </div>
-
     <div id="pinChangePanel" class="pin-change-panel" aria-hidden="true">
       <label id="currentPinLabel" for="currentPin">Current PIN</label>
       <input type="password" id="currentPin" inputmode="numeric" autocomplete="current-password">
@@ -1691,6 +1699,15 @@ document.getElementById(
 
 setLanguage("en");
 restorePortalSession();
+
+window.addEventListener(
+  "pageshow",
+  function(event) {
+    if (event.persisted) {
+      restorePortalSession();
+    }
+  }
+);
 </script>
 </body>
 </html>

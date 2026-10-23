@@ -18,7 +18,8 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
 .language-chip{cursor:pointer;white-space:nowrap}
 .page-title{text-align:center;font-size:24px;font-weight:bold;margin:18px 0 8px;color:#168fb3}
 .subtitle{text-align:center;color:#334155;font-size:15px;line-height:1.7;margin:0 auto 22px;max-width:620px}
-.portal-grid{display:grid;grid-template-columns:repeat(2,minmax(190px,1fr));gap:14px;max-width:620px;margin:0 auto}
+.portal-grid{display:flex;justify-content:center;align-items:stretch;gap:14px;max-width:620px;margin:0 auto;width:100%}
+.portal-grid .portal-card{width:min(100%,360px)}
 .portal-card{background:#168fb3;border:1px solid #168fb3;border-radius:8px;padding:16px;text-decoration:none;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:108px;transition:.15s ease}
 .portal-card:hover{border-color:#0f7592;transform:translateY(-1px);box-shadow:0 8px 18px rgba(22,143,179,.28);filter:brightness(1.05)}
 .card-title{font-size:16px;font-weight:bold;color:#fff;margin:0 0 5px}
@@ -32,7 +33,7 @@ body{padding:10px;background:#fff}
 .official-header h2,.official-header h3{font-size:12px}
 .page-title{font-size:20px}
 .subtitle{font-size:13px}
-.portal-grid{grid-template-columns:1fr;max-width:310px}
+.portal-grid{max-width:310px}
 .portal-card{min-height:92px;padding:12px}
 .card-title{font-size:15px}
 .card-icon{width:34px;height:34px;font-size:19px}
@@ -427,6 +428,15 @@ async function validatePageAccess(){
 
 setLanguage("ar");
 validatePageAccess();
+
+window.addEventListener(
+  "pageshow",
+  function(event) {
+    if (event.persisted) {
+      validatePageAccess();
+    }
+  }
+);
 </script>
 </body>
 </html>
