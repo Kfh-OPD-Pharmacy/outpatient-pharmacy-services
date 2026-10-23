@@ -247,13 +247,6 @@ body{padding:10px;background:#fff}
   <p class="subtitle" id="subtitle">اختيار صفحة الإدارة المطلوبة.</p>
 
   <div class="portal-grid" id="portalGrid">
-    <a class="portal-card" href="admin.html" style="display:none">
-      <div>
-        <p class="card-title" id="usersTitle">إدارة المستخدمين الموحدة</p>
-        <p class="card-desc" id="usersDesc">إضافة المستخدمين وتحديد صلاحيات الخدمات.</p>
-      </div>
-      <div class="card-icon">👤</div>
-    </a>
     <a class="portal-card" href="medications-admin.html" style="display:none">
       <div>
         <p class="card-title" id="medsTitle">إدارة الأدوية الموحدة</p>
@@ -273,8 +266,6 @@ const text = {
     officialLine1:"تجمع المدينة المنورة الصحي",
     officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
     officialLine3:"إدارة الرعاية الصيدلانية",
-    usersTitle:"إدارة المستخدمين الموحدة",
-    usersDesc:"إضافة المستخدمين وتحديد صلاحيات الخدمات.",
     medsTitle:"إدارة الأدوية الموحدة",
     medsDesc:"إضافة وتعديل أسماء الأدوية للقوائم المنسدلة."
   },
@@ -284,8 +275,6 @@ const text = {
     officialLine1:"Madinah Health Cluster",
     officialLine2:"King Fahad Hospital - Madinah",
     officialLine3:"Pharmaceutical Care Administration",
-    usersTitle:"Unified User Management",
-    usersDesc:"Add users and manage service permissions.",
     medsTitle:"Unified Medication Management",
     medsDesc:"Add and edit medication names for dropdown lists."
   }
@@ -298,7 +287,7 @@ function setLanguage(lang){
   ["officialLine1","officialLine2","officialLine3"].forEach(id => document.getElementById(id).innerText = text[lang][id]);
   document.getElementById("pageTitle").innerText = text[lang].title;
   document.getElementById("subtitle").innerText = text[lang].subtitle;
-  ["usersTitle","usersDesc","medsTitle","medsDesc"].forEach(id => document.getElementById(id).innerText = text[lang][id]);
+  ["medsTitle","medsDesc"].forEach(id => document.getElementById(id).innerText = text[lang][id]);
   renderDate();
 }
 function toggleLanguage(){setLanguage(currentLang === "ar" ? "en" : "ar")}
@@ -335,17 +324,12 @@ function clearPortalSession(){
 
 function getControlCards(){
   return {
-    users:document.querySelector('a.portal-card[href="admin.html"]'),
     meds:document.querySelector('a.portal-card[href="medications-admin.html"]')
   };
 }
 
 function hideAllControlCards(){
   const cards = getControlCards();
-
-  if (cards.users){
-    cards.users.style.display = "none";
-  }
 
   if (cards.meds){
     cards.meds.style.display = "none";
@@ -355,22 +339,10 @@ function hideAllControlCards(){
 function renderAllowedControlServices(user){
   const cards = getControlCards();
 
-  const usersAllowed = Boolean(
-    user &&
-    user.userManagementAccess
-  );
-
   const medsAllowed = Boolean(
     user &&
     user.medicationManagementAccess
   );
-
-  if (cards.users){
-    cards.users.style.display =
-      usersAllowed
-        ? "flex"
-        : "none";
-  }
 
   if (cards.meds){
     cards.meds.style.display =
@@ -379,7 +351,7 @@ function renderAllowedControlServices(user){
         : "none";
   }
 
-  return usersAllowed || medsAllowed;
+  return medsAllowed;
 }
 
 async function validatePageAccess(){
