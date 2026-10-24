@@ -1057,6 +1057,7 @@ let adminUsername =
   sessionStorage.getItem(
     "unifiedPortalUsername"
   ) || "";
+let adminDisplayName = "";
 
 
 let adminSessionToken =
@@ -1474,7 +1475,7 @@ function showAdmin(){
   document.getElementById(
     "adminName"
   ).innerText =
-    adminUsername || "Admin";
+    adminDisplayName || "Admin";
 
 
   loadMedications();
@@ -1498,7 +1499,19 @@ function clearPortalSession(){
   ["unifiedPortalUsername", "unifiedPortalSessionToken", "unifiedPortalUser"]
     .forEach(function(key){ sessionStorage.removeItem(key); });
   adminUsername = "";
+  adminDisplayName = "";
   adminSessionToken = "";
+}
+
+function getSessionDisplayName(user){
+  if (!user || typeof user !== "object") return "";
+  return String(
+    user.name ||
+    user.fullName ||
+    user.displayName ||
+    user.employeeName ||
+    ""
+  ).trim();
 }
 
 function handleSessionFailure(code){
@@ -1689,6 +1702,7 @@ async function validateExistingSession(){
       return;
     }
     adminUsername = result.user.username;
+    adminDisplayName = getSessionDisplayName(result.user);
     sessionStorage.setItem("unifiedPortalUsername", adminUsername);
     sessionStorage.setItem("unifiedPortalUser", JSON.stringify(result.user));
     sessionVerified = true;
