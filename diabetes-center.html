@@ -414,7 +414,13 @@ function renderPortalUserCard(user) {
   target.textContent = name;
 }
 
-function logoutPortalCard() {
+async function logoutPortalCard() {
+  const sessionToken = sessionStorage.getItem("unifiedPortalSessionToken") || "";
+  if (sessionToken) {
+    try {
+      await unifiedApi({ action: "revokeSession", sessionToken: sessionToken });
+    } catch (error) {}
+  }
   clearPortalSession();
   window.location.replace("index.html");
 }
