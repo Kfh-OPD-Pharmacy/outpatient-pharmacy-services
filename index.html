@@ -553,7 +553,6 @@ body{padding:10px;background:#fff}
       </button>
 
       <span id="portalUserName" class="portal-user-name"></span>
-      <button type="button" class="portal-back-btn" id="portalBackBtn" onclick="goBackPortal()" title="Back" aria-label="Back">↩</button>
 
       </div>
     </div>
@@ -1327,12 +1326,6 @@ function showPortalView(user) {
     }, 0);
   }
 }
-
-function goBackPortal() {
-  if (window.history.length > 1) window.history.back();
-  else window.location.href = "control-panel.html";
-}
-
 
 function hideAllPortalCards() {
   [
