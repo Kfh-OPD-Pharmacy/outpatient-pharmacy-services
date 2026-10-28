@@ -676,6 +676,7 @@ const text = {
     pinTooShort: "PIN الجديد يجب أن يكون 4 أرقام على الأقل.",
     invalidCurrentPin: "اسم المستخدم أو PIN الحالي غير صحيح.",
     temporaryPinExpired: "انتهت صلاحية PIN المؤقت. اطلب إعادة تعيين PIN.",
+    authRateLimited: "محاولات كثيرة. حاول مرة أخرى بعد قليل.",
     userNotFound: "المستخدم غير موجود.",
     networkError: "تعذر الاتصال بالخدمة. حاول مرة أخرى.",
     sessionExpired: "انتهت الجلسة. سجّل الدخول مجددًا.",
@@ -710,6 +711,7 @@ const text = {
     pinTooShort: "New PIN must be at least 4 digits.",
     invalidCurrentPin: "Invalid username or current PIN.",
     temporaryPinExpired: "The temporary PIN has expired. Request a new PIN.",
+    authRateLimited: "Too many attempts. Try again later.",
     userNotFound: "User not found.",
     networkError: "Could not connect to the service. Please try again.",
     sessionExpired: "Your session has expired. Please log in again.",
@@ -1519,6 +1521,10 @@ async function loginPortal() {
     ) {
       if (result && result.code === "TEMPORARY_PIN_EXPIRED") {
         showLoginResult(text[currentLang].temporaryPinExpired);
+        return;
+      }
+      if (result && result.code === "AUTH_RATE_LIMITED") {
+        showLoginResult(text[currentLang].authRateLimited);
         return;
       }
       showLoginResult(
