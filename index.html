@@ -675,6 +675,7 @@ const text = {
     pinMismatch: "PIN الجديد وتأكيده غير متطابقين.",
     pinTooShort: "PIN الجديد يجب أن يكون 4 أرقام على الأقل.",
     invalidCurrentPin: "اسم المستخدم أو PIN الحالي غير صحيح.",
+    temporaryPinExpired: "انتهت صلاحية PIN المؤقت. اطلب إعادة تعيين PIN.",
     userNotFound: "المستخدم غير موجود.",
     networkError: "تعذر الاتصال بالخدمة. حاول مرة أخرى.",
     sessionExpired: "انتهت الجلسة. سجّل الدخول مجددًا.",
@@ -708,6 +709,7 @@ const text = {
     pinMismatch: "New PIN and confirmation do not match.",
     pinTooShort: "New PIN must be at least 4 digits.",
     invalidCurrentPin: "Invalid username or current PIN.",
+    temporaryPinExpired: "The temporary PIN has expired. Request a new PIN.",
     userNotFound: "User not found.",
     networkError: "Could not connect to the service. Please try again.",
     sessionExpired: "Your session has expired. Please log in again.",
@@ -1080,6 +1082,7 @@ function togglePinChangePanel() {
   }
 
   clearPinChangeFields();
+  setPinChangeMode(Boolean(currentUser && currentUser.mustChangePin));
   showPinChangeResult(
     "",
     false
@@ -1123,9 +1126,11 @@ async function changePortalPin() {
       "confirmPin"
     ).value.trim();
 
+  const limitedPinChange = Boolean(currentUser && currentUser.mustChangePin);
+
   if (
     !username ||
-    !currentPin ||
+    (!limitedPinChange && !currentPin) ||
     !newPin ||
     !confirmPin
   ) {
@@ -1171,19 +1176,14 @@ async function changePortalPin() {
   );
 
   try {
-    const result =
-      await unifiedApi({
-        action:
-          "changeLoginPin",
-        username:
-          username,
-        currentPin:
-          currentPin,
-        newPin:
-          newPin,
-        sessionToken:
-          portalSessionToken
-      });
+    const pinPayload = {
+      action: "changeLoginPin",
+      username: username,
+      newPin: newPin,
+      sessionToken: portalSessionToken
+    };
+    if (!limitedPinChange) pinPayload.currentPin = currentPin;
+    const result = await unifiedApi(pinPayload);
 
     if (
       !result ||
@@ -1210,6 +1210,8 @@ async function changePortalPin() {
       ) {
         message =
           text[currentLang].userNotFound;
+      } else if (code === "TEMPORARY_PIN_EXPIRED") {
+        message = text[currentLang].temporaryPinExpired;
       }
 
       showPinChangeResult(
@@ -1224,10 +1226,13 @@ async function changePortalPin() {
 
     closePinChangePanel();
 
-    showLoginResult(
-      text[currentLang].pinChanged,
-      true
-    );
+    if (limitedPinChange) {
+      clearPortalStorage();
+      showLoginResult(text[currentLang].pinChanged, true);
+      window.setTimeout(function() { showLoginView(); }, 2000);
+    } else {
+      showLoginResult(text[currentLang].pinChanged, true);
+    }
 
   } catch (error) {
     showPinChangeResult(
@@ -1316,6 +1321,8 @@ function showPortalView(user) {
     currentUser
   );
 
+  setPinChangeMode(Boolean(currentUser && currentUser.mustChangePin));
+
   if (currentUser && currentUser.mustChangePin === true) {
     hideAllPortalCards();
     setTimeout(function() {
@@ -1324,6 +1331,17 @@ function showPortalView(user) {
         if (panel && !panel.classList.contains("visible")) togglePinChangePanel();
       }
     }, 0);
+  }
+}
+
+function setPinChangeMode(required) {
+  const label = document.getElementById("currentPinLabel");
+  const input = document.getElementById("currentPin");
+  if (label) label.style.display = required ? "none" : "";
+  if (input) {
+    input.style.display = required ? "none" : "";
+    input.required = !required;
+    if (required) input.value = "";
   }
 }
 
@@ -1499,6 +1517,10 @@ async function loginPortal() {
       !result.sessionToken ||
       !result.user
     ) {
+      if (result && result.code === "TEMPORARY_PIN_EXPIRED") {
+        showLoginResult(text[currentLang].temporaryPinExpired);
+        return;
+      }
       showLoginResult(
         text[currentLang].invalidLogin
       );
