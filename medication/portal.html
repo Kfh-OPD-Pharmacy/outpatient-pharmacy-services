@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>صرف الأدوية الشهرية بموعد</title>
+<title>Monthly Medication Pickup</title>
 
 <style>
 *{box-sizing:border-box}
@@ -38,14 +38,16 @@ body{
 .logo{
   width:120px;
   height:120px;
-  object-fit:contain
+  object-fit:contain;
+  margin-top:-20px;
+  margin-bottom:-28px
 }
 
 .official-header{
   width:fit-content;
   max-width:100%;
   text-align:right;
-  transform:translateY(14px);
+  transform:none;
   padding-left:8px;
   border-left:4px solid #168fb3;
   direction:rtl
@@ -72,7 +74,7 @@ html[dir="rtl"] .official-header{
    نفس مكان الترويسة، فقط النص يكون محاذياً للخط */
 html[dir="ltr"] .official-header{
   text-align:left;
-  padding-left:6px;
+  padding-left:8px;
   padding-right:0;
   border-left:4px solid #168fb3;
   border-right:0
@@ -87,17 +89,22 @@ html[dir="ltr"] .official-header h3{
 hr{
   border:none;
   border-top:1px solid #e5e7eb;
-  margin:14px 0
+  margin:16px 0 14px
 }
 
 .meta-row{
-  display:flex;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr);
   align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:14px;
+  column-gap:4px;
+  row-gap:0;
+  width:100%;
+  margin-bottom:70px;
   direction:ltr
 }
+.meta-row>.date-box{grid-column:1;justify-self:start}
+.meta-row>.employee-toolbar{grid-column:2;justify-self:center}
+.meta-row>.language-chip{grid-column:3;justify-self:end}
 
 .date-box{
   color:#168fb3;
@@ -119,7 +126,7 @@ hr{
   text-align:center;
   font-size:24px;
   font-weight:bold;
-  margin:18px 0 8px;
+  margin:28px 0 30px;
   color:#168fb3
 }
 
@@ -135,63 +142,52 @@ hr{
 .portal-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:14px;
-  max-width:680px;
-  margin:30px auto 0
+  grid-template-rows:repeat(2,116px);
+  gap:4px;
+  max-width:760px;
+  width:min(100%,760px);
+  margin:0 auto
 }
+.portal-grid{position:relative;--portal-cutout:30px}
+.pharmacy-center-icon{position:absolute;z-index:2;left:50%;top:50%;width:54px;height:54px;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none}
 
 .portal-card{
   background:#168fb3;
   border:1px solid #168fb3;
-  border-radius:8px;
-  padding:18px;
+  height:116px;
+  border-radius:10px;
+  padding:14px;
   text-decoration:none;
   color:#fff;
   display:flex;
+  flex-direction:column;
   align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  min-height:118px;
+  justify-content:center;
+  gap:10px;
   transition:.15s ease
 }
+.portal-grid #manageCard{grid-column:2;grid-row:1;-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-grid #indicatorCard{grid-column:1;grid-row:2;-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
 
 .portal-card:hover{
   border-color:#0f7592;
-  transform:translateY(-1px);
-  box-shadow:0 8px 18px rgba(22,143,179,.28);
-  filter:brightness(1.05)
+  transform:translateY(-2px);
+  box-shadow:0 9px 20px rgba(22,143,179,.24);
+  filter:brightness(1.04)
 }
 
 .card-text{
-  text-align:start
+  text-align:center
 }
 
 .card-title{
-  font-size:18px;
+  font-size:16px;
   font-weight:bold;
   color:#fff;
-  margin:0 0 7px
+  margin:0;
+  line-height:1.5
 }
 
-.card-desc{
-  font-size:13px;
-  color:rgba(255,255,255,.85);
-  line-height:1.6;
-  margin:0
-}
-
-.card-icon{
-  width:44px;
-  height:44px;
-  border-radius:10px;
-  background:rgba(255,255,255,.2);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:24px;
-  flex:0 0 auto
-}
 
 .main-home-link{
   display:flex;
@@ -210,35 +206,6 @@ hr{
 
 .main-home-link:hover{
   color:#0f7592
-}
-
-.portal-grid{
-  gap:12px;
-  max-width:580px;
-  margin-top:28px
-}
-
-.portal-card{
-  min-height:100px;
-  padding:14px;
-  gap:12px
-}
-
-.card-title{
-  font-size:16px;
-  margin-bottom:5px
-}
-
-.card-desc{
-  font-size:12px;
-  line-height:1.55
-}
-
-.card-icon{
-  width:38px;
-  height:38px;
-  border-radius:8px;
-  font-size:21px
 }
 
 .back-button{
@@ -287,11 +254,13 @@ hr{
 
   .logo{
     width:84px;
-    height:84px
+    height:84px;
+    margin-top:-12px;
+    margin-bottom:-20px
   }
 
   .official-header{
-    transform:translateY(10px)
+    transform:none
   }
 
   .official-header h2,
@@ -300,31 +269,34 @@ hr{
   }
 
   .page-title{
-    font-size:20px
+    font-size:20px;
+    margin:28px 0 30px
+  }
+
+  .meta-row{
+    margin-bottom:45px
   }
 
   .portal-grid{
-    grid-template-columns:1fr
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-rows:repeat(2,minmax(88px,104px));
+    width:min(100%,360px);
+    max-width:360px;
+    gap:4px
   }
+  .portal-grid{--portal-cutout:26px}
+  .pharmacy-center-icon{width:44px;height:44px}
 
   .portal-card{
-    min-height:88px;
-    padding:12px
+    height:104px;
+    padding:12px;
+    gap:10px
   }
 
   .card-title{
     font-size:15px
   }
 
-  .card-desc{
-    font-size:12px
-  }
-
-  .card-icon{
-    width:34px;
-    height:34px;
-    font-size:19px
-  }
 }
 
 
@@ -666,7 +638,7 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-<style id="header-alignment-default">.top-bar{align-items:flex-start!important}.official-header{box-sizing:border-box!important;align-self:stretch!important;margin-inline:0!important;transform:none!important}</style>
+<style id="monthly-medication-employee-position">.meta-row .employee-toolbar{margin-top:15px;margin-bottom:-15px}</style>
 </head>
 
 <body>
@@ -682,15 +654,15 @@ html,body{overflow-x:hidden}
     <div class="official-header">
 
       <h2>
-        تجمع المدينة المنورة الصحي
+         Madinah Health Cluster
       </h2>
 
       <h3>
-        مستشفى الملك فهد بالمدينة المنورة
+         King Fahad Hospital - Madinah
       </h3>
 
       <h3>
-        إدارة الرعاية الصيدلانية
+         Pharmaceutical Care Administration
       </h3>
 
     </div>
@@ -707,27 +679,29 @@ html,body{overflow-x:hidden}
     </div>
 
     <div class="employee-toolbar">
-      <button id="portalLogoutBtn" class="logout-icon" type="button" title="خروج" aria-label="خروج">
+      <button id="portalLogoutBtn" class="logout-icon" type="button" title="Logout" aria-label="Logout">
         <svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 3v9"></path>
           <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
         </svg>
       </button>
       <strong id="portalEmployeeName" class="employee-name"></strong>
-      <a class="portal-back-button" href="../outpatient-pharmacy.html" title="رجوع" aria-label="رجوع">↩</a>
+      <a class="portal-back-button" href="../outpatient-pharmacy.html" title="Back" aria-label="Back">↩</a>
     </div>
 
     <div class="language-chip">
-      🌐 ع | E
+      🌐 AR | EN
     </div>
 
   </div>
 
   <h1 class="page-title">
-    صرف الأدوية الشهرية بموعد
+     Monthly Medication Pickup
   </h1>
 
   <div class="portal-grid">
+
+    <img class="pharmacy-center-icon" src="../outpatient-pharmacy-icon.png" alt="" aria-hidden="true">
 
     <a
       class="portal-card"
@@ -738,17 +712,10 @@ html,body{overflow-x:hidden}
       <div class="card-text">
 
         <p class="card-title">
-          إدارة المواعيد
+           Appointment Management
         </p>
 
-        <p class="card-desc">
-          متابعة الحجوزات اليومية وتحديث الاستلام والتسليم.
-        </p>
 
-      </div>
-
-      <div class="card-icon">
-        ✓
       </div>
 
     </a>
@@ -762,17 +729,10 @@ html,body{overflow-x:hidden}
       <div class="card-text">
 
         <p class="card-title">
-          مؤشر المواعيد
+           Appointment Index
         </p>
 
-        <p class="card-desc">
-          عرض مؤشرات الحجوزات والسعة المتاحة خلال اليوم.
-        </p>
 
-      </div>
-
-      <div class="card-icon">
-        ▦
       </div>
 
     </a>
@@ -784,7 +744,7 @@ html,body{overflow-x:hidden}
       class="patient-booking-link"
       href="index.html"
       target="_blank"
-      rel="noopener">إذهب إلى رابط الحجز</a>
+        rel="noopener">Open Booking Link</a>
   </div>
 
 </div>
@@ -804,7 +764,7 @@ function renderDate(){
 
   const dayName =
     new Intl.DateTimeFormat(
-      "ar-SA",
+       "en-US",
       {
         timeZone:"Asia/Riyadh",
         weekday:"long"
