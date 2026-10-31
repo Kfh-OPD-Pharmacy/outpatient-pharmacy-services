@@ -31,7 +31,7 @@ body{
   justify-content:space-between;
   gap:12px;
   margin-bottom:8px;
-  direction:rtl
+  direction:ltr
 }
 
 .logo{
@@ -43,10 +43,11 @@ body{
 .official-header{
   width:fit-content;
   max-width:100%;
-  text-align:start;
-  margin-inline-start:0;
-  margin-inline-end:auto;
-  transform:translateY(14px)
+  text-align:right;
+  transform:translateY(14px);
+  padding-left:8px;
+  border-left:4px solid #168fb3;
+  direction:rtl
 }
 
 .official-header h2,
@@ -57,15 +58,8 @@ body{
   color:#168fb3
 }
 
-/* العربي كما هو */
-html[dir="rtl"] .official-header{
-  padding-left:8px;
-  border-left:4px solid #168fb3
-}
-
-/* الإنجليزي: نفس مكان الترويسة، فقط الخط والمحاذاة */
 html[dir="ltr"] .official-header{
-  padding-left:6px;
+  padding-left:8px;
   padding-right:0;
   border-left:4px solid #168fb3;
   border-right:0;
@@ -96,7 +90,8 @@ hr{
   text-align:center;
   color:#168fb3;
   margin-bottom:18px;
-  line-height:1.7
+  line-height:1.7;
+  display:none
 }
 
 .meta-row{
@@ -298,19 +293,21 @@ th{
     line-height:1.4;
   }
 
-  hr,
-  .official-divider{
-    border-top-color:#e5e7eb;
+  hr{
+    border:none;
+    border-top:1px solid #e5e7eb;
     margin:14px 0;
   }
+
+  :root{--appointment-title-offset:16px}
 
   .page-title,
   .employee-page-title{
     color:#168fb3;
-    font-size:23px;
+    font-size:24px;
     font-weight:bold;
     line-height:1.25;
-    margin:18px 0 12px;
+    margin:calc(20px + var(--appointment-title-offset)) 0 10px;
     text-align:center;
   }
 
@@ -439,7 +436,7 @@ th{
     .page-title,
     .employee-page-title{
       font-size:20px;
-      margin:16px 0 12px;
+      margin:calc(18px + var(--appointment-title-offset)) 0 10px;
     }
 
     input,
@@ -566,25 +563,29 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-<style id="header-alignment-default">.top-bar{align-items:flex-start!important}.official-header{box-sizing:border-box!important;align-self:stretch!important;margin-inline:0!important;transform:none!important}</style>
+<style id="official-header-reference-layout">
+.top-bar{align-items:flex-start;min-height:0;margin-bottom:0}
+.top-bar .logo{margin-top:-20px;margin-bottom:-28px}
+.official-header{transform:none!important;margin-top:0}
+.top-bar + hr{margin-top:16px;margin-bottom:14px}
+@media(max-width:700px){
+  .top-bar .logo{margin-top:-12px;margin-bottom:-20px}
+  .top-bar + hr{margin-top:12px;margin-bottom:12px}
+}
+</style>
+<style id="employee-position-reference">.meta-row .employee-toolbar{margin-top:15px;margin-bottom:-15px}</style>
 </head>
 
 <body>
 
 <div class="container">
-<div class="top-bar">
-
+  <div class="top-bar">
+    <img class="logo" src="logo.png" alt="Logo">
     <div class="official-header">
       <h2 id="officialLine1"></h2>
       <h3 id="officialLine2"></h3>
       <h3 id="officialLine3"></h3>
     </div>
-
-    <img
-      class="logo"
-      src="logo.png"
-      alt="Logo">
-
   </div>
 
   <hr>
@@ -711,8 +712,8 @@ const text = {
     officialLine1:"Madinah Health Cluster",
     officialLine2:"King Fahad Hospital - Madinah",
     officialLine3:"Pharmaceutical Care Administration",
-    pageTitle:"Medication Pickup Service Dashboard",
-    pageSubtitle:"Medication Refill Pickup Appointment Service",
+    pageTitle:"Appointment Index",
+    pageSubtitle:"",
     loading:"Loading dashboard...",
     failed:"Failed to load dashboard data",
     totalBookings:"Total Bookings Today",
@@ -735,7 +736,7 @@ const text = {
     officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
     officialLine3:"إدارة الرعاية الصيدلانية",
     pageTitle:"مؤشرات خدمة استلام الأدوية",
-    pageSubtitle:"خدمة حجز موعد استلام أدوية إعادة الصرف",
+    pageSubtitle:"",
     loading:"جاري تحميل البيانات...",
     failed:"فشل تحميل بيانات المؤشرات",
     totalBookings:"إجمالي حجوزات اليوم",
