@@ -72,7 +72,7 @@ let refreshFailureCount = 0;
 let refreshRequestSequence = 0;
 let lastRenderedRowsKey = "";
 let inactivityTimer = null;
-let currentLang = "ar";
+let currentLang = "en";
 let lastSummary = null;
 
 const INACTIVITY_LIMIT_MS =
@@ -199,7 +199,7 @@ document.addEventListener(
 async function initDashboard() {
   startInactivityWatcher();
 
-  setLanguage("ar");
+  setLanguage("en");
 
   clearLegacyDashboardSession();
 
@@ -1542,6 +1542,10 @@ function renderPrintReport(
     summary.preparedByUser ||
     []
   );
+
+  buildMailIndexPrintPages(
+    summary.preparedByUser || []
+  );
 }
 
 
@@ -1589,6 +1593,49 @@ function renderPrintUsers(
       );
     }
   );
+}
+
+function buildMailIndexPrintPages(users = []) {
+  const pages = document.getElementById("printPages");
+  const template = document.getElementById("printReportTemplate");
+  if (!pages || !template) return;
+
+  const rows = Array.from(
+    template.querySelectorAll("#printUserBody > tr")
+  );
+  const rowsPerPage = 18;
+  const pageCount = Math.max(1, Math.ceil(rows.length / rowsPerPage));
+  pages.innerHTML = "";
+
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+    const page = document.createElement("div");
+    page.className = "mail-print-page";
+
+    const report = template.cloneNode(true);
+    report.removeAttribute("id");
+    report.setAttribute("aria-hidden", "true");
+    const body = report.querySelector(".print-user-table tbody");
+    if (body) {
+      body.innerHTML = "";
+      const start = pageIndex * rowsPerPage;
+      rows.slice(start, start + rowsPerPage).forEach((row) => {
+        body.appendChild(row.cloneNode(true));
+      });
+    }
+
+    const footer = document.createElement("footer");
+    footer.className = "mail-print-footer";
+    footer.innerHTML =
+      `<div class="mail-print-page-number">Page ${pageIndex + 1} of ${pageCount}</div>` +
+      `<div class="mail-print-signature">` +
+      `<span>Pharmacy Services - Outpatient Pharmacy</span>` +
+      `<span>Developed by <strong>Abdullah Alattas</strong></span>` +
+      `</div>`;
+
+    page.appendChild(report);
+    page.appendChild(footer);
+    pages.appendChild(page);
+  }
 }
 
 

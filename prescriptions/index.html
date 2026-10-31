@@ -143,7 +143,32 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-<style id="header-alignment-default">.top-bar{align-items:flex-start!important}.official-header{box-sizing:border-box!important;align-self:stretch!important;margin-inline:0!important;transform:none!important}</style>
+<style id="mail-pharmacy-master-layout">
+.portal-shell .official-top{direction:ltr;align-items:flex-start;margin-bottom:0}
+.portal-shell .official-logo{width:120px;height:120px;object-fit:contain;margin-top:-20px;margin-bottom:-28px}
+.portal-shell .official-header{transform:none;margin:0;padding-left:8px;padding-right:0;border-left:4px solid #168fb3;border-right:0;direction:ltr;text-align:left}
+.portal-shell .official-header h2,.portal-shell .official-header h3{margin:2px 0;font-size:13px;line-height:1.4;color:#168fb3;text-align:left}
+.portal-shell .official-divider{margin-top:16px;margin-bottom:14px}
+.portal-shell .employee-meta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr);grid-template-rows:none;align-items:center;column-gap:4px;row-gap:0;width:100%;direction:ltr;margin-bottom:70px}
+.portal-shell .employee-meta>.date-box{grid-column:1;justify-self:start}
+.portal-shell .employee-meta>.language-chip{grid-column:3;justify-self:end}
+.portal-shell .employee-meta>.employee-toolbar{grid-column:2;justify-self:center;margin:15px 0 -15px}
+.portal-shell .portal-hero{margin:28px auto 30px;text-align:center}
+.portal-shell .portal-hero h1{font-size:24px;line-height:1.35;color:#168fb3;font-weight:700}
+.portal-shell .portal-grid{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(104px,116px));gap:4px;width:min(100%,760px);max-width:760px;margin:0 auto}
+.portal-shell .portal-grid::before{content:none}
+.portal-shell .portal-card{position:relative;display:flex;align-items:center;justify-content:center;min-height:0;height:116px;width:auto;padding:14px;overflow:hidden;background:#168fb3;color:#fff;border:1px solid #168fb3;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.04);text-align:center;gap:10px}
+.portal-shell .portal-card:nth-child(odd),.portal-shell .portal-card:nth-child(even){justify-self:stretch}
+.portal-shell .portal-card strong{color:#fff;font-size:15px;font-weight:700;line-height:1.5;margin:0}
+.portal-shell .portal-card small{color:#fff;font-size:12px;line-height:1.4}
+.portal-shell .portal-card .portal-icon{display:none}
+.portal-shell .portal-grid .pharmacy-center-icon{position:absolute;z-index:2;left:50%;top:50%;width:54px;height:54px;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none}
+.portal-shell .portal-grid #prepCard{grid-column:1;grid-row:1;-webkit-mask:radial-gradient(circle 30px at 100% 100%,transparent 0 28px,#000 30px),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle 30px at 100% 100%,transparent 0 28px,#000 30px),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-shell .portal-grid #uploadCard{grid-column:2;grid-row:1;-webkit-mask:radial-gradient(circle 30px at 0 100%,transparent 0 28px,#000 30px),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle 30px at 0 100%,transparent 0 28px,#000 30px),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-shell .portal-grid #dashboardCard{grid-column:1;grid-row:2;-webkit-mask:radial-gradient(circle 30px at 100% 0,transparent 0 28px,#000 30px),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle 30px at 100% 0,transparent 0 28px,#000 30px),linear-gradient(#000 0 0);mask-composite:intersect}
+html[dir="ltr"] .portal-shell .official-header{direction:ltr;text-align:left}
+@media(max-width:700px){.portal-shell .official-logo{width:84px;height:84px;margin-top:-12px;margin-bottom:-20px}.portal-shell .official-divider{margin-top:12px;margin-bottom:12px}.portal-shell .employee-meta{margin-bottom:45px}.portal-shell .portal-hero{margin:28px auto 30px}.portal-shell .portal-hero h1{font-size:20px}.portal-shell .portal-grid{grid-template-rows:repeat(2,minmax(88px,104px));width:min(100%,360px);gap:4px}.portal-shell .portal-card{height:104px;padding:12px}.portal-shell .portal-grid .pharmacy-center-icon{width:44px;height:44px}.portal-shell .portal-grid #prepCard,.portal-shell .portal-grid #uploadCard,.portal-shell .portal-grid #dashboardCard{-webkit-mask-size:100% 100%;mask-size:100% 100%}}
+</style>
 </head>
 <body class="portal-body">
   <main class="app-shell employee-shell portal-shell">
@@ -197,11 +222,12 @@ html,body{overflow-x:hidden}
     </section>
 
     <nav class="portal-grid" id="portalNav" aria-label="روابط صفحات النظام">
+      <img class="pharmacy-center-icon" src="../outpatient-pharmacy-icon.png" alt="" aria-hidden="true">
       <a class="portal-card primary" id="prepCard" href="prep.html" style="display:none">
         <span class="portal-icon" aria-hidden="true">💊</span>
         <span>
           <strong id="prepTitle">وصفات البريد الدوائي</strong>
-          <small id="prepDesc">قراءة MRN وإرسال الوصفة بعد المعالجة</small>
+          <small id="prepDesc" aria-hidden="true"></small>
         </span>
       </a>
 
@@ -209,7 +235,7 @@ html,body{overflow-x:hidden}
         <span class="portal-icon" aria-hidden="true">⇧</span>
         <span>
           <strong id="uploadTitle">إرسال القائمة اليومية</strong>
-          <small id="uploadDesc">رفع ملف Excel أو CSV لقائمة اليوم</small>
+          <small id="uploadDesc" aria-hidden="true"></small>
         </span>
       </a>
 
@@ -217,7 +243,7 @@ html,body{overflow-x:hidden}
         <span class="portal-icon" aria-hidden="true">◫</span>
         <span>
           <strong id="dashboardTitle">المؤشر اليومي للبريد الدوائي</strong>
-          <small id="dashboardDesc">متابعة الحالات والتقرير اليومي</small>
+          <small id="dashboardDesc" aria-hidden="true"></small>
         </span>
       </a>
 
@@ -234,12 +260,12 @@ html,body{overflow-x:hidden}
         portalLabel: "بوابة وصفات البريد",
         navLabel: "روابط صفحات النظام",
         portalTitle: "البريد الدوائي",
-        prepTitle: "وصفات البريد الدوائي",
-        prepDesc: "قراءة MRN وإرسال الوصفة بعد المعالجة",
-        uploadTitle: "إرسال القائمة اليومية",
-        uploadDesc: "رفع ملف Excel أو CSV لقائمة اليوم",
-        dashboardTitle: "المؤشر اليومي للبريد الدوائي",
-        dashboardDesc: "متابعة الحالات والتقرير اليومي"
+        prepTitle: "التحضير",
+        prepDesc: "",
+        uploadTitle: "القائمة اليومية",
+        uploadDesc: "",
+        dashboardTitle: "مؤشر البريد",
+        dashboardDesc: ""
       },
       en: {
         documentTitle: "Prescription Mail Portal",
@@ -249,12 +275,12 @@ html,body{overflow-x:hidden}
         portalLabel: "Prescription Mail Portal",
         navLabel: "System page links",
         portalTitle: "Mail Pharmacy",
-        prepTitle: "Mail Pharmacy Prescription",
-        prepDesc: "Read MRN and submit the prescription after processing",
-        uploadTitle: "Submit Daily List",
-        uploadDesc: "Upload an Excel or CSV file for today's list",
-        dashboardTitle: "Mail Pharmacy Dashboard",
-        dashboardDesc: "Monitor cases and the daily report"
+        prepTitle: "Preparation",
+        prepDesc: "",
+        uploadTitle: "Daily List",
+        uploadDesc: "",
+        dashboardTitle: "Mail Index",
+        dashboardDesc: ""
       }
     };
 
@@ -506,7 +532,7 @@ html,body{overflow-x:hidden}
       }
     );
 
-    setLanguage("ar");
+    setLanguage("en");
     validatePageAccess();
   </script>
 <script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[logout,name,back].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script>

@@ -45,7 +45,7 @@ body{
   width:fit-content;
   max-width:100%;
   text-align:right;
-  transform:translateY(14px);
+  transform:none;
   padding-left:8px;
   border-left:4px solid #168fb3;
   direction:rtl
@@ -522,28 +522,40 @@ tr:has(.date-ok) td{
   justify-content:space-between;
   direction:ltr;
   gap:18px;
-  min-height:23mm;
+  min-height:32mm;
   margin:0 0 4mm
 }
 
 .print-logo{
-  width:78px;
-  height:78px;
+  width:120px;
+  height:auto;
+  aspect-ratio:562 / 380;
   object-fit:contain;
   flex:0 0 auto
 }
 
 .print-official{
-  text-align:right;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  direction:ltr;
+  padding:2mm 0 2mm 8px;
+  border-left:4px solid #168fb3
+}
+
+.print-official[dir="rtl"]{
+  align-items:flex-end;
   direction:rtl;
-  padding:2mm 0 2mm 10px;
-  border-left:3px solid #168fb3
+  padding-left:0;
+  padding-right:8px;
+  border-left:0;
+  border-right:4px solid #168fb3
 }
 
 .print-official h2{
   margin:0 0 3px;
   color:#168fb3;
-  font-size:11px;
+  font-size:13px;
   line-height:1.4;
   font-weight:700
 }
@@ -551,8 +563,8 @@ tr:has(.date-ok) td{
 .print-official h3{
   margin:2px 0;
   color:#168fb3;
-  font-size:10px;
-  line-height:1.35;
+  font-size:12px;
+  line-height:1.4;
   font-weight:600
 }
 
@@ -1000,11 +1012,13 @@ tr:has(.date-ok) td{
   margin-top:auto;
   width:100%;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
   border-top:1px solid #e2e8f0;
   padding-top:1.5mm;
-  min-height:6mm
+  min-height:6mm;
+  gap:2mm
 }
 
 .print-page-number{
@@ -1013,6 +1027,42 @@ tr:has(.date-ok) td{
   line-height:1;
   font-weight:600;
   text-align:center
+}
+
+.print-signature{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  margin:0;
+  text-align:center;
+  color:#334155;
+  font-size:9px;
+  line-height:1.35;
+  font-weight:600;
+  direction:ltr;
+  break-inside:avoid;
+  page-break-inside:avoid
+}
+
+.print-signature .signature-unit,
+.print-signature .signature-author{
+  flex:1 1 50%;
+  white-space:nowrap
+}
+
+.print-signature .signature-unit{
+  text-align:left
+}
+
+.print-signature .signature-author{
+  text-align:right;
+  color:#168fb3
+}
+
+@media print{
+  .print-page{border:0!important}
+  .print-signature{display:flex!important}
 }
 
 /* =========================================================
@@ -1039,7 +1089,7 @@ tr:has(.date-ok) td{
   }
 
   .official-header{
-    transform:translateY(10px)
+    transform:none
   }
 
   .official-header h2,
@@ -1691,7 +1741,19 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-<style id="header-alignment-default">.top-bar{align-items:flex-start!important}.official-header{box-sizing:border-box!important;align-self:stretch!important;margin-inline:0!important;transform:none!important}</style>
+<style id="dashboard-master-header-sync">
+.top-bar{align-items:flex-start;min-height:0;margin-bottom:0}
+.top-bar .logo{margin-top:-20px;margin-bottom:-28px}
+.official-header{display:flex;flex-direction:column;justify-content:center;align-self:flex-start;transform:none!important;margin-top:0;padding-left:8px;border-left:4px solid #168fb3}
+html[dir="ltr"] .official-header{direction:ltr;text-align:left;padding-left:8px;padding-right:0;border-right:0}
+.top-bar + hr{margin-top:16px;margin-bottom:14px}
+.meta-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr)!important;align-items:center!important;column-gap:4px!important;row-gap:0!important;width:100%!important;margin-top:0;padding-top:0;margin-bottom:70px;direction:ltr}
+.meta-row .date-box{grid-column:1!important;justify-self:start!important;white-space:nowrap!important}
+.meta-row .kidney-user-toolbar{grid-column:2!important;justify-self:center!important;margin-top:15px;margin-bottom:-15px}
+.meta-row .language-chip{grid-column:3!important;justify-self:end!important}
+.meta-row + .page-title{font-size:24px;margin-top:28px;margin-bottom:30px}
+@media(max-width:700px){.top-bar .logo{margin-top:-12px;margin-bottom:-20px}.top-bar + hr{margin-top:12px;margin-bottom:12px}.meta-row{margin-bottom:45px}.page-title{font-size:20px;margin-top:28px;margin-bottom:30px}}
+</style>
 </head>
 
 <body>
@@ -3805,7 +3867,7 @@ function buildPrintPages(){
     getPrintableItems();
 
   const ROWS_PER_PAGE =
-    20;
+    19;
 
   const pageCount =
     Math.max(
@@ -3882,23 +3944,25 @@ function createPrintPage(
   header.innerHTML =
     '<img class="print-logo" src="../../logo.png" alt="Logo">' +
 
-    '<div class="print-official">' +
+    '<div class="print-official" dir="' +
+      (currentLang === "ar" ? "rtl" : "ltr") +
+      '">' +
 
       '<h2>' +
       escapeHtml(
-        text.ar.officialLine1
+        text[currentLang].officialLine1
       ) +
       '</h2>' +
 
       '<h3>' +
       escapeHtml(
-        text.ar.officialLine2
+        text[currentLang].officialLine2
       ) +
       '</h3>' +
 
       '<h3>' +
       escapeHtml(
-        text.ar.officialLine3
+        text[currentLang].officialLine3
       ) +
       '</h3>' +
 
@@ -4134,6 +4198,22 @@ function createPrintPage(
 
   footer.appendChild(
     pageNumberBox
+  );
+
+  const signature =
+    document.createElement(
+      "div"
+    );
+
+  signature.className =
+    "print-signature";
+
+  signature.innerHTML =
+    '<span class="signature-unit">Pharmacy Services - Kidney Pharmacy</span>' +
+    '<span class="signature-author">Developed by Abdullah Alattas</span>';
+
+  footer.appendChild(
+    signature
   );
 
   page.appendChild(

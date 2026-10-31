@@ -8,23 +8,29 @@
 *{box-sizing:border-box}
 body{font-family:Arial,sans-serif;background:#f3f4f6;margin:0;padding:16px;color:#168fb3}
 .container{max-width:980px;margin:auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,.1);min-height:calc(100vh - 32px)}
-.top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;direction:ltr}
-.logo{width:120px;height:120px;object-fit:contain}
-.official-header{width:fit-content;max-width:100%;text-align:right;transform:translateY(14px);padding-left:8px;border-left:4px solid #168fb3;direction:rtl}
+.top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:0;direction:ltr}
+.logo{width:120px;height:120px;object-fit:contain;margin-top:-20px;margin-bottom:-28px}
+.official-header{width:fit-content;max-width:100%;text-align:right;transform:none;padding-left:8px;border-left:4px solid #168fb3;direction:rtl}
 .official-header h2,.official-header h3{margin:2px 0;font-size:13px;line-height:1.4;color:#168fb3}
 hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
-.meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;direction:ltr}
+.meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:70px;direction:ltr}
+html[dir="ltr"] .official-header{direction:ltr;text-align:left;padding-left:8px;padding-right:0;border-left:4px solid #168fb3;border-right:0}
+html[dir="ltr"] .official-header h2,html[dir="ltr"] .official-header h3{margin:2px 0;text-align:left;line-height:1.4}
+.top-bar + hr{margin-top:16px;margin-bottom:14px}
 .date-box{color:#168fb3;padding:4px 0;font-size:13px;font-weight:bold;text-align:center}
 .language-chip{color:#168fb3;font-size:13px;font-weight:bold;padding:4px 0;white-space:nowrap;background:transparent;border:0;cursor:pointer;font-family:inherit}
 .title-row{display:flex;align-items:center;justify-content:center;gap:10px;margin:20px 0 24px;direction:rtl}
 .back-button{width:36px;height:36px;border:0;background:transparent;color:#168fb3;font-size:32px;line-height:1;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:.15s ease}
 .back-button:hover{color:#0f7592;transform:translateX(-2px)}
 .page-title{text-align:center;font-size:24px;font-weight:bold;margin:0;color:#168fb3}
-.portal-grid{display:grid;grid-template-columns:1fr;gap:12px;max-width:270px;margin:0 auto}
-.portal-card{height:108px;background:#168fb3;border:1px solid #168fb3;border-radius:8px;padding:12px;text-decoration:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;transition:.15s ease}
-.portal-card:hover{border-color:#0f7592;transform:translateY(-1px);box-shadow:0 8px 18px rgba(22,143,179,.28);filter:brightness(1.05)}
+.portal-grid{--portal-gap:4px;--portal-cutout:30px;position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(104px,116px));gap:var(--portal-gap);max-width:760px;width:min(100%,760px);margin:0 auto;align-items:stretch;justify-items:stretch}
+.portal-card{position:relative;overflow:hidden;height:116px;background:#168fb3;border:1px solid #168fb3;border-radius:10px;padding:14px;text-decoration:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;transition:.15s ease;box-shadow:0 4px 10px rgba(0,0,0,.04)}
+.portal-card:hover{border-color:#0f7592;transform:translateY(-2px);box-shadow:0 9px 20px rgba(22,143,179,.24);filter:brightness(1.04)}
 .card-title{font-size:15px;font-weight:bold;color:#fff;margin:0;line-height:1.5}
-.card-icon{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:17px}
+.portal-card .card-icon{display:none}
+.portal-grid .pharmacy-center-icon{position:absolute;z-index:2;left:50%;top:50%;width:54px;height:54px;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none}
+.portal-grid #mailCard{grid-column:2;grid-row:1;-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-grid #appointmentCard{grid-column:1;grid-row:2;-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
 
 .access-denied{
   display:none;
@@ -42,11 +48,13 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
 @media (max-width:700px){
 body{padding:10px;background:#fff}
 .container{padding:14px;border-radius:0;box-shadow:none;min-height:100vh}
-.logo{width:84px;height:84px}
-.official-header{transform:translateY(10px)}
+.logo{width:84px;height:84px;margin-top:-12px;margin-bottom:-20px}
+.official-header{transform:none}
 .official-header h2,.official-header h3{font-size:12px}
-.page-title{font-size:20px}
-.title-row{margin:18px 0 22px}
+.page-title{font-size:20px;margin-top:28px;margin-bottom:30px}
+.title-row{margin:28px 0 30px}
+.top-bar + hr{margin-top:12px;margin-bottom:12px}
+.meta-row{margin-bottom:45px}
 }
 
 
@@ -258,9 +266,9 @@ body{padding:10px;background:#fff}
   align-items:center;
   justify-content:center;
   gap:10px;
-  margin:0;
-  padding:0;
-  direction:rtl;
+  margin:15px 0 -15px;
+  padding:2px 4px;
+  direction:ltr;
   color:#168fb3
 }
 
@@ -376,7 +384,7 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-<style id="header-alignment-default">.top-bar{align-items:flex-start!important}.official-header{box-sizing:border-box!important;align-self:stretch!important;margin-inline:0!important;transform:none!important}</style>
+<style id="outpatient-user-card-final">.meta-row .employee-toolbar{margin:15px 0 -15px!important;direction:ltr!important}.meta-row .employee-toolbar .logout-icon{order:1}.meta-row .employee-toolbar .employee-name{order:2;font-weight:700}.meta-row .employee-toolbar .portal-back-button{order:3}@media(max-width:700px){.meta-row .employee-toolbar{margin:15px 0 -15px!important}}</style>
 </head>
 <body>
 <div class="container">
@@ -426,6 +434,7 @@ html,body{overflow-x:hidden}
     <h1 class="page-title" id="pageTitle">صيدلية العيادات الخارجية</h1>
   </div>
   <div class="portal-grid">
+    <img class="pharmacy-center-icon" src="outpatient-pharmacy-icon.png" alt="" aria-hidden="true">
     <a class="portal-card" id="mailCard" href="prescriptions/index.html" style="display:none">
       <div class="card-icon">✉</div>
       <p class="card-title" id="mailTitle">البريد الدوائي</p>
@@ -459,7 +468,7 @@ const text = {
     officialLine2: "King Fahad Hospital - Madinah",
     officialLine3: "Pharmaceutical Care Administration",
     mailTitle: "Mail Pharmacy",
-    monthlyTitle: "Monthly Medication Pickup by Appointment",
+    monthlyTitle: "Monthly Medication Pickup",
     accessDenied: "You do not have access to the outpatient pharmacy."
   }
 };
@@ -724,7 +733,7 @@ window.addEventListener(
   }
 );
 
-setLanguage("ar");
+setLanguage("en");
 validatePageAccess();
 </script>
 <script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[logout,name,back].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script>

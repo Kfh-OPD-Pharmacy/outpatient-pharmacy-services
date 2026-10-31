@@ -584,7 +584,17 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-<style id="header-alignment-default">.top-bar{align-items:flex-start!important}.official-header{box-sizing:border-box!important;align-self:stretch!important;margin-inline:0!important;transform:none!important}</style>
+<style id="appointment-management-official-layout">
+.top-bar{direction:ltr;align-items:flex-start;min-height:0;margin-bottom:0}
+.top-bar .logo{width:120px;height:120px;object-fit:contain;margin-top:-20px;margin-bottom:-28px}
+.official-header{transform:none!important;margin:0;padding-left:8px;padding-right:0;border-left:4px solid #168fb3;border-right:0;direction:ltr;text-align:left}
+.official-header h2,.official-header h3{margin:2px 0;color:#168fb3;font-size:13px;line-height:1.4;text-align:left}
+.top-bar + hr{margin-top:16px;margin-bottom:14px}
+.meta-row{margin-bottom:70px}
+.meta-row .employee-toolbar{margin-top:15px;margin-bottom:-15px}
+.page-title{margin:28px 0 30px;color:#168fb3;font-size:24px;font-weight:700;text-align:center}
+@media(max-width:700px){.top-bar .logo{width:84px;height:84px;margin-top:-12px;margin-bottom:-20px}.top-bar + hr{margin-top:12px;margin-bottom:12px}.meta-row{margin-bottom:45px}.page-title{margin:28px 0 30px;font-size:20px}}
+</style>
 </head>
 
 <body>
@@ -592,13 +602,13 @@ html,body{overflow-x:hidden}
 <div class="container">
 <div class="top-bar">
 
+  <img class="logo" src="logo.png" alt="Logo">
+
   <div class="official-header">
     <h2 id="officialLine1"></h2>
     <h3 id="officialLine2"></h3>
     <h3 id="officialLine3"></h3>
   </div>
-
-  <img class="logo" src="logo.png" alt="Logo">
 
 </div>
 
@@ -2585,7 +2595,7 @@ function escapeJs(
 async function init() {
 
   setLanguage(
-    "ar"
+    "en"
   );
 
   await restoreSession();
