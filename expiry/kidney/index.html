@@ -760,7 +760,32 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-<style id="header-alignment-default">.top-bar{align-items:flex-start!important}.official-header{box-sizing:border-box!important;align-self:stretch!important;margin-inline:0!important;transform:none!important}</style>
+<style id="kidney-home-layout-sync">
+.top-bar{align-items:flex-start;min-height:0;margin-bottom:0}
+.top-bar .logo{margin-top:-20px;margin-bottom:-28px}
+.official-header{transform:none!important;margin-top:0}
+.top-bar + hr{margin-top:16px;margin-bottom:14px}
+.meta-row{margin-top:0;padding-top:0;margin-bottom:30px}
+.title-row{margin:0 0 30px}
+.meta-row .kidney-user-toolbar{grid-column:2;justify-self:center;width:220px;max-width:calc(100vw - 54px);height:32px;min-height:32px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:4px;padding:2px 4px;margin-top:15px;margin-bottom:-15px;direction:ltr;overflow:hidden}
+.meta-row .kidney-user-toolbar #employeeName{order:2;flex:1 1 auto;min-width:0;max-width:calc(100% - 56px);overflow:visible;text-overflow:clip;white-space:nowrap;font-size:13px;font-weight:700;line-height:1.1;color:#168fb3;text-align:center}
+.meta-row .kidney-user-toolbar .kidney-toolbar-button{width:27px;height:27px;min-width:27px;min-height:27px;padding:0;flex:0 0 27px}
+.meta-row .kidney-user-toolbar .logout-icon{order:1}.meta-row .kidney-user-toolbar .portal-back-button{order:3}
+.meta-row .kidney-user-toolbar .power-svg{width:23px;height:23px}
+.portal-grid{--portal-gap:4px;--portal-cutout:30px;position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(104px,116px));gap:var(--portal-gap);max-width:760px;width:min(100%,760px);margin:0 auto;align-items:stretch;justify-items:stretch}
+.portal-grid .pharmacy-center-icon{position:absolute;z-index:2;left:50%;top:50%;width:54px;height:54px;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none}
+.portal-grid #formCard{grid-area:1/1}.portal-grid #dashboardCard{grid-area:1/2}.portal-grid #orderCard{grid-area:2/1}.portal-grid #labelsCard{grid-area:2/2}
+.portal-grid .portal-card{position:relative;overflow:hidden;width:100%;height:100%;min-height:0;border-radius:10px;padding:14px;box-shadow:0 4px 10px rgba(0,0,0,.04);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%}
+.portal-grid .card-icon,.portal-grid .card-desc{display:none}
+.portal-grid .card-head,.portal-grid .card-text{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center}
+.portal-grid .card-title{font-size:16px;font-weight:bold;line-height:1.35;color:#fff;margin:0}
+.portal-grid #formCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-grid #dashboardCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-grid #orderCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-grid #labelsCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+@media(max-width:600px){.meta-row .kidney-user-toolbar{width:max-content;max-width:calc(100vw - 110px);height:32px;min-height:32px;padding:2px 4px;gap:4px}.meta-row .kidney-user-toolbar .kidney-toolbar-button{width:16px;height:16px;min-width:16px;min-height:16px;flex-basis:16px}.meta-row .kidney-user-toolbar #employeeName{font-size:11px;max-width:none;white-space:normal;overflow-wrap:anywhere}.meta-row .kidney-user-toolbar .power-svg{width:16px;height:16px}.meta-row .kidney-user-toolbar .portal-back-button{font-size:16px}}
+@media(max-width:700px){.top-bar .logo{margin-top:-12px;margin-bottom:-20px}.top-bar + hr{margin-top:12px;margin-bottom:12px}.meta-row{margin-bottom:30px}.title-row{margin-bottom:24px}.portal-grid{--portal-cutout:26px;grid-template-rows:repeat(2,minmax(88px,104px));width:min(100%,360px)}.portal-grid .pharmacy-center-icon{width:44px;height:44px}.portal-grid .card-title{font-size:15px}}
+</style>
 </head>
 
 <body>
@@ -867,6 +892,8 @@ html,body{overflow-x:hidden}
 
 
   <div class="portal-grid">
+
+    <img class="pharmacy-center-icon" src="../../outpatient-pharmacy-icon.png" alt="" aria-hidden="true">
 
     <a
       class="portal-card"
@@ -1047,7 +1074,7 @@ const text = {
     officialLine2:"King Fahad Hospital - Madinah",
     officialLine3:"Pharmaceutical Care Administration",
     subtitle:"An internal portal to record and monitor medication expiry dates in the pharmacy.",
-    dashboardTitle:"Live Dashboard",
+    dashboardTitle:"Inspection Index",
     dashboardDesc:"Instant view of registered medications, sorted by nearest expiry date.",
     formTitle:"Register Expiry Date",
     formDesc:"Enter a new medication record with an automatic alert when an older expiry date already exists.",
@@ -1316,6 +1343,28 @@ function hideAllKidneyCards(){
 
   });
 
+  updateKidneyGridLayout();
+
+}
+
+function updateKidneyGridLayout(){
+  const grid = document.querySelector(".portal-grid");
+  if (!grid) return;
+  const cards = ["formCard", "dashboardCard", "orderCard", "labelsCard"]
+    .map(function(id){ return document.getElementById(id); })
+    .filter(Boolean);
+  const visible = cards.filter(function(card){
+    return getComputedStyle(card).display !== "none";
+  });
+  const areas = visible.length === 4
+    ? ["1 / 1", "1 / 2", "2 / 1", "2 / 2"]
+    : visible.length === 3
+      ? ["1 / 1", "1 / 2", "2 / 1"]
+      : visible.length === 2
+        ? ["1 / 1", "1 / 2"]
+        : ["1 / 1"];
+  cards.forEach(function(card){ card.style.gridArea = ""; });
+  visible.forEach(function(card,index){ card.style.gridArea = areas[index]; });
 }
 
 
@@ -1372,6 +1421,8 @@ function renderAllowedKidneyServices(user){
     labelsAllowed
       ? "flex"
       : "none";
+
+  updateKidneyGridLayout();
 
   return (
     formAllowed ||
