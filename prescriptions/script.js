@@ -40,7 +40,7 @@ let scanner;
 let selectedPrescription = null;
 let isScanning = false;
 let inactivityTimer = null;
-let currentLang = "ar";
+let currentLang = "en";
 
 const INACTIVITY_LIMIT_MS =
   30 * 60 * 1000;
@@ -169,7 +169,7 @@ document.addEventListener(
 
 
 async function init() {
-  setLanguage("ar");
+  setLanguage("en");
 
   clearLegacyPrepSession();
 
