@@ -1,0 +1,4298 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Inspection</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f3f4f6;
+  margin:0;
+  padding:16px;
+  color:#168fb3
+}
+
+.container{
+  max-width:640px;
+  margin:auto;
+  background:#fff;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+  min-height:calc(100vh - 32px)
+}
+
+.top-bar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+  direction:ltr
+}
+
+.logo{
+  width:120px;
+  height:120px;
+  object-fit:contain;
+  margin-top:-20px;
+  margin-bottom:-28px
+}
+
+.official-header{
+  width:fit-content;
+  max-width:100%;
+  transform:translateY(14px);
+  border-left:4px solid #168fb3
+}
+
+html[dir="rtl"] .official-header{
+  text-align:right;
+  direction:rtl;
+  padding-left:8px;
+  padding-right:0
+}
+
+html[dir="ltr"] .official-header{
+  text-align:left;
+  direction:ltr;
+  padding-left:8px;
+  padding-right:0
+}
+
+.official-header h2,
+.official-header h3{
+  margin:2px 0;
+  font-size:13px;
+  line-height:1.4;
+  color:#168fb3
+}
+
+hr{
+  border:none;
+  border-top:1px solid #e5e7eb;
+  margin:14px 0
+}
+
+.meta-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:70px;
+  direction:ltr
+}
+
+.date-box{
+  color:#168fb3;
+  padding:4px 0;
+  font-size:13px;
+  font-weight:bold;
+  text-align:center
+}
+
+.language-chip{
+  color:#168fb3;
+  font-size:13px;
+  font-weight:bold;
+  padding:4px 0;
+  white-space:nowrap;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  font-family:inherit
+}
+
+.title-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:28px auto 30px;
+  direction:rtl
+}
+
+.page-title{
+  text-align:center;
+  font-size:23px;
+  font-weight:bold;
+  margin:0;
+  color:#168fb3
+}
+
+.back-button{
+  width:34px;
+  height:34px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  font-size:28px;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-family:Arial,sans-serif;
+  flex:0 0 auto
+}
+
+.back-button:hover{
+  background:transparent;
+  color:#0f7592;
+  transform:translateX(-1px)
+}
+
+label{
+  font-weight:bold;
+  display:block;
+  margin-bottom:2px;
+  color:#111827;
+  font-size:12px
+}
+
+input,
+select{
+  width:100%;
+  height:34px;
+  padding:6px 9px;
+  margin-top:4px;
+  margin-bottom:10px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  font-size:13px;
+  background:#fff;
+  text-align:start;
+  font-family:inherit
+}
+
+#medName{
+  direction:ltr;
+  text-align:left
+}
+
+.expiry-row{
+  display:grid;
+  grid-template-columns:80px minmax(120px,1fr) 95px;
+  gap:7px;
+  direction:ltr;
+  margin-top:4px;
+  margin-bottom:10px
+}
+
+.expiry-scan-row{
+  display:flex;
+  justify-content:flex-end;
+  margin:-2px 0 10px;
+  direction:ltr
+}
+
+.expiry-scan-btn{
+  padding:7px 12px;
+  border:1px solid #168fb3;
+  border-radius:8px;
+  background:#fff;
+  color:#168fb3;
+  font-size:12px;
+  font-weight:bold;
+  cursor:pointer;
+  font-family:inherit
+}
+
+.expiry-scan-btn:hover{background:#effaff}
+
+.expiry-ocr-modal[hidden]{display:none}
+.expiry-ocr-modal{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:rgba(15,23,42,.68)
+}
+.expiry-ocr-card{
+  width:min(520px,100%);
+  max-height:92vh;
+  overflow:auto;
+  padding:16px;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 14px 40px rgba(15,23,42,.28);
+  text-align:center
+}
+.expiry-ocr-video-wrap{position:relative;overflow:hidden;border-radius:10px;background:#111}
+.expiry-ocr-video{display:block;width:100%;max-height:52vh;object-fit:cover}
+.expiry-ocr-guide{position:absolute;inset:26% 8%;border:2px solid #fff;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.2);pointer-events:none}
+.expiry-ocr-status{min-height:22px;margin:10px 0;color:#475569;font-size:13px}
+.expiry-ocr-result{margin:10px 0;padding:10px;border-radius:8px;background:#f0fdf4;color:#166534;font-weight:bold}
+.expiry-ocr-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+
+.expiry-row select{
+  width:100%;
+  margin:0;
+  text-align:center;
+  direction:ltr;
+  color:#111827;
+  font-weight:600
+}
+
+.primary-btn{
+  padding:9px 18px;
+  background:#168fb3;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:14px;
+  font-weight:bold;
+  cursor:pointer;
+  font-family:inherit
+}
+
+.primary-btn:hover{
+  filter:brightness(1.05)
+}
+
+.primary-btn:disabled{
+  background:#94a3b8;
+  cursor:not-allowed
+}
+
+.secondary-btn{
+  border:1px solid #cbd5e1;
+  background:#fff;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:bold;
+  color:#168fb3;
+  padding:7px 10px;
+  border-radius:8px;
+  font-family:inherit
+}
+
+.secondary-btn:hover{
+  background:#f9fafb
+}
+
+.login-card{
+  max-width:280px;
+  margin:16px auto 0;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:16px
+}
+
+.login-actions{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:fit-content;
+  margin:4px auto 0
+}
+
+.login-actions .primary-btn,
+.login-actions .secondary-btn{
+  width:40px;
+  height:40px;
+  margin:0;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  line-height:1
+}
+
+.login-svg{
+  width:20px;
+  height:20px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.4;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+.change-password-panel{
+  display:none;
+  border-top:1px solid #e5e7eb;
+  margin-top:14px;
+  padding-top:14px
+}
+
+.employee-toolbar{
+  display:grid;
+  grid-template-columns:36px auto 36px;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  background:transparent;
+  border:none;
+  border-radius:0;
+  padding:4px 0 2px;
+  margin:8px auto 18px;
+  color:#168fb3;
+  text-align:center
+}
+
+.employee-name{
+  font-weight:bold;
+  color:#168fb3;
+  font-size:24px;
+  line-height:1.2;
+  grid-column:2;
+  white-space:nowrap
+}
+
+.logout-icon{
+  width:34px;
+  height:34px;
+  padding:0;
+  border:none;
+  background:transparent;
+  color:#168fb3;
+  font-size:0;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border-radius:0;
+  grid-column:1;
+  grid-row:1
+}
+
+.logout-icon:hover{
+  background:transparent;
+  transform:scale(1.06)
+}
+
+.power-svg{
+  width:30px;
+  height:30px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+.form-panel{
+  width:min(100%,360px);
+  margin:0 auto;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:16px
+}
+
+.combo-wrap{
+  position:relative;
+  width:100%;
+  margin:0 auto
+}
+
+.combo-options{
+  position:absolute;
+  top:100%;
+  right:0;
+  left:0;
+  background:#fff;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  margin-top:-6px;
+  max-height:190px;
+  overflow-y:auto;
+  box-shadow:0 10px 20px rgba(0,0,0,.1);
+  z-index:20;
+  display:none
+}
+
+.combo-option{
+  padding:8px 10px;
+  font-size:13px;
+  cursor:pointer;
+  text-align:left;
+  direction:ltr
+}
+
+.combo-option:hover,
+.combo-option.active{
+  background:#e0f2fe
+}
+
+.combo-empty{
+  padding:9px 12px;
+  font-size:12px;
+  color:#94a3b8
+}
+
+.form-actions{
+  display:flex;
+  justify-content:center;
+  margin-top:4px
+}
+
+.conflict-box{
+  display:none;
+  background:#fff6e0;
+  border:1px solid #eab308;
+  border-radius:8px;
+  padding:12px 14px;
+  margin-bottom:14px;
+  font-size:13px;
+  color:#7c5a00
+}
+
+.conflict-box ul{
+  margin:8px 0;
+  padding-inline-start:18px
+}
+
+.conflict-actions{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:10px
+}
+
+.conflict-actions button{
+  min-width:120px
+}
+
+.conflict-actions .danger-btn{
+  background:#eab308;
+  color:#111827;
+  border:none;
+  border-radius:8px;
+  padding:8px 14px;
+  font-weight:bold;
+  font-size:13px;
+  cursor:pointer;
+  font-family:inherit
+}
+
+#result,
+#loginResult{
+  display:none;
+  margin-top:12px;
+  padding:10px;
+  border-radius:8px;
+  text-align:center;
+  font-size:13px
+}
+
+#result.error,
+#loginResult.error{
+  display:block;
+  background:#fef2f2;
+  color:#991b1b
+}
+
+#result.success,
+#loginResult.success{
+  display:block;
+  background:#ecfdf5;
+  color:#065f46
+}
+
+@media (max-width:700px){
+
+  body{
+    padding:10px;
+    background:#fff
+  }
+
+  .container{
+    padding:14px;
+    border-radius:0;
+    box-shadow:none;
+    min-height:100vh
+  }
+
+  .logo{
+    width:84px;
+    height:84px;
+    margin-top:-12px;
+    margin-bottom:-20px
+  }
+
+  .official-header{
+    transform:translateY(10px)
+  }
+
+  .official-header h2,
+  .official-header h3{
+    font-size:12px
+  }
+
+  .title-row{
+    gap:8px;
+    margin-bottom:20px
+  }
+
+  .page-title{
+    font-size:20px;
+    margin-top:28px;
+    margin-bottom:30px
+  }
+
+  .back-button{
+    width:34px;
+    height:34px;
+    font-size:28px
+  }
+
+  .employee-toolbar{
+    gap:10px;
+    margin:8px auto 16px
+  }
+
+  .employee-name{
+    font-size:22px
+  }
+
+  .logout-icon{
+    width:32px;
+    height:32px
+  }
+
+  .power-svg{
+    width:28px;
+    height:28px
+  }
+
+  .form-panel{
+    width:min(100%,320px);
+    padding:14px
+  }
+
+  .expiry-row{
+    grid-template-columns:68px minmax(110px,1fr) 84px;
+    gap:6px
+  }
+
+  .expiry-row select{
+    padding:5px 4px;
+    font-size:12px
+  }
+
+  .login-actions .primary-btn,
+  .login-actions .secondary-btn{
+    width:44px!important;
+    height:44px!important
+  }
+}
+/* PHASE B: unified login UI only */
+#loginView.login-card{
+  width:min(100%, 360px);
+  max-width:360px;
+  margin:18px auto 0;
+  padding:18px;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  box-shadow:0 12px 28px rgba(15,23,42,.08)
+}
+#loginView.login-card label,
+#loginView .change-password-panel label{
+  margin:0 0 6px;
+  color:#168fb3;
+  font-size:14px;
+  line-height:1.35
+}
+#loginView.login-card input{
+  height:40px;
+  padding:8px 10px;
+  margin:0 0 12px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#111827;
+  font-size:14px;
+  font-family:inherit
+}
+#loginView.login-card input:focus{
+  border-color:#168fb3;
+  outline:3px solid rgba(22,143,179,.12)
+}
+#loginView .login-actions{
+  gap:10px;
+  margin:4px auto 0
+}
+#loginView .login-actions .primary-btn,
+#loginView .login-actions .secondary-btn{
+  width:42px;
+  min-width:42px;
+  height:42px;
+  min-height:42px;
+  border-radius:10px
+}
+#loginView .login-actions .secondary-btn{
+  background:#fff;
+  color:#168fb3;
+  border:1px solid #cbd5e1
+}
+#loginView .primary-btn:disabled{
+  background:#94a3b8;
+  color:#fff;
+  cursor:not-allowed;
+  opacity:.85
+}
+#loginView .change-password-panel{
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px solid #e5e7eb
+}
+#changePasswordBtn{
+  height:40px;
+  border-radius:10px
+}
+#loginResult{
+  margin-top:12px;
+  padding:10px 12px;
+  border-radius:8px;
+  font-size:13px;
+  line-height:1.5
+}
+@media (max-width:700px){
+  #loginView.login-card{
+    width:min(100%, 320px);
+    padding:16px;
+    margin-top:16px
+  }
+  #loginView .login-actions .primary-btn,
+  #loginView .login-actions .secondary-btn{
+    width:42px;
+    min-width:42px
+  }
+}
+
+/* PHASE B-FIX: exact unified visual tokens only */
+.container{
+  max-width:980px;
+  background:#fff;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1)
+}
+.page-title{
+  font-size:23px;
+  font-weight:bold;
+  margin:18px 0 12px
+}
+#loginView.login-card{
+  width:100%;
+  max-width:420px;
+  padding:22px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08)
+}
+#loginView.login-card input{
+  width:100%;
+  height:44px;
+  padding:8px 12px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  font-size:14px;
+  font-family:inherit;
+  outline:none;
+  box-sizing:border-box
+}
+#loginView.login-card input:focus{
+  border-color:#168fb3;
+  box-shadow:0 0 0 2px rgba(22,143,179,.12);
+  outline:none
+}
+#loginView .login-actions .primary-btn,
+#loginView .login-actions .secondary-btn,
+#changePasswordBtn{
+  height:44px;
+  min-height:44px;
+  border-radius:8px;
+  font-size:14px;
+  font-weight:bold
+}
+@media (max-width:700px){
+  .container{
+    padding:14px;
+    border-radius:0;
+    box-shadow:none
+  }
+  #loginView.login-card{
+    max-width:420px;
+    padding:22px
+  }
+}
+
+
+/* PHASE C: unified portal design system */
+@media screen{
+  body{
+    background:#f3f4f6;
+  }
+
+  .container,
+  .employee-shell{
+    max-width:980px;
+    margin:auto;
+    background:#fff;
+    padding:22px;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
+  }
+
+  .logo,
+  .official-logo{
+    width:120px;
+    height:120px;
+    object-fit:contain;
+  }
+
+  .official-header h2,
+  .official-header h3{
+    margin:2px 0;
+    color:#168fb3;
+    font-size:13px;
+    line-height:1.4;
+  }
+
+  hr,
+  .official-divider{
+    border-top-color:#e5e7eb;
+    margin:14px 0;
+  }
+
+  .page-title,
+  .employee-page-title{
+    color:#168fb3;
+    font-size:23px;
+    font-weight:bold;
+    line-height:1.25;
+    margin:18px 0 12px;
+    text-align:center;
+  }
+
+  .title-row{
+    margin:28px 0 30px;
+  }
+
+  .panel,
+  .toolbar,
+  .empty-box,
+  .order-panel,
+  .size-row,
+  .result-card,
+  .upload-box,
+  .users-form,
+  .upload-standalone,
+  .upload-toolbar,
+  .supervisor-panel,
+  .user-summary-panel,
+  .filter-panel,
+  .filters-panel,
+  .summary-card,
+  .stat-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.04);
+  }
+
+  .portal-card,
+  .service-card,
+  .control-card,
+  .pharmacy-card,
+  .card-link{
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.04);
+  }
+
+  input,
+  select,
+  textarea{
+    min-height:40px;
+    padding:8px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    font-size:14px;
+    font-family:inherit;
+    box-sizing:border-box;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus{
+    border-color:#168fb3;
+    box-shadow:0 0 0 2px rgba(22,143,179,.12);
+    outline:none;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .action-btn,
+  .ghost-btn,
+  button[type="submit"]{
+    min-height:40px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:bold;
+  }
+
+  .actions,
+  .form-actions,
+  .login-actions,
+  .card-actions,
+  .row-actions,
+  .scan-actions{
+    gap:10px;
+  }
+
+  .table-wrap,
+  .dashboard-table-wrap,
+  .orders-table-wrap{
+    overflow-x:auto;
+    border-radius:10px;
+  }
+
+  table{
+    border-collapse:collapse;
+  }
+
+  th{
+    background:#168fb3;
+    color:#fff;
+    font-weight:bold;
+  }
+
+  th,
+  td{
+    border-color:#e5e7eb;
+  }
+
+  @media (max-width:700px){
+    body{
+      padding:10px;
+      background:#fff;
+    }
+
+    .container,
+    .employee-shell{
+      padding:14px;
+      border-radius:0;
+      box-shadow:none;
+    }
+
+    .logo,
+    .official-logo{
+      width:84px;
+      height:84px;
+    }
+
+    .official-header h2,
+    .official-header h3{
+      font-size:12px;
+    }
+
+    .page-title,
+    .employee-page-title{
+      font-size:20px;
+      margin:28px 0 30px;
+    }
+
+    input,
+    select,
+    textarea{
+      width:100%;
+      font-size:13px;
+    }
+
+    .meta-row{
+      margin-bottom:45px;
+    }
+  }
+}
+
+/* Medication combo visibility fix: keep central database results above Phase C cards. */
+@media screen{
+  .form-panel{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.04);
+    padding:14px;
+  }
+
+  .form-panel > label{
+    min-height:17px;
+    margin-bottom:4px;
+  }
+
+  .form-panel input,
+  .form-panel select{
+    width:100%;
+  }
+
+  .expiry-row{
+    gap:10px;
+  }
+
+  .form-panel,
+  .combo-wrap{
+    overflow:visible;
+  }
+
+  .combo-wrap{
+    position:relative;
+    z-index:50;
+  }
+
+  #medNameOptions.combo-options{
+    z-index:9999;
+    opacity:1;
+    visibility:visible;
+  }
+}
+
+
+/* Surgical layout only: language right, user controls centered, date left */
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+
+.meta-row .date-box{
+  justify-self:start
+}
+
+.meta-row .language-chip{
+  justify-self:end
+}
+
+.meta-row .employee-toolbar{
+  grid-column:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:auto;
+  margin:0;
+  padding:0;
+  direction:rtl
+}
+
+.meta-row .employee-name{
+  grid-column:auto;
+  white-space:nowrap;
+  font-size:18px
+}
+
+.meta-row .logout-icon{
+  grid-column:auto;
+  grid-row:auto;
+  flex:0 0 auto
+}
+
+.meta-row #loginBackButton{
+  display:inline-flex!important;
+  flex:0 0 auto
+}
+
+@media (max-width:700px){
+  .meta-row{
+    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+    gap:6px
+  }
+
+  .meta-row .employee-toolbar{
+    gap:6px
+  }
+
+  .meta-row .employee-name{
+    max-width:130px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:15px
+  }
+
+  .meta-row .back-button,
+  .meta-row .logout-icon{
+    width:30px;
+    height:30px
+  }
+
+  .meta-row .power-svg{
+    width:25px;
+    height:25px
+  }
+
+  .meta-row .date-box,
+  .meta-row .language-chip{
+    font-size:11px
+  }
+}
+
+
+/* Shared Kidney user toolbar: screen only, preserving print layout. */
+@media screen{
+  .meta-row .kidney-user-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:nowrap;
+    direction:ltr;
+    box-sizing:border-box;
+    width:246px;
+    max-width:calc(100vw - 156px);
+    min-width:86px;
+    height:42px;
+    gap:6px;
+    padding:4px 6px;
+    margin:0;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.06);
+    color:#168fb3;
+  }
+  .meta-row .kidney-user-toolbar #employeeName{
+    flex:1 1 auto;
+    min-width:0;
+    max-width:160px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-family:Arial,sans-serif;
+    font-size:15px;
+    font-weight:bold;
+    line-height:1.2;
+    text-align:center;
+    color:#168fb3;
+  }
+  .meta-row .kidney-user-toolbar .kidney-toolbar-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 30px;
+    box-sizing:border-box;
+    width:30px;
+    height:30px;
+    min-height:0;
+    padding:0;
+    margin:0;
+    border:0;
+    background:transparent;
+    color:#168fb3;
+    font-family:Arial,sans-serif;
+    font-size:28px;
+    line-height:1;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .meta-row .kidney-user-toolbar .power-svg{
+    width:25px;
+    height:25px;
+    display:block;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2.35;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+}
+@media screen and (max-width:700px){
+  .meta-row .kidney-user-toolbar #employeeName{
+    max-width:90px;
+  }
+}
+
+</style>
+<style id="unified-user-toolbar-style">.kidney-user-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;direction:rtl;min-width:0}.kidney-user-toolbar .portal-back-button{order:1}.kidney-user-toolbar .employee-name{order:2;min-width:0;max-width:min(42vw,260px);overflow:visible;text-overflow:clip;white-space:nowrap}.kidney-user-toolbar .logout-icon{order:3}.kidney-user-toolbar .employee-name{font-size:clamp(15px,2vw,21px)}@media(max-width:700px){.kidney-user-toolbar{gap:6px}.kidney-user-toolbar .employee-name{max-width:45vw;font-size:15px}}</style><style id="toolbar-pin-layout">.unified-user-group{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}.unified-user-group .employee-toolbar{flex:0 1 auto}.toolbar-pin-button{width:34px;height:34px;border:1px solid #e5e7eb;border-radius:50%;background:#fff;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex:0 0 auto}.toolbar-pin-button:hover{background:#f0f9fc}.authenticated-pin-panel{display:block;position:relative;margin:12px auto;max-width:420px}@media(max-width:700px){.unified-user-group{gap:5px}.toolbar-pin-button{width:32px;height:32px}}</style><style id="compact-user-toolbar-style">.portal-user-group{gap:3px;max-width:100%;min-width:0}.portal-session{height:32px;width:220px;max-width:calc(100vw - 54px);gap:4px;padding:2px 4px;border-radius:8px}.portal-user-name{font-size:13px;line-height:1.1;max-width:calc(100% - 56px)}.portal-back-btn,.portal-session .logout-btn{width:27px;height:27px}.portal-back-btn{font-size:19px}.portal-pin-outside,.toolbar-pin-button{width:30px;height:30px;min-width:30px;min-height:30px;font-size:16px;border-radius:50%}.employee-meta-tools{height:36px;gap:7px;direction:ltr}.employee-meta-tools .back-button,.employee-meta-tools .logout-icon{width:28px;height:28px}.employee-meta-tools .employee-name{font-size:13px;max-width:min(42vw,240px)}.employee-toolbar,.kidney-user-toolbar{min-height:32px;height:32px;gap:5px;padding:2px 5px;direction:ltr}.employee-toolbar .portal-back-button,.employee-toolbar .back-button,.kidney-user-toolbar .back-button{order:3}.employee-toolbar .portal-back-button,.employee-toolbar .back-button,.kidney-user-toolbar .back-button,.employee-toolbar .logout-icon,.kidney-user-toolbar .logout-icon{width:28px;height:28px}.employee-toolbar .logout-icon,.kidney-user-toolbar .logout-icon{order:1}.employee-toolbar .employee-name,.employee-toolbar strong,.kidney-user-toolbar .employee-name{order:2;font-size:13px;max-width:min(42vw,240px)}@media(max-width:430px){.portal-user-group{gap:3px}.portal-session{width:calc(100vw - 56px);max-width:calc(100vw - 56px);height:34px;padding:2px 3px}.portal-user-name{font-size:12px;max-width:calc(100% - 52px)}.portal-back-btn,.portal-session .logout-btn{width:25px;height:25px}.portal-pin-outside,.toolbar-pin-button{width:28px;height:28px;min-width:28px;min-height:28px;font-size:15px}.employee-meta-tools{height:34px;gap:5px}.employee-meta-tools .employee-name{font-size:12px;max-width:calc(100vw - 120px)}.employee-toolbar,.kidney-user-toolbar{gap:4px;padding:2px 4px;min-height:32px;height:32px}.employee-toolbar .employee-name,.employee-toolbar strong,.kidney-user-toolbar .employee-name{font-size:12px;max-width:calc(100vw - 120px)}}@media(max-width:340px){.portal-user-name{font-size:11px}.employee-meta-tools .employee-name,.employee-toolbar .employee-name,.employee-toolbar strong,.kidney-user-toolbar .employee-name{font-size:11px;max-width:calc(100vw - 112px)}}</style><style id="unified-user-card-final">.employee-toolbar,.kidney-user-toolbar,.employee-strip,.admin-strip,.dashboard-user-tools,.unified-user-tools{background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.06);height:32px;min-height:32px;width:220px;max-width:calc(100vw - 54px);box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:4px;padding:2px 4px;direction:ltr;overflow:hidden}.employee-toolbar .logout-icon,.kidney-user-toolbar .logout-icon,.employee-strip .logout-icon,.admin-strip .logout-btn,.dashboard-user-tools .logout-icon,.unified-user-tools .logout-icon{order:1;width:27px;height:27px;min-width:27px;min-height:27px;margin:0;padding:0;border:0;background:transparent;background-image:none;box-shadow:none;appearance:none;-webkit-appearance:none;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.employee-toolbar .employee-name,.kidney-user-toolbar .employee-name,.employee-strip .employee-name,.admin-strip .admin-name,.dashboard-user-tools strong,.unified-user-tools strong{order:2;flex:1 1 auto;min-width:0;max-width:calc(100% - 56px);overflow:visible;text-overflow:clip;white-space:nowrap;text-align:center;font-size:13px;line-height:1.1;color:#168fb3}.employee-toolbar .portal-back-button,.kidney-user-toolbar .portal-back-button,.employee-strip .portal-back-button,.admin-strip .portal-back-button,.dashboard-user-tools .portal-back-button,.unified-user-tools .portal-back-button{order:3;width:27px;height:27px;margin:0;padding:0;border:0;background:transparent;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:Arial,sans-serif;font-size:19px;line-height:1;text-decoration:none}.employee-toolbar .power-svg,.kidney-user-toolbar .power-svg,.employee-strip .power-svg,.admin-strip .power-svg,.dashboard-user-tools .power-svg,.unified-user-tools .power-svg{width:23px;height:23px;display:block;fill:none;stroke:currentColor;stroke-width:2.35;stroke-linecap:round;stroke-linejoin:round}@media(max-width:430px){.employee-toolbar,.kidney-user-toolbar,.employee-strip,.admin-strip,.dashboard-user-tools,.unified-user-tools{width:calc(100vw - 56px);max-width:calc(100vw - 56px);height:34px;min-height:34px;padding:2px 3px;gap:3px}.employee-toolbar .logout-icon,.kidney-user-toolbar .logout-icon,.employee-strip .logout-icon,.admin-strip .logout-btn,.dashboard-user-tools .logout-icon,.unified-user-tools .logout-icon,.employee-toolbar .portal-back-button,.kidney-user-toolbar .portal-back-button,.employee-strip .portal-back-button,.admin-strip .portal-back-button,.dashboard-user-tools .portal-back-button,.unified-user-tools .portal-back-button{width:25px;height:25px}.employee-toolbar .employee-name,.kidney-user-toolbar .employee-name,.employee-strip .employee-name,.admin-strip .admin-name,.dashboard-user-tools strong,.unified-user-tools strong{font-size:12px;max-width:calc(100% - 52px)}}@media(max-width:340px){.employee-toolbar .employee-name,.kidney-user-toolbar .employee-name,.employee-strip .employee-name,.admin-strip .admin-name,.dashboard-user-tools strong,.unified-user-tools strong{font-size:11px}}</style><style id="kidney-form-user-card-final">
+.meta-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;direction:ltr}
+.meta-row .date-box{grid-column:1;justify-self:start}
+.meta-row .kidney-user-toolbar{grid-column:2;justify-self:center;width:220px;max-width:calc(100vw - 54px);height:32px;min-height:32px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:4px;padding:2px 4px;margin:15px 0 -15px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.06);direction:ltr;overflow:hidden;color:#168fb3}
+.meta-row .kidney-user-toolbar #employeeName{order:2;flex:1 1 auto;min-width:0;max-width:calc(100% - 56px);overflow:visible;text-overflow:clip;white-space:nowrap;font-size:13px;font-weight:700;line-height:1.1;text-align:center;color:#168fb3}
+.meta-row .kidney-user-toolbar .kidney-toolbar-button{display:inline-flex;align-items:center;justify-content:center;flex:0 0 27px;width:27px;height:27px;min-height:0;margin:0;padding:0;border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;appearance:none;-webkit-appearance:none;color:#168fb3;font-family:Arial,sans-serif;line-height:1;text-decoration:none;cursor:pointer}
+.meta-row .kidney-user-toolbar .logout-icon{order:1}
+.meta-row .kidney-user-toolbar .portal-back-button{order:3;font-size:19px}
+.meta-row .kidney-user-toolbar .power-svg{width:23px;height:23px;display:block;fill:none;stroke:currentColor;stroke-width:2.35;stroke-linecap:round;stroke-linejoin:round}
+.meta-row .kidney-user-toolbar .logout-icon:hover,.meta-row .kidney-user-toolbar .logout-icon:focus,.meta-row .kidney-user-toolbar .logout-icon:active{background:transparent!important;box-shadow:none!important;color:#168fb3}
+.meta-row .language-chip{grid-column:3;justify-self:end}
+@media(max-width:430px){.meta-row{gap:4px}.meta-row .date-box,.meta-row .language-chip{font-size:11px}.meta-row .kidney-user-toolbar{width:calc(100vw - 56px);max-width:calc(100vw - 56px);height:34px;min-height:34px;padding:2px 3px;gap:3px}.meta-row .kidney-user-toolbar .kidney-toolbar-button{flex-basis:25px;width:25px;height:25px}.meta-row .kidney-user-toolbar #employeeName{font-size:12px;max-width:calc(100% - 52px)}}
+@media(max-width:340px){.meta-row .kidney-user-toolbar #employeeName{font-size:11px}}
+</style>
+<style id="outpatient-footer-style">
+.developer-signature{max-width:760px;margin:28px auto 8px;padding:0 12px;text-align:center;line-height:1.5;font-family:inherit}
+.developer-signature .signature-unit,.developer-signature .signature-author{display:block;margin:0;font-size:11px;font-weight:400;white-space:normal}
+.developer-signature .signature-unit{color:#64748b}
+.developer-signature .signature-author{margin-top:2px;color:#168fb3;font-weight:600}
+@media(max-width:600px){.developer-signature{margin-top:22px;padding:0 8px}.developer-signature .signature-unit,.developer-signature .signature-author{font-size:10px}}
+@media print{.developer-signature{display:none!important}}
+</style>
+<style id="mobile-user-header-fix">
+@media (max-width:600px){
+html,body{overflow-x:hidden}
+.meta-row,.employee-meta,.meta-row.unified-meta{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr)!important;grid-template-rows:none!important;align-items:center!important;column-gap:4px!important;row-gap:0!important;width:100%!important;flex-wrap:nowrap!important}
+.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{grid-column:1!important;grid-row:auto!important;justify-self:start!important;min-width:0!important;max-width:100%!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;font-size:clamp(9px,2.8vw,11px)!important;line-height:1.2!important;padding:2px 0!important}
+.meta-row>.language-chip,.meta-row>.language-btn,.meta-row>.language-box,.employee-meta>.language-chip,.employee-meta>.language-btn,.employee-meta>.language-box,.meta-row.unified-meta>.language-chip,.meta-row.unified-meta>.language-btn,.meta-row.unified-meta>.language-box{grid-column:3!important;grid-row:auto!important;justify-self:end!important;white-space:nowrap!important;min-width:max-content!important;font-size:clamp(10px,3vw,11px)!important;padding:2px 0!important}
+.portal-user-group,.unified-user-group,.employee-meta-tools,.employee-toolbar,.employee-strip,.admin-strip,.dashboard-user-tools,.unified-user-tools,.meta-row>.employee-toolbar,.meta-row>.employee-strip,.meta-row>.admin-strip,.meta-row>.dashboard-user-tools,.meta-row>.unified-user-tools{grid-column:2!important;grid-row:auto!important;justify-self:center!important;min-width:0!important;width:max-content!important;max-width:calc(100vw - 110px)!important;box-sizing:border-box!important;overflow:visible!important;flex-wrap:nowrap!important;padding-left:5px!important;padding-right:5px!important;gap:4px!important}
+.portal-session,.portal-user-group .portal-session{max-width:calc(100vw - 110px)!important;min-width:0!important;width:max-content!important;overflow:visible!important;padding-left:5px!important;padding-right:5px!important;gap:4px!important}
+.portal-user-name,.employee-name,.admin-name,.dashboard-user-tools strong,.unified-user-tools strong,.employee-toolbar strong,.employee-strip .employee-name,.employee-meta-tools .employee-name{min-width:0!important;max-width:none!important;width:auto!important;overflow:visible!important;text-overflow:clip!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;font-weight:700!important;line-height:1.15!important;text-align:center!important;font-size:11px!important}
+.employee-toolbar .logout-icon,.employee-toolbar .logout-btn,.employee-strip .logout-icon,.admin-strip .logout-btn,.dashboard-user-tools .logout-icon,.unified-user-tools .logout-icon{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;padding:0!important;background:transparent!important;background-image:none!important;border:0!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;color:#168fb3!important}
+.employee-toolbar .portal-back-button,.employee-toolbar .back-button,.employee-strip .portal-back-button,.admin-strip .portal-back-button,.dashboard-user-tools .portal-back-button,.unified-user-tools .portal-back-button{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;font-size:16px!important;padding:0!important}.employee-toolbar .power-svg,.employee-strip .power-svg,.admin-strip .power-svg,.dashboard-user-tools .power-svg,.unified-user-tools .power-svg{width:16px!important;height:16px!important;fill:none!important;stroke:currentColor!important;stroke-width:2.35!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+}
+</style>
+<style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="top-bar">
+
+    <img class="logo" src="../../logo.png" alt="Logo">
+
+    <div class="official-header">
+      <h2 id="officialLine1">تجمع المدينة المنورة الصحي</h2>
+      <h3 id="officialLine2">مستشفى الملك فهد بالمدينة المنورة</h3>
+      <h3 id="officialLine3">إدارة الرعاية الصيدلانية</h3>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <div id="employeeView" style="display:none">
+
+    <div class="meta-row">
+
+      <div class="date-box" id="dateBox"></div>
+
+      <div class="employee-toolbar kidney-user-toolbar">
+
+      <button
+          type="button"
+          class="logout-icon kidney-toolbar-button"
+          id="logoutBtn"
+          onclick="logoutEmployee()"
+          title="تسجيل الخروج"
+          aria-label="تسجيل الخروج">
+
+          <svg
+            class="power-svg"
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path d="M12 3v9"></path>
+            <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+
+          </svg>
+
+        </button>
+
+      <span dir="auto"
+          class="employee-name"
+          id="employeeName">
+        </span>
+
+      <a
+          class="portal-back-button kidney-toolbar-button"
+          id="loginBackButton"
+          href="../../expiry-dates.html"
+          onclick="navigateFresh(this.getAttribute('href')); return false;"
+          title="رجوع"
+          aria-label="رجوع">
+          ↩
+        </a>
+
+    </div>
+
+      <button
+        type="button"
+        class="language-chip"
+        id="languageToggle"
+        onclick="toggleLanguage()">
+        🌐 ع | E
+      </button>
+
+    </div>
+
+    <div class="title-row">
+
+      <h1 class="page-title" id="pageTitle">
+        Monthly Inspection
+      </h1>
+
+    </div>
+
+  <div id="loginView" class="login-card" style="display:none">
+
+    <label id="usernameLabel" for="username">
+      اسم المستخدم
+    </label>
+
+    <input
+      type="text"
+      id="username"
+      autocomplete="username">
+
+    <label id="passwordLabel" for="password">
+      PIN
+    </label>
+
+    <input
+      type="password"
+      id="password"
+      inputmode="numeric"
+      autocomplete="current-password">
+
+    <div class="login-actions">
+
+      <button
+        type="button"
+        class="primary-btn"
+        id="loginBtn"
+        onclick="loginEmployee()"
+        title="تسجيل الدخول"
+        aria-label="تسجيل الدخول">
+
+        <svg
+          class="login-svg"
+          viewBox="0 0 24 24"
+          aria-hidden="true">
+
+          <path d="M10 17l5-5-5-5"></path>
+          <path d="M15 12H3"></path>
+          <path d="M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"></path>
+
+        </svg>
+
+      </button>
+
+      <button
+        type="button"
+        class="secondary-btn"
+        id="togglePasswordBtn"
+        onclick="togglePasswordPanel()"
+        title="تغيير PIN"
+        aria-label="تغيير PIN">
+        🔑
+      </button>
+
+    </div>
+
+    <div
+      class="change-password-panel"
+      id="changePasswordPanel">
+
+      <label
+        id="changeUsernameLabel"
+        for="changeUsername">
+        اسم المستخدم
+      </label>
+
+      <input
+        type="text"
+        id="changeUsername"
+        autocomplete="username">
+
+      <label
+        id="oldPasswordLabel"
+        for="oldPassword">
+        PIN الحالي
+      </label>
+
+      <input
+        type="password"
+        id="oldPassword"
+        autocomplete="current-password">
+
+      <label
+        id="newPasswordLabel"
+        for="newPassword">
+        PIN الجديد
+      </label>
+
+      <input
+        type="password"
+        id="newPassword"
+        autocomplete="new-password">
+
+      <button
+        type="button"
+        class="primary-btn"
+        id="changePasswordBtn"
+        onclick="changePassword()">
+        تغيير PIN
+      </button>
+
+    </div>
+
+    <div id="loginResult"></div>
+
+  </div>
+
+    <div
+      class="conflict-box"
+      id="conflictBox">
+
+      <div id="conflictText"></div>
+
+      <ul id="conflictList"></ul>
+
+      <div class="conflict-actions">
+
+        <button
+          type="button"
+          class="danger-btn"
+          id="replaceOldBtn"
+          onclick="replaceOldAndSave()">
+          حذف القديم وحفظ الجديد
+        </button>
+
+        <button
+          type="button"
+          class="secondary-btn"
+          id="confirmSaveBtn"
+          onclick="confirmSave()">
+          الاحتفاظ بالتاريخين
+        </button>
+
+        <button
+          type="button"
+          class="secondary-btn"
+          id="cancelConflictBtn"
+          onclick="cancelConflict()">
+          إلغاء
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="form-panel">
+
+      <label
+        id="medNameLabel"
+        for="medName">
+        اسم الدواء
+      </label>
+
+      <div class="combo-wrap">
+
+        <input
+          type="text"
+          id="medName"
+          autocomplete="off"
+          dir="ltr"
+          lang="en"
+          inputmode="text"
+          pattern="[A-Za-z0-9\s\-_/().,+%]*">
+
+        <div
+          class="combo-options"
+          id="medNameOptions">
+        </div>
+
+      </div>
+
+      <label id="medExpiryLabel">
+        تاريخ الانتهاء
+      </label>
+
+      <div class="expiry-row">
+
+        <select
+          id="expiryDay"
+          aria-label="Day">
+
+          <option value="">
+            Day
+          </option>
+
+        </select>
+
+        <select
+          id="expiryMonth"
+          aria-label="Month">
+
+          <option value="">Month</option>
+          <option value="01">January</option>
+          <option value="02">February</option>
+          <option value="03">March</option>
+          <option value="04">April</option>
+          <option value="05">May</option>
+          <option value="06">June</option>
+          <option value="07">July</option>
+          <option value="08">August</option>
+          <option value="09">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+
+        </select>
+
+        <select
+          id="expiryYear"
+          aria-label="Year">
+
+          <option value="">
+            Year
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="expiry-scan-row">
+        <button type="button" class="expiry-scan-btn" id="scanExpiryBtn" onclick="openExpiryScanner()">
+          Scan Expiry Date
+        </button>
+      </div>
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="primary-btn"
+          id="submitBtn"
+          onclick="submitMedication()">
+          تسجيل
+        </button>
+
+      </div>
+
+    </div>
+
+    <div id="result"></div>
+
+  </div>
+
+  <div class="expiry-ocr-modal" id="expiryOcrModal" hidden aria-hidden="true">
+    <div class="expiry-ocr-card" role="dialog" aria-modal="true" aria-labelledby="expiryOcrTitle">
+      <h2 id="expiryOcrTitle" style="color:#168fb3;font-size:18px;margin:0 0 10px">Scan Expiry Date</h2>
+      <div class="expiry-ocr-video-wrap">
+        <video class="expiry-ocr-video" id="expiryOcrVideo" autoplay muted playsinline></video>
+        <div class="expiry-ocr-guide" aria-hidden="true"></div>
+      </div>
+      <div class="expiry-ocr-status" id="expiryOcrStatus">Point the camera at EXP and the date.</div>
+      <div class="expiry-ocr-result" id="expiryOcrResult" hidden></div>
+      <div class="expiry-ocr-actions">
+        <button type="button" class="primary-btn" id="expiryOcrConfirmBtn" onclick="confirmExpiryScan()" disabled>Confirm</button>
+        <button type="button" class="secondary-btn" id="expiryOcrRescanBtn" onclick="rescanExpiry()">Rescan</button>
+        <button type="button" class="secondary-btn" onclick="closeExpiryScanner()">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+
+function navigateFresh(target, replaceHistory = false){
+  const url = new URL(target, window.location.href);
+  url.searchParams.set("_r", Date.now().toString());
+  if (replaceHistory){
+    window.location.replace(url.toString());
+  } else {
+    window.location.assign(url.toString());
+  }
+}
+
+
+
+const KIDNEY_API_URL =
+  "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
+
+const UNIFIED_API_URL =
+  "https://script.google.com/macros/s/AKfycbzg9PCeoJQl0ifbng_aam6u5mTePD0872wqZ5ilZYqcFV9QypiyopulgPPyO3nqLpez/exec";
+
+const CENTRAL_MEDICATIONS_API_URL =
+  "https://script.google.com/macros/s/AKfycbxtK-J87-gmKVXExW_kbVXBuYTxArtP5pnvnp3HJh2s_BL2nPQn8vPrwMX_bDUkp4uq/exec";
+
+const KIDNEY_SESSION_NAME_KEY =
+  "kidneyEmployeeName";
+
+const KIDNEY_SESSION_USERNAME_KEY =
+  "kidneyEmployeeUsername";
+
+const KIDNEY_SESSION_TOKEN_KEY =
+  "kidneySessionToken";
+
+
+let centralMedicationList =
+  [];
+
+let centralMedicationListUpdatedAt =
+  0;
+
+const CENTRAL_MEDICATION_LIST_FRESH_MS =
+  30000;
+
+let selectedMedicationId =
+  "";
+
+let selectedMedicationName =
+  "";
+
+
+let currentLang =
+  "en";
+
+
+function migrateOldSession(){
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_NAME_KEY
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  );
+
+}
+
+
+migrateOldSession();
+
+
+let currentEmployeeName =
+  sessionStorage.getItem(
+    KIDNEY_SESSION_NAME_KEY
+  ) || "";
+
+let currentEmployeeUsername =
+  sessionStorage.getItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  ) || "";
+
+let currentSessionToken =
+  sessionStorage.getItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  ) || "";
+
+
+let pendingMedication =
+  null;
+
+let inactivityTimer =
+  null;
+
+let inactivityWatcherStarted =
+  false;
+
+const INACTIVITY_LIMIT_MS =
+  30 * 60 * 1000;
+
+
+const text = {
+
+  ar:{
+    title:"الفحص الشهري",
+    officialLine1:"تجمع المدينة المنورة الصحي",
+    officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
+    officialLine3:"إدارة الرعاية الصيدلانية",
+    username:"اسم المستخدم",
+    password:"PIN",
+    login:"تسجيل الدخول",
+    changePassword:"تغيير PIN",
+    oldPassword:"PIN الحالي",
+    newPassword:"PIN الجديد",
+    passwordChanged:"تم تغيير PIN بنجاح.",
+    passwordMismatch:"اسم المستخدم أو PIN الحالي غير صحيح.",
+    passwordTooShort:"PIN الجديد يجب ألا يكون فارغاً.",
+    logout:"تسجيل الخروج",
+    invalidLogin:"اسم المستخدم أو PIN غير صحيح.",
+    notConfigured:"لم يتم ربط مصدر البيانات بعد.",
+    noMatches:"لا يوجد دواء مطابق في القائمة.",
+    medName:"اسم الدواء",
+    medExpiry:"تاريخ الانتهاء",
+    submit:"تسجيل",
+    missingFields:"الرجاء تعبئة اسم الدواء وتاريخ الانتهاء.",
+    pastExpiry:"لا يمكن تسجيل تاريخ انتهاء سابق لتاريخ اليوم.",
+    englishNameOnly:"اسم الدواء يجب أن يكون باللغة الإنجليزية فقط.",
+    saved:"تم تسجيل الدواء بنجاح.",
+    saveFailed:"تعذر حفظ البيانات.",
+    conflictTitle:"يوجد تسجيل سابق لنفس الدواء بتاريخ أقدم:",
+    replaceOld:"حذف القديم وحفظ الجديد",
+    confirmSave:"الاحتفاظ بالتاريخين",
+    cancel:"إلغاء",
+    sessionExpired:"انتهت الجلسة. سجّل الدخول مرة أخرى.",
+    checkFailed:"تعذر التحقق من التسجيلات السابقة."
+  },
+
+  en:{
+    title:"Monthly Inspection",
+    officialLine1:"Madinah Health Cluster",
+    officialLine2:"King Fahad Hospital - Madinah",
+    officialLine3:"Pharmaceutical Care Administration",
+    username:"Username",
+    password:"PIN",
+    login:"Login",
+    changePassword:"Change PIN",
+    oldPassword:"Current PIN",
+    newPassword:"New PIN",
+    passwordChanged:"PIN changed successfully.",
+    passwordMismatch:"Username or current PIN is incorrect.",
+    passwordTooShort:"New PIN cannot be empty.",
+    logout:"Logout",
+    invalidLogin:"Incorrect username or PIN.",
+    notConfigured:"Data source is not connected yet.",
+    noMatches:"No matching medication in the list.",
+    medName:"Medication Name",
+    medExpiry:"Expiry Date",
+    submit:"Register",
+    missingFields:"Please fill in the medication name and expiry date.",
+    pastExpiry:"Expiry date cannot be in the past.",
+    englishNameOnly:"Medication name must be in English only.",
+    saved:"Medication registered successfully.",
+    saveFailed:"Could not save the data.",
+    conflictTitle:"An earlier expiry date is already registered for this medication:",
+    replaceOld:"Delete Old and Save New",
+    confirmSave:"Keep Both Dates",
+    cancel:"Cancel",
+    sessionExpired:"Session expired. Please sign in again.",
+    checkFailed:"Could not verify previous medication records."
+  }
+
+};
+
+
+function setLanguage(lang){
+
+  currentLang =
+    lang;
+
+  document.documentElement.lang =
+    lang;
+
+  document.documentElement.dir =
+    lang === "ar"
+      ? "rtl"
+      : "ltr";
+
+  document.title =
+    text[lang].title;
+
+  document.getElementById("officialLine1").innerText =
+    text[lang].officialLine1;
+
+  document.getElementById("officialLine2").innerText =
+    text[lang].officialLine2;
+
+  document.getElementById("officialLine3").innerText =
+    text[lang].officialLine3;
+
+  document.getElementById("pageTitle").innerText =
+    text[lang].title;
+
+  document.getElementById("usernameLabel").innerText =
+    text[lang].username;
+
+  document.getElementById("passwordLabel").innerText =
+    text[lang].password;
+
+  document.getElementById("loginBtn").title =
+    text[lang].login;
+
+  document.getElementById("loginBtn").setAttribute(
+    "aria-label",
+    text[lang].login
+  );
+
+  document.getElementById("togglePasswordBtn").title =
+    text[lang].changePassword;
+
+  document.getElementById("togglePasswordBtn").setAttribute(
+    "aria-label",
+    text[lang].changePassword
+  );
+
+  document.getElementById("changeUsernameLabel").innerText =
+    text[lang].username;
+
+  document.getElementById("oldPasswordLabel").innerText =
+    text[lang].oldPassword;
+
+  document.getElementById("newPasswordLabel").innerText =
+    text[lang].newPassword;
+
+  document.getElementById("changePasswordBtn").innerText =
+    text[lang].changePassword;
+
+  document.getElementById("logoutBtn").title =
+    text[lang].logout;
+
+  document.getElementById("logoutBtn").setAttribute(
+    "aria-label",
+    text[lang].logout
+  );
+
+  document.getElementById("medNameLabel").innerText =
+    text[lang].medName;
+
+  document.getElementById("medExpiryLabel").innerText =
+    text[lang].medExpiry;
+
+  document.getElementById("submitBtn").innerText =
+    text[lang].submit;
+
+  document.getElementById("replaceOldBtn").innerText =
+    text[lang].replaceOld;
+
+  document.getElementById("confirmSaveBtn").innerText =
+    text[lang].confirmSave;
+
+  document.getElementById("cancelConflictBtn").innerText =
+    text[lang].cancel;
+
+  document.getElementById("conflictText").innerText =
+    text[lang].conflictTitle;
+
+  document.getElementById("languageToggle").innerText =
+    "🌐 ع | E";
+
+  if (
+    currentEmployeeName
+  ){
+    document.getElementById("employeeName").innerText =
+      currentEmployeeName;
+  }
+
+  renderDate();
+
+}
+
+
+function toggleLanguage(){
+
+  setLanguage(
+    currentLang === "ar"
+      ? "en"
+      : "ar"
+  );
+
+}
+
+
+function renderDate(){
+
+  const now =
+    new Date();
+
+  const date =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:"Asia/Riyadh"
+      }
+    ).format(now);
+
+  const dayName =
+    new Intl.DateTimeFormat(
+      currentLang === "ar"
+        ? "ar-SA"
+        : "en-US",
+      {
+        timeZone:"Asia/Riyadh",
+        weekday:"long"
+      }
+    ).format(now);
+
+  document.getElementById("dateBox").innerText =
+    `${dayName} - ${date}`;
+
+}
+
+
+/* =========================================================
+   EXPIRY DATE
+========================================================= */
+
+function getExpiryCurrentYear(){
+
+  return Number(
+    new Intl.DateTimeFormat(
+      "en",
+      {
+        timeZone:"Asia/Riyadh",
+        year:"numeric"
+      }
+    ).format(
+      new Date()
+    )
+  );
+
+}
+
+
+function buildExpirySelectors(){
+
+  const yearSelect =
+    document.getElementById(
+      "expiryYear"
+    );
+
+  const currentYear =
+    getExpiryCurrentYear();
+
+
+  for (
+    let year = currentYear;
+    year <= currentYear + 15;
+    year++
+  ){
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      String(year);
+
+    option.textContent =
+      String(year);
+
+    yearSelect.appendChild(
+      option
+    );
+
+  }
+
+
+  updateExpiryDays();
+
+}
+
+
+function updateExpiryDays(){
+
+  const daySelect =
+    document.getElementById(
+      "expiryDay"
+    );
+
+  const monthSelect =
+    document.getElementById(
+      "expiryMonth"
+    );
+
+  const yearSelect =
+    document.getElementById(
+      "expiryYear"
+    );
+
+  const today =
+    getRiyadhTodayDate();
+
+  const todayYear =
+    Number(
+      today.slice(
+        0,
+        4
+      )
+    );
+
+  const todayMonth =
+    Number(
+      today.slice(
+        5,
+        7
+      )
+    );
+
+  const selectedYear =
+    yearSelect.value
+      ? Number(yearSelect.value)
+      : todayYear;
+
+  Array.from(
+    monthSelect.options
+  ).forEach(
+    function(option){
+
+      option.disabled =
+        Boolean(option.value) &&
+        selectedYear === todayYear &&
+        Number(option.value) < todayMonth;
+
+    }
+  );
+
+  if (
+    monthSelect.selectedOptions.length &&
+    monthSelect.selectedOptions[0].disabled
+  ){
+    monthSelect.value =
+      "";
+  }
+
+  const month =
+    monthSelect.value;
+
+  const year =
+    yearSelect.value;
+
+  const previousDay =
+    daySelect.value;
+
+  daySelect.innerHTML =
+    '<option value="">Day</option>';
+
+
+  if (
+    !month
+  ){
+    return;
+  }
+
+
+  const effectiveYear =
+    year
+      ? Number(year)
+      : getExpiryCurrentYear();
+
+
+  const daysInMonth =
+    new Date(
+      effectiveYear,
+      Number(month),
+      0
+    ).getDate();
+
+
+  for (
+    let day = 1;
+    day <= daysInMonth;
+    day++
+  ){
+
+    const value =
+      String(day).padStart(
+        2,
+        "0"
+      );
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      value;
+
+    option.textContent =
+      value;
+
+    option.disabled =
+      effectiveYear +
+        "-" +
+        month +
+        "-" +
+        value <
+      today;
+
+    daySelect.appendChild(
+      option
+    );
+
+  }
+
+
+  if (
+    previousDay &&
+    Number(previousDay) <= daysInMonth &&
+    effectiveYear +
+      "-" +
+      month +
+      "-" +
+      previousDay >=
+      today
+  ){
+
+    daySelect.value =
+      previousDay;
+
+  }
+
+}
+
+
+function getExpiryDate(){
+
+  const day =
+    document.getElementById(
+      "expiryDay"
+    ).value;
+
+  const month =
+    document.getElementById(
+      "expiryMonth"
+    ).value;
+
+  const year =
+    document.getElementById(
+      "expiryYear"
+    ).value;
+
+
+  if (
+    !day ||
+    !month ||
+    !year
+  ){
+    return "";
+  }
+
+
+  const expiry =
+    year +
+    "-" +
+    month +
+    "-" +
+    day;
+
+
+  const check =
+    new Date(
+      year +
+      "-" +
+      month +
+      "-" +
+      day +
+      "T12:00:00"
+    );
+
+
+  if (
+    Number.isNaN(
+      check.getTime()
+    ) ||
+    check.getFullYear() !== Number(year) ||
+    check.getMonth() + 1 !== Number(month) ||
+    check.getDate() !== Number(day)
+  ){
+    return "";
+  }
+
+
+  return expiry;
+
+}
+
+
+function clearExpiryDate(){
+
+  document.getElementById(
+    "expiryDay"
+  ).value =
+    "";
+
+  document.getElementById(
+    "expiryMonth"
+  ).value =
+    "";
+
+  document.getElementById(
+    "expiryYear"
+  ).value =
+    "";
+
+  updateExpiryDays();
+
+}
+
+
+/* =========================================================
+   SESSION STORAGE
+========================================================= */
+
+function saveStoredSession(){
+
+  sessionStorage.setItem(
+    KIDNEY_SESSION_NAME_KEY,
+    currentEmployeeName
+  );
+
+  sessionStorage.setItem(
+    KIDNEY_SESSION_USERNAME_KEY,
+    currentEmployeeUsername
+  );
+
+  sessionStorage.setItem(
+    KIDNEY_SESSION_TOKEN_KEY,
+    currentSessionToken
+  );
+
+}
+
+
+function clearStoredSession(){
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_NAME_KEY
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  );
+
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_NAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  );
+
+
+  currentEmployeeName =
+    "";
+
+  currentEmployeeUsername =
+    "";
+
+  currentSessionToken =
+    "";
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+async function loginEmployee(){
+
+  const username =
+    document.getElementById(
+      "username"
+    ).value.trim();
+
+  const password =
+    document.getElementById(
+      "password"
+    ).value.trim();
+
+
+  if (
+    !username ||
+    !password
+  ){
+
+    showLoginResult(
+      "error",
+      text[currentLang].invalidLogin
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const result =
+      await postApi(
+        "employeeLogin",
+        {
+          username:username,
+          password:password,
+          pin:password
+        },
+        false
+      );
+
+
+    if (
+      !result.success ||
+      !result.employee ||
+      !result.sessionToken
+    ){
+
+      showLoginResult(
+        "error",
+        text[currentLang].invalidLogin +
+        diagnosticText(
+          result
+        )
+      );
+
+      return;
+
+    }
+
+
+    currentEmployeeName =
+      result.employee.name ||
+      result.employee.username ||
+      username;
+
+
+    currentEmployeeUsername =
+      result.employee.username ||
+      username;
+
+
+    currentSessionToken =
+      result.sessionToken;
+
+
+    saveStoredSession();
+
+    clearLoginResult();
+
+
+    document.getElementById(
+      "password"
+    ).value =
+      "";
+
+
+    showEmployeeView();
+
+  }catch(error){
+
+    showLoginResult(
+      "error",
+      text[currentLang].invalidLogin +
+      " [NETWORK_ERROR]"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   RESTORE SESSION
+========================================================= */
+
+async function unifiedApi(payload){
+
+  const response =
+    await fetch(
+      UNIFIED_API_URL,
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          )
+      }
+    );
+
+  if (
+    !response.ok
+  ){
+
+    throw new Error(
+      "HTTP_" +
+      response.status
+    );
+
+  }
+
+  return await response.json();
+
+}
+
+
+function clearUnifiedPortalSession(){
+
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+
+}
+
+
+function redirectToMainPortal(){
+
+  window.location.replace(
+    "../../index.html"
+  );
+
+}
+
+
+function allowUnifiedKidneyExpiryUser(
+  user,
+  unifiedSessionToken
+){
+
+  if (
+    !user ||
+    !user.kidneyExpiryRegisterAccess
+  ){
+
+    return false;
+
+  }
+
+  currentEmployeeUsername =
+    user.username ||
+    "";
+
+  currentEmployeeName =
+    user.name ||
+    user.username ||
+    "";
+
+  currentSessionToken =
+    unifiedSessionToken;
+
+  /*
+    Preserve the existing kidney API/session mechanism:
+    operational API calls continue using currentSessionToken
+    and the existing KIDNEY_SESSION_* keys.
+  */
+  saveStoredSession();
+
+  showEmployeeView();
+
+  return true;
+
+}
+
+
+async function restoreSession(){
+
+  const unifiedSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (
+    !unifiedSessionToken
+  ){
+
+    clearStoredSession();
+
+    redirectToMainPortal();
+
+    return false;
+
+  }
+
+  let cachedUserAllowed =
+    false;
+
+  const cachedUserText =
+    sessionStorage.getItem(
+      "unifiedPortalUser"
+    ) || "";
+
+  if (
+    cachedUserText
+  ){
+
+    try{
+
+      const cachedUser =
+        JSON.parse(
+          cachedUserText
+        );
+
+      cachedUserAllowed =
+        allowUnifiedKidneyExpiryUser(
+          cachedUser,
+          unifiedSessionToken
+        );
+
+    }catch(error){
+
+      cachedUserAllowed =
+        false;
+
+    }
+
+  }
+
+  try{
+
+    const result =
+      await unifiedApi({
+        action:"validateSession",
+        sessionToken:unifiedSessionToken,
+        service:"kidneyExpiryRegister"
+      });
+
+
+    if (
+      !result.success ||
+      !result.user ||
+      result.user.active === false ||
+      !result.user.kidneyExpiryRegisterAccess
+    ){
+
+      clearUnifiedPortalSession();
+
+      clearStoredSession();
+
+      redirectToMainPortal();
+
+      return false;
+
+    }
+
+
+    sessionStorage.setItem(
+      "unifiedPortalUser",
+      JSON.stringify(
+        result.user
+      )
+    );
+
+
+    allowUnifiedKidneyExpiryUser(
+      result.user,
+      unifiedSessionToken
+    );
+
+    return true;
+
+  }catch(error){
+
+    if (
+      cachedUserAllowed
+    ){
+
+      return true;
+
+    }
+
+    /*
+      Network failure only:
+      do not clear the unified session,
+      and do not expose the protected employee view.
+    */
+    document.getElementById(
+      "loginView"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "employeeView"
+    ).style.display =
+      "none";
+
+    return false;
+
+  }
+
+}
+
+/* =========================================================
+   CHANGE PIN
+========================================================= */
+
+function togglePasswordPanel(){
+
+  const panel =
+    document.getElementById(
+      "changePasswordPanel"
+    );
+
+  panel.style.display =
+    panel.style.display === "block"
+      ? "none"
+      : "block";
+
+  clearLoginResult();
+
+}
+
+
+function openAuthenticatedPinPanel(){ const panel=document.getElementById("changePasswordPanel"); const employeeView=document.getElementById("employeeView"); if(!panel || !employeeView || employeeView.style.display === "none") return; if(panel.parentElement !== employeeView) employeeView.appendChild(panel); panel.classList.add("authenticated-pin-panel"); panel.style.display=panel.style.display === "block" ? "none" : "block"; const username=document.getElementById("changeUsername"); if(username && !username.value) username.value=currentEmployeeUsername || ""; }
+
+async function changePassword(){
+
+  const username =
+    document.getElementById(
+      "changeUsername"
+    ).value.trim();
+
+  const oldPassword =
+    document.getElementById(
+      "oldPassword"
+    ).value.trim();
+
+  const newPassword =
+    document.getElementById(
+      "newPassword"
+    ).value.trim();
+
+
+  if (
+    !username ||
+    !oldPassword ||
+    !newPassword
+  ){
+
+    showLoginResult(
+      "error",
+      text[currentLang].passwordMismatch
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const result =
+      await postApi(
+        "changeEmployeePassword",
+        {
+          username:username,
+          oldPassword:oldPassword,
+          currentPin:oldPassword,
+          newPassword:newPassword,
+          newPin:newPassword
+        },
+        true
+      );
+
+
+    if (
+      !result.success
+    ){
+
+      showLoginResult(
+        "error",
+        text[currentLang].passwordMismatch +
+        diagnosticText(
+          result
+        )
+      );
+
+      return;
+
+    }
+
+
+    document.getElementById(
+      "oldPassword"
+    ).value =
+      "";
+
+    document.getElementById(
+      "newPassword"
+    ).value =
+      "";
+
+    clearStoredSession();
+
+    showLoginResult(
+      "success",
+      text[currentLang].passwordChanged
+    );
+
+  }catch(error){
+
+    showLoginResult(
+      "error",
+      text[currentLang].passwordMismatch +
+      " [NETWORK_ERROR]"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logoutEmployee(){
+
+  const unifiedSessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (
+    unifiedSessionToken
+  ){
+
+    try{
+
+      await unifiedApi({
+        action:"revokeSession",
+        sessionToken:unifiedSessionToken
+      });
+
+    }catch(error){}
+
+  }
+
+  sessionStorage.removeItem(
+    "unifiedPortalUsername"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalSessionToken"
+  );
+
+  sessionStorage.removeItem(
+    "unifiedPortalUser"
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_NAME_KEY
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  );
+
+  localStorage.removeItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  );
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_NAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_USERNAME_KEY
+  );
+
+  sessionStorage.removeItem(
+    KIDNEY_SESSION_TOKEN_KEY
+  );
+
+  currentEmployeeName =
+    "";
+
+  currentEmployeeUsername =
+    "";
+
+  currentSessionToken =
+    "";
+
+  window.clearTimeout(
+    inactivityTimer
+  );
+
+  inactivityTimer =
+    null;
+
+  pendingMedication =
+    null;
+
+  document.getElementById(
+    "conflictBox"
+  ).style.display =
+    "none";
+
+  navigateFresh("../../index.html", true);
+
+}
+
+
+
+window.addEventListener(
+  "pageshow",
+  function(){
+
+    const unifiedSessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+    if (
+      unifiedSessionToken
+    ){
+
+      return;
+
+    }
+
+    const loginView =
+      document.getElementById(
+        "loginView"
+      );
+
+    const employeeView =
+      document.getElementById(
+        "employeeView"
+      );
+
+    if (
+      loginView
+    ){
+
+      loginView.style.display =
+        "none";
+
+    }
+
+    if (
+      employeeView
+    ){
+
+      employeeView.style.display =
+        "none";
+
+    }
+
+    window.location.replace(
+      "../../index.html"
+    );
+
+  }
+);
+
+
+function showLoginView(){
+
+  document.getElementById(
+    "employeeView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "block";
+
+  document.getElementById(
+    "loginBackButton"
+  ).style.display =
+    "inline-flex";
+
+}
+
+
+function showEmployeeView(){
+
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "employeeView"
+  ).style.display =
+    "block";
+
+  document.getElementById(
+    "loginBackButton"
+  ).style.display =
+    "inline-flex";
+
+  document.getElementById(
+    "employeeName"
+  ).innerText =
+    currentEmployeeName;
+
+  startInactivityWatcher();
+
+}
+
+
+/* =========================================================
+   INACTIVITY
+========================================================= */
+
+function startInactivityWatcher(){
+
+  if (
+    !inactivityWatcherStarted
+  ){
+
+    [
+      "click",
+      "keydown",
+      "touchstart",
+      "mousemove"
+    ].forEach(
+      function(eventName){
+
+        window.addEventListener(
+          eventName,
+          resetInactivityTimer,
+          {
+            passive:true
+          }
+        );
+
+      }
+    );
+
+    inactivityWatcherStarted =
+      true;
+
+  }
+
+  resetInactivityTimer();
+
+}
+
+
+function resetInactivityTimer(){
+
+  window.clearTimeout(
+    inactivityTimer
+  );
+
+  inactivityTimer =
+    window.setTimeout(
+      function(){
+
+        if (
+          currentSessionToken
+        ){
+          logoutEmployee();
+        }
+
+      },
+      INACTIVITY_LIMIT_MS
+    );
+
+}
+
+
+/* =========================================================
+   MEDICATION COMBO
+========================================================= */
+
+function renderMedOptions(
+  filterText
+){
+
+  const box =
+    document.getElementById(
+      "medNameOptions"
+    );
+
+
+  const q =
+    (
+      filterText ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const medicationSource =
+    getMedicationSource();
+
+  const matches =
+    q
+      ? medicationSource.filter(
+          function(m){
+            return m.name
+              .toLowerCase()
+              .includes(
+                q
+              );
+          }
+        )
+      : medicationSource;
+
+
+  box.innerHTML =
+    "";
+
+
+  if (
+    !matches.length
+  ){
+
+    const empty =
+      document.createElement(
+        "div"
+      );
+
+    empty.className =
+      "combo-empty";
+
+    empty.innerText =
+      text[currentLang].noMatches;
+
+    box.appendChild(
+      empty
+    );
+
+  }else{
+
+    matches
+      .slice(
+        0,
+        50
+      )
+      .forEach(
+        function(medication){
+
+          const opt =
+            document.createElement(
+              "div"
+            );
+
+          opt.className =
+            "combo-option";
+
+          opt.innerText =
+            medication.name;
+
+          opt.onmousedown =
+            function(e){
+
+              e.preventDefault();
+
+              selectMedication(
+                medication
+              );
+
+            };
+
+          box.appendChild(
+            opt
+          );
+
+        }
+      );
+
+  }
+
+
+  box.style.display =
+    "block";
+
+}
+
+
+function getMedicationSource(){
+
+  return centralMedicationList;
+
+}
+
+
+function getRiyadhTodayDate(){
+
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone:"Asia/Riyadh",
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    ).formatToParts(
+      new Date()
+    );
+
+  const values = {};
+
+  parts.forEach(
+    function(part){
+      values[part.type] =
+        part.value;
+    }
+  );
+
+  return values.year +
+    "-" +
+    values.month +
+    "-" +
+    values.day;
+
+}
+
+function normalizeCentralMedicationName(
+  value
+){
+
+  return String(
+    value ||
+    ""
+  )
+    .trim()
+    .toLowerCase()
+    .replace(
+      /\s+/g,
+      " "
+    );
+
+}
+
+
+function resolveSelectedMedication(
+  name
+){
+
+  const normalizedName =
+    normalizeCentralMedicationName(
+      name
+    );
+
+  if (
+    selectedMedicationId &&
+    normalizeCentralMedicationName(
+      selectedMedicationName
+    ) === normalizedName
+  ){
+    return {
+      id:
+        selectedMedicationId,
+      name:
+        selectedMedicationName
+    };
+  }
+
+  const matches =
+    centralMedicationList.filter(
+      function(item){
+        return (
+          normalizeCentralMedicationName(
+            item.name
+          ) === normalizedName
+        );
+      }
+    );
+
+  return matches.length === 1
+    ? matches[0]
+    : null;
+
+}
+
+
+function centralMedicationsApiReady(){
+
+  return CENTRAL_MEDICATIONS_API_URL &&
+    !CENTRAL_MEDICATIONS_API_URL.includes(
+      "PUT_CENTRAL_MEDICATIONS"
+    );
+
+}
+
+
+async function loadCentralMedicationList(){
+
+  if (
+    !centralMedicationsApiReady()
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    const response =
+      await fetch(
+        CENTRAL_MEDICATIONS_API_URL +
+          "?action=listMedications&service=kidney&_ts=" +
+          Date.now()
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      data &&
+      data.success &&
+      Array.isArray(
+        data.medications
+      )
+    ){
+
+      centralMedicationList =
+        data.medications
+          .map(
+            function(item){
+              return {
+                id:
+                  item && item.id
+                    ? String(item.id).trim()
+                    : "",
+                name:
+                  item && item.name
+                    ? String(item.name).trim()
+                    : ""
+              };
+            }
+          )
+          .filter(
+            function(item){
+              return (
+                item.id &&
+                item.name
+              );
+            }
+          );
+
+      centralMedicationListUpdatedAt =
+        Date.now();
+
+    }
+
+  }catch(error){
+
+    centralMedicationList =
+      [];
+
+  }
+
+}
+
+
+function selectMedication(
+  medication
+){
+
+  selectedMedicationId =
+    String(
+      medication &&
+      medication.id ||
+      ""
+    ).trim();
+
+  selectedMedicationName =
+    String(
+      medication &&
+      medication.name ||
+      ""
+    ).trim();
+
+  document.getElementById(
+    "medName"
+  ).value =
+    selectedMedicationName;
+
+  document.getElementById(
+    "medNameOptions"
+  ).style.display =
+    "none";
+
+}
+
+
+function isEnglishMedicationName(
+  value
+){
+
+  return /^[A-Za-z0-9][A-Za-z0-9\s\-_/().,+%]*$/.test(
+    value
+  );
+
+}
+
+
+/* =========================================================
+   LOCAL EXPIRY DATE OCR
+========================================================= */
+let expiryOcrStream = null;
+let expiryOcrTimer = null;
+let expiryOcrBusy = false;
+let expiryOcrCandidate = null;
+let expiryOcrLibraryPromise = null;
+
+function setExpiryOcrStatus(message){
+  const el = document.getElementById("expiryOcrStatus");
+  if(el) el.textContent = message;
+}
+
+function loadExpiryOcrLibrary(){
+  if(window.Tesseract) return Promise.resolve(window.Tesseract);
+  if(expiryOcrLibraryPromise) return expiryOcrLibraryPromise;
+  expiryOcrLibraryPromise = new Promise(function(resolve,reject){
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    script.onload = function(){ window.Tesseract ? resolve(window.Tesseract) : reject(new Error("OCR_LIBRARY_UNAVAILABLE")); };
+    script.onerror = function(){ reject(new Error("OCR_LIBRARY_LOAD_FAILED")); };
+    document.head.appendChild(script);
+  });
+  return expiryOcrLibraryPromise;
+}
+
+function normalizeExpiryOcrText(value){
+  return String(value || "")
+    .toUpperCase()
+    .replace(/[–—]/g,"-")
+    .replace(/[|]/g,"/")
+    .replace(/[OQ]/g,"0")
+    .replace(/[IL]/g,"1")
+    .replace(/\s+/g," ");
+}
+
+function expiryEndDate(year, month){
+  const day = new Date(Number(year), Number(month), 0).getDate();
+  return String(year).padStart(4,"0") + "-" + String(month).padStart(2,"0") + "-" + String(day).padStart(2,"0");
+}
+
+function parseExpiryOcrText(raw){
+  const text = normalizeExpiryOcrText(raw);
+  const expIndex = text.search(/\b(?:EXP|EXPIRY|EXPIRES|USE BY)\b/);
+  const mfgIndex = text.search(/\b(?:MFG|MFD|MANUFACTURED|MANUFACTURE)\b/);
+  const candidates = [];
+  const add = function(year,month,day,index){
+    year=Number(year); month=Number(month); day=day ? Number(day) : null;
+    if(year < 100) year += 2000;
+    if(year < 2000 || year > 2100 || month < 1 || month > 12) return;
+    if(day && (day < 1 || day > new Date(year,month,0).getDate())) return;
+    candidates.push({date:day ? String(year).padStart(4,"0")+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0") : expiryEndDate(year,month), index:index || 0});
+  };
+  let m;
+  const dmy = /\b(0?[1-9]|[12]\d|3[01])\s*[\/-]\s*(0?[1-9]|1[0-2])\s*[\/-]\s*(20\d{2}|\d{2})\b/g;
+  while((m=dmy.exec(text))) add(m[3],m[2],m[1],m.index);
+  const my = /\b(0?[1-9]|1[0-2])\s*[\/-]\s*(20\d{2}|\d{2})\b/g;
+  while((m=my.exec(text))) add(m[2],m[1],null,m.index);
+  const ym = /\b(20\d{2})\s*[-\/]\s*(0?[1-9]|1[0-2])\b/g;
+  while((m=ym.exec(text))) add(m[1],m[2],null,m.index);
+  const usable = candidates.filter(function(c){
+    const nearMfg = mfgIndex >= 0 && Math.abs(c.index - mfgIndex) < 18 &&
+      !(expIndex >= 0 && c.index >= expIndex && Math.abs(c.index - expIndex) < 24);
+    return !nearMfg;
+  });
+  if(!usable.length || (usable.length > 1 && expIndex < 0)) return null;
+  usable.sort(function(a,b){
+    const aExp = expIndex >= 0 && Math.abs(a.index-expIndex) < 24;
+    const bExp = expIndex >= 0 && Math.abs(b.index-expIndex) < 24;
+    return Number(bExp)-Number(aExp) || a.index-b.index;
+  });
+  if(usable.length > 1 && expIndex < 0 && usable[0].date !== usable[1].date) return null;
+  return usable[0].date;
+}
+
+function showExpiryOcrCandidate(date){
+  expiryOcrCandidate = date;
+  const result = document.getElementById("expiryOcrResult");
+  const confirm = document.getElementById("expiryOcrConfirmBtn");
+  if(result){ result.hidden = !date; result.textContent = date ? "Detected expiry date: " + date : ""; }
+  if(confirm) confirm.disabled = !date;
+}
+
+async function scanExpiryFrame(){
+  if(expiryOcrBusy || !expiryOcrStream) return;
+  expiryOcrBusy = true;
+  try{
+    const video = document.getElementById("expiryOcrVideo");
+    const canvas = document.createElement("canvas");
+    const width = Math.min(video.videoWidth || 640, 960);
+    const height = Math.round(width * (video.videoHeight || 480) / (video.videoWidth || 640));
+    canvas.width = width; canvas.height = height;
+    canvas.getContext("2d", {willReadFrequently:true}).drawImage(video,0,0,width,height);
+    const Tesseract = await loadExpiryOcrLibrary();
+    const result = await Tesseract.recognize(canvas,"eng");
+    const date = parseExpiryOcrText(result && result.data ? result.data.text : "");
+    if(date){ showExpiryOcrCandidate(date); setExpiryOcrStatus("Review the detected date, then confirm."); }
+    else setExpiryOcrStatus("No clear EXP date found. Keep the label steady or use manual entry.");
+  }catch(error){
+    setExpiryOcrStatus("OCR unavailable. You can continue with manual entry.");
+  }finally{ expiryOcrBusy = false; }
+}
+
+async function openExpiryScanner(){
+  const modal = document.getElementById("expiryOcrModal");
+  if(!modal) return;
+  modal.hidden=false; modal.setAttribute("aria-hidden","false");
+  showExpiryOcrCandidate(null);
+  setExpiryOcrStatus("Starting camera…");
+  try{
+    await loadExpiryOcrLibrary();
+    expiryOcrStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    const video=document.getElementById("expiryOcrVideo");
+    video.srcObject=expiryOcrStream;
+    await video.play();
+    setExpiryOcrStatus("Point the camera at EXP and the date.");
+    expiryOcrTimer = window.setInterval(scanExpiryFrame,1800);
+  }catch(error){
+    setExpiryOcrStatus(error && error.name === "NotAllowedError" ? "Camera permission was denied. Use manual entry." : "Camera or OCR could not be loaded. Use manual entry.");
+    stopExpiryScannerStream();
+  }
+}
+
+function stopExpiryScannerStream(){
+  if(expiryOcrTimer){ clearInterval(expiryOcrTimer); expiryOcrTimer=null; }
+  if(expiryOcrStream){ expiryOcrStream.getTracks().forEach(function(track){track.stop();}); expiryOcrStream=null; }
+  const video=document.getElementById("expiryOcrVideo");
+  if(video) video.srcObject=null;
+  expiryOcrBusy=false;
+}
+
+function closeExpiryScanner(){
+  stopExpiryScannerStream();
+  const modal=document.getElementById("expiryOcrModal");
+  if(modal){ modal.hidden=true; modal.setAttribute("aria-hidden","true"); }
+}
+
+function rescanExpiry(){
+  showExpiryOcrCandidate(null);
+  setExpiryOcrStatus("Point the camera at EXP and the date.");
+}
+
+function confirmExpiryScan(){
+  if(!expiryOcrCandidate) return;
+  const parts=expiryOcrCandidate.split("-");
+  document.getElementById("expiryYear").value=parts[0];
+  document.getElementById("expiryMonth").value=parts[1];
+  updateExpiryDays();
+  document.getElementById("expiryDay").value=parts[2];
+  closeExpiryScanner();
+}
+
+window.addEventListener("pagehide", closeExpiryScanner);
+document.addEventListener("visibilitychange", function(){ if(document.hidden) closeExpiryScanner(); });
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+async function submitMedication(){
+
+  clearResult();
+
+
+  if (
+    !currentSessionToken
+  ){
+
+    handleSessionExpired();
+
+    return;
+
+  }
+
+
+  const name =
+    document.getElementById(
+      "medName"
+    ).value.trim();
+
+
+  const expiry =
+    getExpiryDate();
+  const selectedMedication =
+    resolveSelectedMedication(
+      name
+    );
+
+
+  if (
+    !name ||
+    !expiry
+  ){
+
+    showResult(
+      "error",
+      text[currentLang].missingFields
+    );
+
+    return;
+
+  }
+
+
+  if (
+    expiry <
+    getRiyadhTodayDate()
+  ){
+
+    showResult(
+      "error",
+      text[currentLang].pastExpiry
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !isEnglishMedicationName(
+      name
+    )
+  ){
+
+    showResult(
+      "error",
+      text[currentLang].englishNameOnly
+    );
+
+    return;
+
+  }
+
+  if (
+    !selectedMedication
+  ){
+
+    showResult(
+      "error",
+      text[currentLang].noMatches
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const data =
+      await postApi(
+        "checkMedication",
+        {
+          name:name,
+          medicationName:name,
+          medicationId:
+            selectedMedication.id
+        },
+        true
+      );
+
+
+    if (
+      !data ||
+      !data.success
+    ){
+
+      if (
+        isSessionError(
+          data
+        )
+      ){
+
+        handleSessionExpired();
+
+        return;
+
+      }
+
+
+      showResult(
+        "error",
+        text[currentLang].checkFailed +
+        diagnosticText(
+          data
+        )
+      );
+
+      return;
+
+    }
+
+
+    const matches =
+      data.matches ||
+      data.items ||
+      [];
+
+
+    const older =
+      matches.filter(
+        function(m){
+
+          const itemExpiry =
+            m.expiry ||
+            m.expiryDate ||
+            "";
+
+          return (
+            itemExpiry &&
+            itemExpiry <
+              expiry
+          );
+
+        }
+      );
+
+
+    if (
+      older.length
+    ){
+
+      pendingMedication = {
+        name:name,
+        medicationId:
+          selectedMedication.id,
+        expiry:expiry
+      };
+
+
+      showConflict(
+        older
+      );
+
+      return;
+
+    }
+
+  }catch(error){
+
+    showResult(
+      "error",
+      text[currentLang].checkFailed +
+      " [NETWORK_ERROR]"
+    );
+
+    return;
+
+  }
+
+
+  await saveMedication(
+    name,
+    selectedMedication.id,
+    expiry
+  );
+
+}
+
+
+/* =========================================================
+   CONFLICT
+========================================================= */
+
+function showConflict(
+  older
+){
+
+  const list =
+    document.getElementById(
+      "conflictList"
+    );
+
+  list.innerHTML =
+    "";
+
+
+  older.forEach(
+    function(m){
+
+      const li =
+        document.createElement(
+          "li"
+        );
+
+      const itemExpiry =
+        m.expiry ||
+        m.expiryDate ||
+        "";
+
+      const registeredBy =
+        m.registeredBy ||
+        m.registeredByName ||
+        "";
+
+      li.innerText =
+        itemExpiry +
+        (
+          registeredBy
+            ? " — " +
+              registeredBy
+            : ""
+        );
+
+      list.appendChild(
+        li
+      );
+
+    }
+  );
+
+
+  document.getElementById(
+    "conflictBox"
+  ).style.display =
+    "block";
+
+}
+
+
+function cancelConflict(){
+
+  pendingMedication =
+    null;
+
+  document.getElementById(
+    "conflictBox"
+  ).style.display =
+    "none";
+
+}
+
+
+async function confirmSave(){
+
+  if (
+    !pendingMedication
+  ){
+    return;
+  }
+
+
+  const {
+    name,
+    medicationId,
+    expiry
+  } =
+    pendingMedication;
+
+
+  document.getElementById(
+    "conflictBox"
+  ).style.display =
+    "none";
+
+
+  await saveMedication(
+    name,
+    medicationId,
+    expiry,
+    false
+  );
+
+}
+
+
+async function replaceOldAndSave(){
+
+  if (
+    !pendingMedication
+  ){
+    return;
+  }
+
+
+  const {
+    name,
+    medicationId,
+    expiry
+  } =
+    pendingMedication;
+
+
+  document.getElementById(
+    "conflictBox"
+  ).style.display =
+    "none";
+
+
+  await saveMedication(
+    name,
+    medicationId,
+    expiry,
+    true
+  );
+
+}
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+async function saveMedication(
+  name,
+  medicationId,
+  expiry,
+  deleteOlderExisting
+){
+
+  try{
+
+    const result =
+      await postApi(
+        "addMedication",
+        {
+          name:name,
+          medicationName:name,
+          medicationId:
+            medicationId,
+
+          expiry:expiry,
+          expiryDate:expiry,
+
+          deleteOlderExisting:
+            deleteOlderExisting === true,
+
+          registeredByUsername:
+            currentEmployeeUsername,
+
+          registeredByName:
+            currentEmployeeName
+        },
+        true
+      );
+
+
+    if (
+      !result.success
+    ){
+
+      if (
+        isSessionError(
+          result
+        )
+      ){
+
+        handleSessionExpired();
+
+        return;
+
+      }
+
+
+      showResult(
+        "error",
+        text[currentLang].saveFailed +
+        diagnosticText(
+          result
+        )
+      );
+
+      return;
+
+    }
+
+
+    showResult(
+      "success",
+      text[currentLang].saved
+    );
+
+
+    document.getElementById(
+      "medName"
+    ).value =
+      "";
+
+
+    clearExpiryDate();
+
+
+    pendingMedication =
+      null;
+
+    selectedMedicationId =
+      "";
+
+    selectedMedicationName =
+      "";
+
+
+    document.getElementById(
+      "medNameOptions"
+    ).style.display =
+      "none";
+
+  }catch(error){
+
+    showResult(
+      "error",
+      text[currentLang].saveFailed +
+      " [NETWORK_ERROR: " +
+      String(
+        error.message ||
+        error
+      ) +
+      "]"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   API
+========================================================= */
+
+async function postApi(
+  action,
+  payload = {},
+  includeSession = true
+){
+
+  const requestData = {
+    action:action,
+    ...payload
+  };
+
+
+  if (
+    includeSession
+  ){
+
+    const unifiedSessionToken =
+      sessionStorage.getItem(
+        "unifiedPortalSessionToken"
+      ) || "";
+
+
+    if (
+      !unifiedSessionToken
+    ){
+
+      throw new Error(
+        "MISSING_UNIFIED_SESSION"
+      );
+
+    }
+
+
+    currentSessionToken =
+      unifiedSessionToken;
+
+    requestData.sessionToken =
+      unifiedSessionToken;
+
+    requestData.token =
+      unifiedSessionToken;
+
+  }
+
+
+  const response =
+    await fetch(
+      KIDNEY_API_URL,
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:
+          JSON.stringify(
+            requestData
+          )
+      }
+    );
+
+
+  if (
+    !response.ok
+  ){
+
+    throw new Error(
+      "HTTP_" +
+      response.status
+    );
+
+  }
+
+
+  return await response.json();
+
+}
+
+
+/* =========================================================
+   ERRORS
+========================================================= */
+
+function diagnosticText(
+  result
+){
+
+  if (
+    !result
+  ){
+    return " [NO_RESPONSE]";
+  }
+
+
+  const parts =
+    [];
+
+
+  if (
+    result.code
+  ){
+
+    parts.push(
+      "CODE=" +
+      result.code
+    );
+
+  }
+
+
+  if (
+    result.message
+  ){
+
+    parts.push(
+      "MESSAGE=" +
+      result.message
+    );
+
+  }
+
+
+  if (
+    !parts.length
+  ){
+
+    parts.push(
+      "UNKNOWN_ERROR"
+    );
+
+  }
+
+
+  return (
+    " [" +
+    parts.join(
+      " | "
+    ) +
+    "]"
+  );
+
+}
+
+
+function isSessionError(
+  result
+){
+
+  if (
+    !result
+  ){
+    return false;
+  }
+
+
+  return [
+    "INVALID_SESSION",
+    "MISSING_SESSION",
+    "NO_PERMISSION",
+    "USER_INACTIVE",
+    "SESSION_REQUIRED"
+  ].includes(
+    result.code
+  );
+
+}
+
+
+function handleSessionExpired(){
+
+  clearUnifiedPortalSession();
+
+  clearStoredSession();
+
+  pendingMedication =
+    null;
+
+
+  document.getElementById(
+    "conflictBox"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "loginView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "employeeView"
+  ).style.display =
+    "none";
+
+
+  window.location.replace(
+    "../../index.html"
+  );
+
+}
+
+
+/* =========================================================
+   UI RESULTS
+========================================================= */
+
+function showResult(
+  type,
+  message
+){
+
+  const result =
+    document.getElementById(
+      "result"
+    );
+
+
+  result.className =
+    type;
+
+  result.innerText =
+    message;
+
+}
+
+
+function clearResult(){
+
+  const result =
+    document.getElementById(
+      "result"
+    );
+
+
+  result.className =
+    "";
+
+  result.innerText =
+    "";
+
+}
+
+
+function showLoginResult(
+  type,
+  message
+){
+
+  const result =
+    document.getElementById(
+      "loginResult"
+    );
+
+
+  result.className =
+    type;
+
+  result.innerText =
+    message;
+
+}
+
+
+function clearLoginResult(){
+
+  const result =
+    document.getElementById(
+      "loginResult"
+    );
+
+
+  result.className =
+    "";
+
+  result.innerText =
+    "";
+
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+document.getElementById(
+  "medName"
+).addEventListener(
+  "input",
+  function(){
+
+    if (
+      normalizeCentralMedicationName(
+        this.value
+      ) !==
+      normalizeCentralMedicationName(
+        selectedMedicationName
+      )
+    ){
+      selectedMedicationId =
+        "";
+      selectedMedicationName =
+        "";
+    }
+
+    renderMedOptions(
+      this.value
+    );
+
+  }
+);
+
+
+document.getElementById(
+  "medName"
+).addEventListener(
+  "focus",
+  function(){
+
+    const input =
+      this;
+
+    renderMedOptions(
+      input.value
+    );
+
+    if (
+      Date.now() -
+        centralMedicationListUpdatedAt >=
+        CENTRAL_MEDICATION_LIST_FRESH_MS
+    ){
+
+      loadCentralMedicationList()
+        .then(
+          function(){
+
+            const optionsBox =
+              document.getElementById(
+                "medNameOptions"
+              );
+
+            if (
+              document.activeElement === input &&
+              optionsBox.style.display === "block"
+            ){
+              renderMedOptions(
+                input.value
+              );
+            }
+
+          }
+        );
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "click",
+  function(e){
+
+    if (
+      !e.target.closest(
+        ".combo-wrap"
+      )
+    ){
+
+      document.getElementById(
+        "medNameOptions"
+      ).style.display =
+        "none";
+
+    }
+
+  }
+);
+
+
+document.getElementById(
+  "expiryMonth"
+).addEventListener(
+  "change",
+  updateExpiryDays
+);
+
+
+document.getElementById(
+  "expiryYear"
+).addEventListener(
+  "change",
+  updateExpiryDays
+);
+
+
+/* =========================================================
+   START
+========================================================= */
+
+async function init(){
+
+  if (new URLSearchParams(location.search).get("from") === "expiry-dates") {
+    const back = document.querySelector(".portal-back-button");
+    if (back) back.href = "../../expiry-dates.html";
+  }
+
+  buildExpirySelectors();
+
+  setLanguage(
+    "en"
+  );
+
+  const accessAllowed =
+    await restoreSession();
+
+  if (
+    !accessAllowed
+  ){
+
+    return;
+
+  }
+
+  await loadCentralMedicationList();
+
+}
+
+
+document.addEventListener(
+  "DOMContentLoaded",
+  init
+);
+
+</script>
+
+<script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[logout,name,back].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script>
+<footer class="developer-signature" aria-label="Project signature"><span class="signature-unit">Pharmacy Services - Outpatient Pharmacy</span><span class="signature-author">Developed by Abdullah Alattas</span></footer>
+<script id="mobile-date-compact-fix">(function(){function compactDate(){var el=document.getElementById('dateBox');if(!el)return;var raw=el.dataset.fullDate||el.textContent.trim();if(raw)el.dataset.fullDate=raw;var m=raw.match(/^(.*?)\s*-\s*(\d{4})-(\d{2})-(\d{2})$/);if(!m)return;var mobile=window.innerWidth<=600;var next=mobile?'<span class="mobile-day">'+m[1]+'</span><span class="mobile-date">'+m[2]+'-'+m[3]+'-'+m[4]+'</span>':m[1]+' - '+m[2]+'-'+m[3]+'-'+m[4];if(el.innerHTML!==next)el.innerHTML=next;}function run(){compactDate();var el=document.getElementById('dateBox');if(el&&!el.dataset.mobileObserver){el.dataset.mobileObserver='1';new MutationObserver(compactDate).observe(el,{childList:true,characterData:true,subtree:true});}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();window.addEventListener('resize',compactDate,{passive:true});})();</script>
+</body>
+</html>
