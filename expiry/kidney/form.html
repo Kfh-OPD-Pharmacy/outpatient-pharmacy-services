@@ -185,6 +185,55 @@ select{
   margin-bottom:10px
 }
 
+.expiry-scan-row{
+  display:flex;
+  justify-content:flex-end;
+  margin:-2px 0 10px;
+  direction:ltr
+}
+
+.expiry-scan-btn{
+  padding:7px 12px;
+  border:1px solid #168fb3;
+  border-radius:8px;
+  background:#fff;
+  color:#168fb3;
+  font-size:12px;
+  font-weight:bold;
+  cursor:pointer;
+  font-family:inherit
+}
+
+.expiry-scan-btn:hover{background:#effaff}
+
+.expiry-ocr-modal[hidden]{display:none}
+.expiry-ocr-modal{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:rgba(15,23,42,.68)
+}
+.expiry-ocr-card{
+  width:min(520px,100%);
+  max-height:92vh;
+  overflow:auto;
+  padding:16px;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 14px 40px rgba(15,23,42,.28);
+  text-align:center
+}
+.expiry-ocr-video-wrap{position:relative;overflow:hidden;border-radius:10px;background:#111}
+.expiry-ocr-video{display:block;width:100%;max-height:52vh;object-fit:cover}
+.expiry-ocr-guide{position:absolute;inset:26% 8%;border:2px solid #fff;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.2);pointer-events:none}
+.expiry-ocr-status{min-height:22px;margin:10px 0;color:#475569;font-size:13px}
+.expiry-ocr-result{margin:10px 0;padding:10px;border-radius:8px;background:#f0fdf4;color:#166534;font-weight:bold}
+.expiry-ocr-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+
 .expiry-row select{
   width:100%;
   margin:0;
@@ -1411,6 +1460,12 @@ html,body{overflow-x:hidden}
 
       </div>
 
+      <div class="expiry-scan-row">
+        <button type="button" class="expiry-scan-btn" id="scanExpiryBtn" onclick="openExpiryScanner()">
+          Scan Expiry Date
+        </button>
+      </div>
+
       <div class="form-actions">
 
         <button
@@ -1427,6 +1482,23 @@ html,body{overflow-x:hidden}
 
     <div id="result"></div>
 
+  </div>
+
+  <div class="expiry-ocr-modal" id="expiryOcrModal" hidden aria-hidden="true">
+    <div class="expiry-ocr-card" role="dialog" aria-modal="true" aria-labelledby="expiryOcrTitle">
+      <h2 id="expiryOcrTitle" style="color:#168fb3;font-size:18px;margin:0 0 10px">Scan Expiry Date</h2>
+      <div class="expiry-ocr-video-wrap">
+        <video class="expiry-ocr-video" id="expiryOcrVideo" autoplay muted playsinline></video>
+        <div class="expiry-ocr-guide" aria-hidden="true"></div>
+      </div>
+      <div class="expiry-ocr-status" id="expiryOcrStatus">Point the camera at EXP and the date.</div>
+      <div class="expiry-ocr-result" id="expiryOcrResult" hidden></div>
+      <div class="expiry-ocr-actions">
+        <button type="button" class="primary-btn" id="expiryOcrConfirmBtn" onclick="confirmExpiryScan()" disabled>Confirm</button>
+        <button type="button" class="secondary-btn" id="expiryOcrRescanBtn" onclick="rescanExpiry()">Rescan</button>
+        <button type="button" class="secondary-btn" onclick="closeExpiryScanner()">Close</button>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -3162,6 +3234,162 @@ function isEnglishMedicationName(
 
 
 /* =========================================================
+   LOCAL EXPIRY DATE OCR
+========================================================= */
+let expiryOcrStream = null;
+let expiryOcrTimer = null;
+let expiryOcrBusy = false;
+let expiryOcrCandidate = null;
+let expiryOcrLibraryPromise = null;
+
+function setExpiryOcrStatus(message){
+  const el = document.getElementById("expiryOcrStatus");
+  if(el) el.textContent = message;
+}
+
+function loadExpiryOcrLibrary(){
+  if(window.Tesseract) return Promise.resolve(window.Tesseract);
+  if(expiryOcrLibraryPromise) return expiryOcrLibraryPromise;
+  expiryOcrLibraryPromise = new Promise(function(resolve,reject){
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    script.onload = function(){ window.Tesseract ? resolve(window.Tesseract) : reject(new Error("OCR_LIBRARY_UNAVAILABLE")); };
+    script.onerror = function(){ reject(new Error("OCR_LIBRARY_LOAD_FAILED")); };
+    document.head.appendChild(script);
+  });
+  return expiryOcrLibraryPromise;
+}
+
+function normalizeExpiryOcrText(value){
+  return String(value || "")
+    .toUpperCase()
+    .replace(/[–—]/g,"-")
+    .replace(/[|]/g,"/")
+    .replace(/[OQ]/g,"0")
+    .replace(/[IL]/g,"1")
+    .replace(/\s+/g," ");
+}
+
+function expiryEndDate(year, month){
+  const day = new Date(Number(year), Number(month), 0).getDate();
+  return String(year).padStart(4,"0") + "-" + String(month).padStart(2,"0") + "-" + String(day).padStart(2,"0");
+}
+
+function parseExpiryOcrText(raw){
+  const text = normalizeExpiryOcrText(raw);
+  const expIndex = text.search(/\b(?:EXP|EXPIRY|EXPIRES|USE BY)\b/);
+  const mfgIndex = text.search(/\b(?:MFG|MFD|MANUFACTURED|MANUFACTURE)\b/);
+  const candidates = [];
+  const add = function(year,month,day,index){
+    year=Number(year); month=Number(month); day=day ? Number(day) : null;
+    if(year < 100) year += 2000;
+    if(year < 2000 || year > 2100 || month < 1 || month > 12) return;
+    if(day && (day < 1 || day > new Date(year,month,0).getDate())) return;
+    candidates.push({date:day ? String(year).padStart(4,"0")+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0") : expiryEndDate(year,month), index:index || 0});
+  };
+  let m;
+  const dmy = /\b(0?[1-9]|[12]\d|3[01])\s*[\/-]\s*(0?[1-9]|1[0-2])\s*[\/-]\s*(20\d{2}|\d{2})\b/g;
+  while((m=dmy.exec(text))) add(m[3],m[2],m[1],m.index);
+  const my = /\b(0?[1-9]|1[0-2])\s*[\/-]\s*(20\d{2}|\d{2})\b/g;
+  while((m=my.exec(text))) add(m[2],m[1],null,m.index);
+  const ym = /\b(20\d{2})\s*[-\/]\s*(0?[1-9]|1[0-2])\b/g;
+  while((m=ym.exec(text))) add(m[1],m[2],null,m.index);
+  const usable = candidates.filter(function(c){
+    const nearMfg = mfgIndex >= 0 && Math.abs(c.index - mfgIndex) < 18 &&
+      !(expIndex >= 0 && c.index >= expIndex && Math.abs(c.index - expIndex) < 24);
+    return !nearMfg;
+  });
+  if(!usable.length || (usable.length > 1 && expIndex < 0)) return null;
+  usable.sort(function(a,b){
+    const aExp = expIndex >= 0 && Math.abs(a.index-expIndex) < 24;
+    const bExp = expIndex >= 0 && Math.abs(b.index-expIndex) < 24;
+    return Number(bExp)-Number(aExp) || a.index-b.index;
+  });
+  if(usable.length > 1 && expIndex < 0 && usable[0].date !== usable[1].date) return null;
+  return usable[0].date;
+}
+
+function showExpiryOcrCandidate(date){
+  expiryOcrCandidate = date;
+  const result = document.getElementById("expiryOcrResult");
+  const confirm = document.getElementById("expiryOcrConfirmBtn");
+  if(result){ result.hidden = !date; result.textContent = date ? "Detected expiry date: " + date : ""; }
+  if(confirm) confirm.disabled = !date;
+}
+
+async function scanExpiryFrame(){
+  if(expiryOcrBusy || !expiryOcrStream) return;
+  expiryOcrBusy = true;
+  try{
+    const video = document.getElementById("expiryOcrVideo");
+    const canvas = document.createElement("canvas");
+    const width = Math.min(video.videoWidth || 640, 960);
+    const height = Math.round(width * (video.videoHeight || 480) / (video.videoWidth || 640));
+    canvas.width = width; canvas.height = height;
+    canvas.getContext("2d", {willReadFrequently:true}).drawImage(video,0,0,width,height);
+    const Tesseract = await loadExpiryOcrLibrary();
+    const result = await Tesseract.recognize(canvas,"eng");
+    const date = parseExpiryOcrText(result && result.data ? result.data.text : "");
+    if(date){ showExpiryOcrCandidate(date); setExpiryOcrStatus("Review the detected date, then confirm."); }
+    else setExpiryOcrStatus("No clear EXP date found. Keep the label steady or use manual entry.");
+  }catch(error){
+    setExpiryOcrStatus("OCR unavailable. You can continue with manual entry.");
+  }finally{ expiryOcrBusy = false; }
+}
+
+async function openExpiryScanner(){
+  const modal = document.getElementById("expiryOcrModal");
+  if(!modal) return;
+  modal.hidden=false; modal.setAttribute("aria-hidden","false");
+  showExpiryOcrCandidate(null);
+  setExpiryOcrStatus("Starting camera…");
+  try{
+    await loadExpiryOcrLibrary();
+    expiryOcrStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    const video=document.getElementById("expiryOcrVideo");
+    video.srcObject=expiryOcrStream;
+    await video.play();
+    setExpiryOcrStatus("Point the camera at EXP and the date.");
+    expiryOcrTimer = window.setInterval(scanExpiryFrame,1800);
+  }catch(error){
+    setExpiryOcrStatus(error && error.name === "NotAllowedError" ? "Camera permission was denied. Use manual entry." : "Camera or OCR could not be loaded. Use manual entry.");
+    stopExpiryScannerStream();
+  }
+}
+
+function stopExpiryScannerStream(){
+  if(expiryOcrTimer){ clearInterval(expiryOcrTimer); expiryOcrTimer=null; }
+  if(expiryOcrStream){ expiryOcrStream.getTracks().forEach(function(track){track.stop();}); expiryOcrStream=null; }
+  const video=document.getElementById("expiryOcrVideo");
+  if(video) video.srcObject=null;
+  expiryOcrBusy=false;
+}
+
+function closeExpiryScanner(){
+  stopExpiryScannerStream();
+  const modal=document.getElementById("expiryOcrModal");
+  if(modal){ modal.hidden=true; modal.setAttribute("aria-hidden","true"); }
+}
+
+function rescanExpiry(){
+  showExpiryOcrCandidate(null);
+  setExpiryOcrStatus("Point the camera at EXP and the date.");
+}
+
+function confirmExpiryScan(){
+  if(!expiryOcrCandidate) return;
+  const parts=expiryOcrCandidate.split("-");
+  document.getElementById("expiryYear").value=parts[0];
+  document.getElementById("expiryMonth").value=parts[1];
+  updateExpiryDays();
+  document.getElementById("expiryDay").value=parts[2];
+  closeExpiryScanner();
+}
+
+window.addEventListener("pagehide", closeExpiryScanner);
+document.addEventListener("visibilitychange", function(){ if(document.hidden) closeExpiryScanner(); });
+
+/* =========================================================
    REGISTER
 ========================================================= */
 
@@ -4028,6 +4256,11 @@ document.getElementById(
 ========================================================= */
 
 async function init(){
+
+  if (new URLSearchParams(location.search).get("from") === "expiry-dates") {
+    const back = document.querySelector(".portal-back-button");
+    if (back) back.href = "../../expiry-dates.html";
+  }
 
   buildExpirySelectors();
 

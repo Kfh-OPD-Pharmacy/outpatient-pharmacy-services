@@ -560,15 +560,17 @@ html[dir="ltr"] .official-header h2,html[dir="ltr"] .official-header h3{margin:2
 .meta-row .portal-user-group{margin-top:15px;margin-bottom:-15px}
 .meta-row{margin-bottom:70px}
 .page-title{margin-top:28px;margin-bottom:30px}
-.portal-grid{--portal-gap:4px;--portal-cutout:30px;position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(104px,116px));gap:var(--portal-gap);max-width:760px;width:min(100%,760px);margin:0 auto;align-items:stretch;justify-items:stretch}
+ .portal-grid{--portal-gap:4px;--portal-cutout:30px;position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(104px,116px));gap:var(--portal-gap);max-width:760px;width:min(100%,760px);margin:0 auto;align-items:stretch;justify-items:stretch;direction:ltr}
 .portal-grid .pharmacy-center-icon{position:absolute;z-index:2;left:50%;top:50%;width:54px;height:54px;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none}
-.portal-grid #outpatientCard{grid-area:1/1}.portal-grid #diabetesCard{grid-area:1/3}.portal-grid #kidneyCard{grid-area:3/1}.portal-grid #controlCard{grid-area:3/3}
+.portal-grid #pharmacyMedicationsCard{grid-area:1/1}.portal-grid #bookingCard{grid-area:1/2}.portal-grid #mailCard{grid-area:2/1}.portal-grid #controlCard{grid-area:2/2}
 .portal-grid .portal-card{position:relative;overflow:hidden}
-.portal-grid #outpatientCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
-.portal-grid #diabetesCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
-.portal-grid #kidneyCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+ html[dir="ltr"] .portal-grid .portal-card{direction:ltr}
+ html[dir="rtl"] .portal-grid .portal-card{direction:rtl}
+.portal-grid #pharmacyMedicationsCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-grid #bookingCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-grid #mailCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
 .portal-grid #controlCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
-@media(max-width:700px){.top-bar .logo{margin-top:-12px;margin-bottom:-20px}.top-bar + hr{margin-top:12px;margin-bottom:12px}.meta-row{margin-bottom:45px}.portal-grid{--portal-gap:4px;--portal-cutout:26px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(88px,104px));gap:var(--portal-gap);width:min(100%,360px)}.portal-grid .pharmacy-center-icon{width:44px;height:44px}.portal-grid #outpatientCard,.portal-grid #diabetesCard,.portal-grid #kidneyCard,.portal-grid #controlCard{-webkit-mask-size:100% 100%;mask-size:100% 100%}}
+@media(max-width:700px){.top-bar .logo{margin-top:-12px;margin-bottom:-20px}.top-bar + hr{margin-top:12px;margin-bottom:12px}.meta-row{margin-bottom:45px}.portal-grid{--portal-gap:4px;--portal-cutout:26px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(88px,104px));gap:var(--portal-gap);width:min(100%,360px)}.portal-grid .pharmacy-center-icon{width:44px;height:44px}.portal-grid #pharmacyMedicationsCard,.portal-grid #bookingCard,.portal-grid #mailCard,.portal-grid #controlCard{-webkit-mask-size:100% 100%;mask-size:100% 100%}}
 </style>
 </head>
 <body>
@@ -669,16 +671,16 @@ html[dir="ltr"] .official-header h2,html[dir="ltr"] .official-header h3{margin:2
 
     <div class="portal-grid">
       <img class="pharmacy-center-icon" src="outpatient-pharmacy-icon.png" alt="" aria-hidden="true">
-      <a class="portal-card" id="outpatientCard" href="outpatient-pharmacy.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
-        <p class="card-title" id="outpatientTitle">صيدلية العيادات الخارجية</p>
+      <a class="portal-card" id="pharmacyMedicationsCard" href="pharmacy-medications.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
+        <p class="card-title" id="pharmacyMedicationsTitle">Pharmacy Medications</p>
       </a>
 
-      <a class="portal-card" id="diabetesCard" href="diabetes-center.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
-        <p class="card-title" id="diabetesTitle">صيدلية مركز السكر</p>
+      <a class="portal-card" id="bookingCard" href="medication-booking.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
+        <p class="card-title" id="bookingTitle">Medication Booking</p>
       </a>
 
-      <a class="portal-card" id="kidneyCard" href="expiry/kidney/index.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
-        <p class="card-title" id="kidneyTitle">صيدلية مركز الكلى</p>
+      <a class="portal-card" id="mailCard" href="prescriptions/index.html?from=main" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
+        <p class="card-title" id="mailTitle">Mail Pharmacy</p>
       </a>
 
       <a class="portal-card" id="controlCard" href="control-panel.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
@@ -733,12 +735,9 @@ const text = {
     sessionExpired: "انتهت الجلسة. سجّل الدخول مجددًا.",
     logout: "تسجيل الخروج",
     invalidLogin: "اسم المستخدم أو PIN غير صحيح، أو لا توجد لديك صلاحية دخول.",
-    outpatientTitle: "صيدلية العيادات الخارجية",
-    outpatientDesc: "خدمات صيدلية العيادات الخارجية.",
-    diabetesTitle: "صيدلية مركز السكر",
-    diabetesDesc: "خدمات صيدلية مركز السكر.",
-    kidneyTitle: "صيدلية مركز الكلى",
-    kidneyDesc: "خدمات تتبع الصلاحية والطلبات.",
+    pharmacyMedicationsTitle: "أدوية الصيدلية",
+    bookingTitle: "حجز الأدوية",
+    mailTitle: "البريد الدوائي",
     controlTitle: "لوحة التحكم",
     controlDesc: "إدارة المستخدمين والأدوية المركزية.",
     noAccess: "لا توجد خدمات متاحة لهذا المستخدم."
@@ -768,12 +767,9 @@ const text = {
     sessionExpired: "Your session has expired. Please log in again.",
     logout: "Logout",
     invalidLogin: "Invalid username/PIN or no portal permission.",
-    outpatientTitle: "Outpatient Pharmacy",
-    outpatientDesc: "Outpatient pharmacy services.",
-    diabetesTitle: "Diabetes Center Pharmacy",
-    diabetesDesc: "Diabetes center pharmacy services.",
-    kidneyTitle: "Kidney Center Pharmacy",
-    kidneyDesc: "Expiry tracking and order services.",
+    pharmacyMedicationsTitle: "Pharmacy Medications",
+    bookingTitle: "Medication Booking",
+    mailTitle: "Mail Pharmacy",
     controlTitle: "Control Panel",
     controlDesc: "Unified users and central medications management.",
     noAccess: "No services are available for this user."
@@ -800,12 +796,9 @@ function setLanguage(lang) {
     "officialLine2",
     "officialLine3",
     "subtitle",
-    "outpatientTitle",
-    "outpatientDesc",
-    "diabetesTitle",
-    "diabetesDesc",
-    "kidneyTitle",
-    "kidneyDesc",
+    "pharmacyMedicationsTitle",
+    "bookingTitle",
+    "mailTitle",
     "controlTitle",
     "controlDesc"
   ].forEach(
@@ -1400,9 +1393,9 @@ function setPinChangeMode(required) {
 
 function hideAllPortalCards() {
   [
-    "outpatientCard",
-    "diabetesCard",
-    "kidneyCard",
+    "pharmacyMedicationsCard",
+    "bookingCard",
+    "mailCard",
     "controlCard"
   ].forEach(
     function(id) {
@@ -1424,7 +1417,7 @@ function hideAllPortalCards() {
 function updatePortalGridLayout() {
   const grid = document.querySelector(".portal-grid");
   if (!grid) return;
-  const cards = ["outpatientCard", "diabetesCard", "kidneyCard", "controlCard"]
+  const cards = ["pharmacyMedicationsCard", "bookingCard", "mailCard", "controlCard"]
     .map(function(id) { return document.getElementById(id); })
     .filter(Boolean);
   const visible = cards.filter(function(card) {
@@ -1460,40 +1453,17 @@ function hasAny(user, keys) {
 function renderPortalCards(user) {
   hideAllPortalCards();
 
-  const outpatientAllowed =
-    hasAny(
-      user,
-      [
-        "opdMailRxAccess",
-        "opdMailDailyListAccess",
-        "opdMailIndicatorAccess",
-        "opdAppointmentManageAccess",
-        "opdAppointmentIndicatorAccess"
-      ]
-    );
-
-  const diabetesAllowed =
-    hasAny(
-      user,
-      [
-        "diabetesMailRxAccess",
-        "diabetesMailDailyListAccess",
-        "diabetesMailIndicatorAccess",
-        "diabetesAppointmentManageAccess",
-        "diabetesAppointmentIndicatorAccess"
-      ]
-    );
-
-  const kidneyAllowed =
-    hasAny(
-      user,
-      [
-        "kidneyExpiryRegisterAccess",
-        "kidneyExpiryDashboardAccess",
-        "kidneyOrderAccess",
-        "kidneyLabelsAccess"
-      ]
-    );
+  const pharmacyMedicationsAllowed = hasAny(user, [
+    "kidneyExpiryRegisterAccess", "kidneyExpiryDashboardAccess",
+    "kidneyOrderAccess", "diabetesOrderAccess", "outpatientOrderAccess",
+    "kidneyLabelsAccess"
+  ]);
+  const bookingAllowed = hasAny(user, [
+    "opdAppointmentManageAccess", "opdAppointmentIndicatorAccess"
+  ]);
+  const mailAllowed = hasAny(user, [
+    "opdMailRxAccess", "opdMailDailyListAccess", "opdMailIndicatorAccess"
+  ]);
 
   const controlAllowed =
     hasAny(
@@ -1505,23 +1475,23 @@ function renderPortalCards(user) {
     );
 
   document.getElementById(
-    "outpatientCard"
+    "pharmacyMedicationsCard"
   ).style.display =
-    outpatientAllowed
+    pharmacyMedicationsAllowed
       ? "flex"
       : "none";
 
   document.getElementById(
-    "diabetesCard"
+    "bookingCard"
   ).style.display =
-    diabetesAllowed
+    bookingAllowed
       ? "flex"
       : "none";
 
   document.getElementById(
-    "kidneyCard"
+    "mailCard"
   ).style.display =
-    kidneyAllowed
+    mailAllowed
       ? "flex"
       : "none";
 
@@ -1535,9 +1505,9 @@ function renderPortalCards(user) {
   updatePortalGridLayout();
 
   const anyPortal =
-    outpatientAllowed ||
-    diabetesAllowed ||
-    kidneyAllowed ||
+    pharmacyMedicationsAllowed ||
+    bookingAllowed ||
+    mailAllowed ||
     controlAllowed;
 
   document.getElementById(

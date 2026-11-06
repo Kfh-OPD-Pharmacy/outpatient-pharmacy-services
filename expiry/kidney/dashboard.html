@@ -4681,6 +4681,11 @@ document.addEventListener(
 
 function init(){
 
+  if (new URLSearchParams(location.search).get("from") === "expiry-dates") {
+    const back = document.querySelector(".portal-back-button");
+    if (back) back.href = "../../expiry-dates.html";
+  }
+
   buildReportMonthOptions();
   restorePortalIdentity();
   updateReportSelectColor();
