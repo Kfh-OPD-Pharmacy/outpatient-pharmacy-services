@@ -1300,7 +1300,7 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-</head>
+<style>.pharmacy-selector-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px auto;max-width:320px;color:#168fb3;font-weight:700}.pharmacy-selector-wrap select{padding:7px 10px;border:1px solid #168fb3;border-radius:6px;background:#fff;color:#18324b}</style></head>
 
 <body>
 <div class="container">
@@ -1362,6 +1362,7 @@ html,body{overflow-x:hidden}
     <h1 class="page-title" id="pageTitle">
       Kidney Order
     </h1>
+    <div class="pharmacy-selector-wrap"><label for="pharmacySelector">Pharmacy</label><select id="pharmacySelector" disabled><option value="">Select pharmacy</option></select></div>
   </div>
 
   <div id="loginView" class="login-card hidden">
@@ -1518,6 +1519,7 @@ function navigateFresh(target, replaceHistory = false){
 }
 
 
+var selectedPharmacyId = sessionStorage.getItem("selectedPharmacyId") || (function(){try{var u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null");if(u&&u.isAdmin)return "kidney";if(u&&u.kidneyOrderAccess)return "kidney";if(u&&u.diabetesOrderAccess)return "diabetes";if(u&&u.outpatientOrderAccess)return "outpatient";}catch(e){}return "";})();
 const ORDERS_API_URL =
   "https://script.google.com/macros/s/AKfycbwna5ifaRT46qMasogcUbjs6u15PtP7p6vwTNCtNqtQi0Kn8FR6JLtjeborWXNPb4Hz/exec";
 
@@ -1928,6 +1930,7 @@ async function loginUser(){
 async function unifiedApi(
   payload
 ){
+  payload = Object.assign({}, payload || {}, { pharmacyId: selectedPharmacyId || "kidney" });
   const response =
     await fetch(
       UNIFIED_API_URL,
@@ -1980,6 +1983,8 @@ function hasKidneyOrderPermission(
 
 
 function clearUnifiedPortalSession(){
+  sessionStorage.removeItem("selectedPharmacyId");
+  sessionStorage.removeItem("selectedPharmacyOwner");
   sessionStorage.removeItem(
     "unifiedPortalUsername"
   );
@@ -2233,11 +2238,12 @@ function stopInactivityTimer(){
 }
 
 async function loadMedicationDatabase(){
+  if (!selectedPharmacyId) return;
   try{
     const response =
       await fetch(
         CENTRAL_MEDICATIONS_API_URL +
-        "?action=listMedications&service=kidney"
+        "?action=listMedications&service=" + (selectedPharmacyId || "kidney")
       );
 
     const result =
@@ -2981,6 +2987,7 @@ restoreSession();
 <script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[logout,name,back].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script>
 <footer class="developer-signature" aria-label="Project signature"><span class="signature-unit">Pharmacy Services - Outpatient Pharmacy</span><span class="signature-author">Developed by Abdullah Alattas</span></footer>
 <script id="mobile-date-compact-fix">(function(){function compactDate(){var el=document.getElementById('dateBox');if(!el)return;var raw=el.dataset.fullDate||el.textContent.trim();if(raw)el.dataset.fullDate=raw;var m=raw.match(/^(.*?)\s*-\s*(\d{4})-(\d{2})-(\d{2})$/);if(!m)return;var mobile=window.innerWidth<=600;var next=mobile?'<span class="mobile-day">'+m[1]+'</span><span class="mobile-date">'+m[2]+'-'+m[3]+'-'+m[4]+'</span>':m[1]+' - '+m[2]+'-'+m[3]+'-'+m[4];if(el.innerHTML!==next)el.innerHTML=next;}function run(){compactDate();var el=document.getElementById('dateBox');if(el&&!el.dataset.mobileObserver){el.dataset.mobileObserver='1';new MutationObserver(compactDate).observe(el,{childList:true,characterData:true,subtree:true});}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();window.addEventListener('resize',compactDate,{passive:true});})();</script>
-</body>
+<script>document.addEventListener("DOMContentLoaded",function(){var s=document.getElementById("pharmacySelector"),u;try{u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null")}catch(e){}if(!s)return;var p=u&&u.isAdmin===true?["kidney","diabetes","outpatient"]:[];if(u&&u.kidneyOrderAccess)p.push("kidney");if(u&&u.diabetesOrderAccess)p.push("diabetes");if(u&&u.outpatientOrderAccess)p.push("outpatient");p=p.filter(function(x,i,a){return a.indexOf(x)===i});s.innerHTML='<option value="">Select pharmacy</option>'+p.map(function(x){return '<option value="'+x+'">'+x.charAt(0).toUpperCase()+x.slice(1)+' Pharmacy</option>';}).join("");s.disabled=!p.length;s.value=selectedPharmacyId&&p.indexOf(selectedPharmacyId)>=0?selectedPharmacyId:"";s.addEventListener("change",function(){selectedPharmacyId=s.value;sessionStorage.setItem("selectedPharmacyId",selectedPharmacyId);location.reload()});});</script></body>
 </html>
 
+<script>(function(){var u;try{u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null")}catch(e){}var owner=(u&&String(u.username||"").toLowerCase())||"";if(sessionStorage.getItem("selectedPharmacyOwner")!==owner){sessionStorage.removeItem("selectedPharmacyId");sessionStorage.setItem("selectedPharmacyOwner",owner);window.selectedPharmacyId="";}document.addEventListener("change",function(e){if(e.target&&e.target.id==="pharmacySelector")sessionStorage.setItem("selectedPharmacyOwner",owner);});})();</script>
