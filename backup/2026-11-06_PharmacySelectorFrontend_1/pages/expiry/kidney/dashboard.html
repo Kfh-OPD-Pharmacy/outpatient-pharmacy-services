@@ -1,0 +1,4716 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inspection Indicator</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f3f4f6;
+  margin:0;
+  padding:16px;
+  color:#168fb3
+}
+
+.container{
+  max-width:980px;
+  margin:auto;
+  background:#fff;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+  min-height:calc(100vh - 32px)
+}
+
+.top-bar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+  direction:ltr
+}
+
+.logo{
+  width:120px;
+  height:120px;
+  object-fit:contain
+}
+
+.official-header{
+  width:fit-content;
+  max-width:100%;
+  text-align:right;
+  transform:none;
+  padding-left:8px;
+  border-left:4px solid #168fb3;
+  direction:rtl
+}
+
+html[dir="ltr"] .official-header{
+  text-align:left;
+  direction:ltr
+}
+
+.official-header h2,
+.official-header h3{
+  margin:2px 0;
+  font-size:13px;
+  line-height:1.4;
+  color:#168fb3
+}
+
+hr{
+  border:none;
+  border-top:1px solid #e5e7eb;
+  margin:14px 0
+}
+
+.meta-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+  direction:ltr
+}
+
+.date-box{
+  color:#168fb3;
+  padding:4px 0;
+  font-size:13px;
+  font-weight:bold;
+  text-align:center
+}
+
+.language-chip{
+  color:#168fb3;
+  font-size:13px;
+  font-weight:bold;
+  padding:4px 0;
+  white-space:nowrap;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  font-family:inherit
+}
+
+.page-title{
+  text-align:center;
+  font-size:23px;
+  font-weight:bold;
+  margin:18px 0 10px;
+  color:#168fb3
+}
+
+.dashboard-overview{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin:0 auto 16px;
+  direction:ltr
+}
+
+.report-controls{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  margin:0;
+  flex-wrap:nowrap;
+  direction:ltr
+}
+
+.report-controls select{
+  width:auto;
+  min-width:0;
+  height:34px;
+  padding:5px 28px 5px 10px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#168fb3;
+  font-size:13px;
+  font-weight:bold;
+  font-family:inherit;
+  text-align:center;
+  direction:ltr
+}
+
+#reportType{
+  width:250px;
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23168fb3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  background-size:12px 8px
+}
+
+#reportMonth{
+  width:220px
+}
+
+.stats{
+  display:flex;
+  gap:10px;
+  margin:0;
+  flex-wrap:nowrap;
+  justify-content:flex-end
+}
+
+.stat-card{
+  display:grid;
+  justify-items:center;
+  gap:4px;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  box-shadow:0 4px 10px rgba(0,0,0,.04);
+  padding:10px 14px;
+  min-width:118px;
+  min-height:52px;
+  text-align:center;
+  cursor:pointer;
+  transition:.15s ease;
+  user-select:none
+}
+
+.stat-card .num{
+  font-size:20px;
+  font-weight:bold;
+  line-height:1
+}
+
+.stat-card .label{
+  font-size:13px;
+  color:#168fb3;
+  font-weight:bold
+}
+
+.stat-card.red .num{color:#a12727}
+.stat-card.orange .num{color:#eab308}
+.stat-card.green .num{color:#0f7592}
+
+.stat-card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 14px rgba(0,0,0,.08)
+}
+
+.stat-card.active-filter{
+  transform:translateY(-1px);
+  box-shadow:0 6px 14px rgba(0,0,0,.08)
+}
+
+.stat-card.red.active-filter{
+  background:#fdeaea;
+  border-color:#a12727
+}
+
+.stat-card.orange.active-filter{
+  background:#fff6e0;
+  border-color:#eab308
+}
+
+.stat-card.green.active-filter{
+  background:#e6f2f5;
+  border-color:#0f7592
+}
+
+@media (max-width:980px){
+  .dashboard-overview{
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px
+  }
+
+  .report-controls,
+  .stats{
+    justify-content:center;
+    flex-wrap:wrap
+  }
+}
+
+/* =========================================================
+   MEDICATION SEARCH
+========================================================= */
+
+.search-row{
+  display:flex;
+  justify-content:center;
+  margin:0 auto 14px
+}
+
+.combo-wrap{
+  position:relative;
+  width:min(340px, 100%);
+  max-width:340px
+}
+
+.medicine-search{
+  width:100%;
+  height:40px;
+  padding:6px 11px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#111827;
+  font-size:14px;
+  font-family:inherit;
+  text-align:center;
+  direction:ltr;
+  outline:none
+}
+
+.medicine-search:focus{
+  border-color:#168fb3;
+  box-shadow:0 0 0 2px rgba(22,143,179,.12)
+}
+
+.combo-options{
+  position:absolute;
+  top:100%;
+  right:0;
+  left:0;
+  background:#fff;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  margin-top:3px;
+  max-height:190px;
+  overflow-y:auto;
+  box-shadow:0 10px 20px rgba(0,0,0,.1);
+  z-index:30;
+  display:none
+}
+
+#medicineSearchOptions{
+  display:none !important
+}
+
+.combo-option{
+  padding:8px 10px;
+  font-size:13px;
+  cursor:pointer;
+  text-align:left;
+  direction:ltr;
+  color:#111827
+}
+
+.combo-option:hover{
+  background:#e0f2fe
+}
+
+.combo-empty{
+  padding:9px 12px;
+  font-size:12px;
+  color:#94a3b8;
+  text-align:left;
+  direction:ltr
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.action-row{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+  direction:ltr
+}
+
+.action-left,
+.action-right{
+  display:flex;
+  align-items:center;
+  gap:4px
+}
+
+.action-left{
+  justify-self:start
+}
+
+.action-right{
+  justify-self:end
+}
+
+.action-btn{
+  width:44px;
+  min-width:44px;
+  min-height:44px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  font-size:26px;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-family:inherit
+}
+
+.action-btn:hover{
+  transform:scale(1.08)
+}
+
+.remove-btn{
+  color:#a12727;
+  display:none
+}
+
+.remove-btn.visible{
+  display:inline-flex
+}
+
+/* =========================================================
+   SCREEN TABLE
+========================================================= */
+
+.table-wrap{
+  overflow-x:auto;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  box-shadow:0 4px 10px rgba(0,0,0,.04)
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff
+}
+
+th,
+td{
+  padding:9px 10px;
+  text-align:center;
+  font-size:13px;
+  white-space:nowrap;
+  border-bottom:1px solid #e5e7eb
+}
+
+th{
+  background:#168fb3;
+  color:#fff;
+  font-weight:bold;
+  font-size:14px
+}
+
+tr:last-child td{
+  border-bottom:0
+}
+
+.row-expired{
+  background:#fdeaea !important
+}
+
+.row-expired td{
+  color:#7f1d1d;
+  font-weight:600
+}
+
+.row-soon{
+  background:#fff2a8 !important
+}
+
+.row-soon td{
+  color:#8a5a00;
+  font-weight:600
+}
+
+tr:has(.date-ok) td{
+  color:#0b5f78;
+  font-weight:600
+}
+
+.date-expired{
+  color:#7f1d1d;
+  font-weight:bold
+}
+
+.date-soon{
+  color:#8a5a00;
+  font-weight:bold
+}
+
+.date-ok{
+  color:#0b5f78;
+  font-weight:bold
+}
+
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  border-radius:999px;
+  padding:3px 11px;
+  font-size:12px;
+  font-weight:bold;
+  white-space:nowrap
+}
+
+.status-pill.expired{
+  background:rgba(161,39,39,.12);
+  color:#a12727
+}
+
+.status-pill.soon{
+  background:rgba(234,179,8,.2);
+  color:#a16207
+}
+
+.status-pill.ok{
+  background:rgba(15,117,146,.12);
+  color:#0f7592
+}
+
+.empty-note,
+.refresh-note{
+  text-align:center;
+  font-size:12px;
+  color:#888;
+  margin-top:10px
+}
+
+/* =========================================================
+   PRINT LAYOUT
+========================================================= */
+
+#printPages{
+  display:none;
+  counter-reset:printRow
+}
+
+.print-page{
+  width:100%;
+  min-height:281mm;
+  height:281mm;
+  margin:0 auto;
+  padding:10mm 12mm;
+  background:#fff;
+  color:#111827;
+  border:1.3px solid #cbdfe6;
+  border-radius:3mm;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  page-break-after:always;
+  break-after:page
+}
+
+.print-page:last-child{
+  page-break-after:auto;
+  break-after:auto
+}
+
+/* =========================================================
+   PRINT HEADER
+========================================================= */
+
+.print-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  direction:ltr;
+  gap:18px;
+  min-height:32mm;
+  margin:0 0 4mm
+}
+
+.print-logo{
+  width:120px;
+  height:auto;
+  aspect-ratio:562 / 380;
+  object-fit:contain;
+  flex:0 0 auto
+}
+
+.print-official{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  direction:ltr;
+  padding:2mm 0 2mm 8px;
+  border-left:4px solid #168fb3
+}
+
+.print-official[dir="rtl"]{
+  align-items:flex-end;
+  direction:rtl;
+  padding-left:0;
+  padding-right:8px;
+  border-left:0;
+  border-right:4px solid #168fb3
+}
+
+.print-official h2{
+  margin:0 0 3px;
+  color:#168fb3;
+  font-size:13px;
+  line-height:1.4;
+  font-weight:700
+}
+
+.print-official h3{
+  margin:2px 0;
+  color:#168fb3;
+  font-size:12px;
+  line-height:1.4;
+  font-weight:600
+}
+
+.print-divider{
+  border:0;
+  border-top:1px solid #cbdfe6;
+  margin:0 0 3mm
+}
+
+/* =========================================================
+   PRINT REPORT INFO
+========================================================= */
+
+.print-date{
+  display:none !important;
+  text-align:center;
+  color:#64748b;
+  font-size:9.5px;
+  font-weight:600;
+  margin:0 0 2mm
+}
+
+.print-title{
+  text-align:center;
+  color:#168fb3;
+  font-size:17px;
+  line-height:1.25;
+  font-weight:700;
+  margin:0 0 4mm
+}
+
+/* =========================================================
+   PRINT TABLE
+========================================================= */
+
+.print-table-wrap{
+  width:100%;
+  border:1.3px solid #168fb3;
+  border-radius:2px;
+  overflow:hidden;
+  margin:0
+}
+
+.print-table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed
+}
+
+.print-table thead{
+  display:table-header-group
+}
+
+.print-table tr{
+  break-inside:avoid;
+  page-break-inside:avoid
+}
+
+.print-table th{
+  height:8mm;
+  background:#168fb3 !important;
+  color:#fff !important;
+  font-size:9.5px;
+  font-weight:700;
+  padding:3px 5px;
+  border-right:1px solid rgba(255,255,255,.45);
+  vertical-align:middle;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
+.print-table th:last-child{
+  border-right:0
+}
+
+.print-table tbody tr{
+  height:9mm
+}
+
+.print-table td{
+  color:#111827;
+  font-size:10px;
+  line-height:1.2;
+  padding:4px 6px;
+  border-top:1px solid #d8e0e5;
+  border-right:1px solid #d8e0e5;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  vertical-align:middle
+}
+
+.print-table td:last-child{
+  border-right:0
+}
+
+.print-table th:nth-child(1),
+.print-table td:nth-child(1){
+  width:32%
+}
+
+.print-table th:nth-child(2),
+.print-table td:nth-child(2){
+  width:18%
+}
+
+.print-table th:nth-child(3),
+.print-table td:nth-child(3){
+  width:26%
+}
+
+.print-table th:nth-child(4),
+.print-table td:nth-child(4){
+  width:24%
+}
+
+.print-table .row-expired{
+  background:#fdeaea !important;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
+.print-table .row-expired td{
+  color:#7f1d1d !important;
+  font-weight:600;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
+.print-table .row-soon{
+  background:#fff2a8 !important;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
+.print-table .row-soon td{
+  color:#8a5a00 !important;
+  font-weight:600;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
+.print-table tr:has(.date-ok) td{
+  color:#0b5f78 !important;
+  font-weight:600;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
+.print-table th:nth-child(4),
+.print-table td:nth-child(4){
+  display:none !important
+}
+
+.print-table th:nth-child(1),
+.print-table td:nth-child(1){
+  width:34%
+}
+
+.print-table th:nth-child(2),
+.print-table td:nth-child(2){
+  width:20%
+}
+
+.print-table th:nth-child(3),
+.print-table td:nth-child(3){
+  width:18%
+}
+
+.print-table th:nth-child(5),
+.print-table td:nth-child(5){
+  width:20%
+}
+
+
+.print-table thead tr::before{
+  content:"No.";
+  display:table-cell;
+  width:8%;
+  height:8mm;
+  background:#168fb3 !important;
+  color:#fff !important;
+  font-size:9.5px;
+  font-weight:700;
+  padding:3px 5px;
+  border-right:1px solid rgba(255,255,255,.45);
+  vertical-align:middle;
+  text-align:center;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
+.print-table tbody tr::before{
+  counter-increment:printRow;
+  content:counter(printRow);
+  display:table-cell;
+  width:8%;
+  color:#111827;
+  font-size:10px;
+  line-height:1.2;
+  font-weight:600;
+  padding:4px 6px;
+  border-top:1px solid #d8e0e5;
+  border-right:1px solid #d8e0e5;
+  vertical-align:middle;
+  text-align:center
+}
+
+.print-table tbody tr.row-expired::before{
+  color:#7f1d1d !important
+}
+
+.print-table tbody tr.row-soon::before{
+  color:#8a5a00 !important
+}
+
+.print-table tbody tr:has(.date-ok)::before{
+  color:#0b5f78 !important
+}
+
+.medication-type{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  flex-wrap:wrap
+}
+
+.high-alert-indicator{
+  display:inline-block;
+  padding:1px 4px;
+  border:1px solid #b91c1c;
+  border-radius:3px;
+  background:#b91c1c;
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap
+}
+
+.lasa-indicator{
+  display:inline-block;
+  padding:1px 4px;
+  border:1px solid #FFD600;
+  border-radius:3px;
+  background:#FFD600;
+  color:#000;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap
+}
+
+.refrigerated-indicator{
+  width:14px;
+  height:14px;
+  flex:0 0 auto;
+  color:#0f7592
+}
+
+.refrigerated-indicator path{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round
+}
+
+.sortable-header{
+  cursor:pointer;
+  user-select:none
+}
+
+.sort-indicator{
+  margin-left:3px;
+  font-size:10px;
+  font-weight:700
+}
+
+.high-alert-medication-name{
+  color:#ff0000;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact
+}
+
+#reportType option{
+  color:#168fb3
+}
+
+#reportType option[value="highAlertInspection"]{
+  color:#ff0000
+}
+
+#reportType option[value="nearlyExpire"]{
+  color:#eab308
+}
+
+#reportType.report-select-high-alert{
+  color:#ff0000
+}
+
+#reportType.report-select-nearly-expire{
+  color:#eab308
+}
+
+.high-alert-report-theme #pageTitle{
+  color:#ff0000
+}
+
+.high-alert-report-theme .table-wrap{
+  border-color:#ff0000
+}
+
+.high-alert-report-theme th{
+  background:#ff0000;
+  color:#fff
+}
+
+.high-alert-report-theme th,
+.high-alert-report-theme td{
+  border-bottom-color:#e5e7eb
+}
+
+.nearly-expire-report-theme #pageTitle{
+  color:#eab308
+}
+
+.nearly-expire-report-theme .table-wrap{
+  border-color:#eab308
+}
+
+.nearly-expire-report-theme th{
+  background:#eab308;
+  color:#fff
+}
+
+.nearly-expire-report-theme th,
+.nearly-expire-report-theme td{
+  border-bottom-color:#e5e7eb
+}
+
+@media print{
+  .high-alert-indicator{
+    border-color:#b91c1c !important;
+    background:#b91c1c !important;
+    color:#fff !important;
+    font-size:9px;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .refrigerated-indicator{
+    width:13px;
+    height:13px;
+    color:#0f7592 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .lasa-indicator{
+    border-color:#FFD600 !important;
+    background:#FFD600 !important;
+    color:#000 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-title{
+    color:#ff0000 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table-wrap{
+    border-color:#ff0000 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table th{
+    background:#ff0000 !important;
+    color:#fff !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table td{
+    border-color:#d8e0e5 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table thead tr::before{
+    background:#ff0000 !important;
+    color:#fff !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.high-alert-report-theme .print-table tbody tr::before{
+    border-color:#d8e0e5 !important
+  }
+
+  .print-page.nearly-expire-report-theme .print-title{
+    color:#eab308 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table-wrap{
+    border-color:#eab308 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table th{
+    background:#eab308 !important;
+    color:#fff !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table td{
+    border-color:#d8e0e5 !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table thead tr::before{
+    background:#eab308 !important;
+    color:#fff !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact
+  }
+
+  .print-page.nearly-expire-report-theme .print-table tbody tr::before{
+    border-color:#d8e0e5 !important
+  }
+}
+
+/* =========================================================
+   PRINT FOOTER
+========================================================= */
+
+.print-footer{
+  margin-top:auto;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border-top:1px solid #e2e8f0;
+  padding-top:1.5mm;
+  min-height:6mm;
+  gap:2mm
+}
+
+.print-page-number{
+  color:#64748b;
+  font-size:8.5px;
+  line-height:1;
+  font-weight:600;
+  text-align:center
+}
+
+.print-signature{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  margin:0;
+  text-align:center;
+  color:#334155;
+  font-size:9px;
+  line-height:1.35;
+  font-weight:600;
+  direction:ltr;
+  break-inside:avoid;
+  page-break-inside:avoid
+}
+
+.print-signature .signature-unit,
+.print-signature .signature-author{
+  flex:1 1 50%;
+  white-space:nowrap
+}
+
+.print-signature .signature-unit{
+  text-align:left
+}
+
+.print-signature .signature-author{
+  text-align:right;
+  color:#168fb3
+}
+
+@media print{
+  .print-page{border:0!important}
+  .print-signature{display:flex!important}
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width:700px){
+
+  body{
+    padding:10px;
+    background:#fff
+  }
+
+  .container{
+    padding:14px;
+    border-radius:0;
+    box-shadow:none;
+    min-height:100vh
+  }
+
+  .logo{
+    width:84px;
+    height:84px
+  }
+
+  .official-header{
+    transform:none
+  }
+
+  .official-header h2,
+  .official-header h3{
+    font-size:12px
+  }
+
+  .page-title{
+    font-size:20px;
+    margin-bottom:10px
+  }
+
+  .report-controls{
+    gap:8px;
+    margin:0
+  }
+
+  .report-controls select{
+    font-size:12px
+  }
+
+  .stat-card{
+    min-width:96px;
+    padding:8px 12px
+  }
+
+  .stat-card .num{
+    font-size:18px
+  }
+
+  .dashboard-overview{
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+    margin-bottom:14px
+  }
+
+  .report-controls,
+  .stats{
+    justify-content:center;
+    flex-wrap:wrap
+  }
+
+  .combo-wrap{
+    width:min(300px, 100%);
+    max-width:300px
+  }
+
+  .medicine-search{
+    height:40px
+  }
+
+  .action-row{
+    grid-template-columns:auto minmax(0, 1fr) auto;
+    gap:6px
+  }
+
+  th,
+  td{
+    padding:8px;
+    font-size:12px
+  }
+
+  .action-btn{
+    width:40px;
+    min-width:40px;
+    min-height:40px;
+    font-size:22px
+  }
+
+  body{
+    padding-left:6px;
+    padding-right:6px;
+    overflow-x:hidden
+  }
+
+  .container{
+    padding-left:4px;
+    padding-right:4px
+  }
+
+  /* Mobile table compact layout */
+  .table-wrap{
+    overflow-x:auto
+  }
+
+  .table-wrap table{
+    table-layout:fixed;
+    width:100%;
+    min-width:360px
+  }
+
+  .table-wrap th,
+  .table-wrap td{
+    white-space:normal;
+    overflow-wrap:anywhere;
+    padding:3px 2px;
+    font-size:9px;
+    line-height:1.15
+  }
+
+  .table-wrap th{
+    font-size:9px
+  }
+
+  .table-wrap .print-selection{
+    width:20px;
+    padding:2px
+  }
+
+  .table-wrap .print-selection input{
+    width:13px;
+    height:13px
+  }
+
+  .table-wrap th:nth-child(1),
+  .table-wrap td:nth-child(1){
+    width:6%
+  }
+
+  .table-wrap th:nth-child(2),
+  .table-wrap td:nth-child(2){
+    width:34%
+  }
+
+  .table-wrap th:nth-child(3),
+  .table-wrap td:nth-child(3){
+    width:15%
+  }
+
+  .table-wrap th:nth-child(4),
+  .table-wrap td:nth-child(4){
+    width:18%
+  }
+
+  .table-wrap th:nth-child(5),
+  .table-wrap td:nth-child(5){
+    width:14%
+  }
+
+  .table-wrap th:nth-child(6),
+  .table-wrap td:nth-child(6){
+    width:13%
+  }
+
+  .table-wrap .status-pill{
+    min-height:0;
+    padding:2px 4px;
+    font-size:8px;
+    line-height:1.1;
+    white-space:normal
+  }
+
+  .table-wrap .medication-type{
+    gap:2px
+  }
+
+  .table-wrap .sort-indicator{
+    margin-left:1px;
+    font-size:8px
+  }
+
+  .table-wrap .high-alert-indicator,
+  .table-wrap .lasa-indicator{
+    padding:1px 2px;
+    font-size:7px;
+    line-height:1.1
+  }
+
+  .table-wrap .refrigerated-indicator{
+    width:10px;
+    height:10px
+  }
+}
+
+/* =========================================================
+   A4
+========================================================= */
+
+@page{
+  size:A4 portrait;
+  margin:8mm
+}
+
+@media print{
+
+  html,
+  body{
+    width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    background:#fff !important
+  }
+
+  .container{
+    display:none !important
+  }
+
+  #printPages{
+    display:block !important
+  }
+
+  .print-page{
+    box-shadow:none !important;
+    width:100% !important;
+    min-height:274mm !important;
+    height:274mm !important;
+    margin:0 auto !important;
+    padding:10mm 12mm !important
+  }
+
+  .print-footer{
+    padding-top:2mm !important;
+    min-height:8mm !important
+  }
+}
+
+
+/* PHASE C: unified portal design system */
+@media screen{
+  body{
+    background:#f3f4f6;
+  }
+
+  .container,
+  .employee-shell{
+    max-width:980px;
+    margin:auto;
+    background:#fff;
+    padding:22px;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
+  }
+
+  .logo,
+  .official-logo{
+    width:120px;
+    height:120px;
+    object-fit:contain;
+  }
+
+  .official-header h2,
+  .official-header h3{
+    margin:2px 0;
+    color:#168fb3;
+    font-size:13px;
+    line-height:1.4;
+  }
+
+  hr,
+  .official-divider{
+    border-top-color:#e5e7eb;
+    margin:14px 0;
+  }
+
+  .page-title,
+  .employee-page-title{
+    color:#168fb3;
+    font-size:23px;
+    font-weight:bold;
+    line-height:1.25;
+    margin:18px 0 12px;
+    text-align:center;
+  }
+
+  .title-row{
+    margin:18px 0 12px;
+  }
+
+  .panel,
+  .toolbar,
+  .empty-box,
+  .order-panel,
+  .size-row,
+  .result-card,
+  .upload-box,
+  .users-form,
+  .upload-standalone,
+  .employee-toolbar,
+  .upload-toolbar,
+  .supervisor-panel,
+  .user-summary-panel,
+  .filter-panel,
+  .filters-panel,
+  .summary-card,
+  .stat-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.04);
+  }
+
+  .portal-card,
+  .service-card,
+  .control-card,
+  .pharmacy-card,
+  .card-link{
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.04);
+  }
+
+  input,
+  select,
+  textarea{
+    min-height:40px;
+    padding:8px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    font-size:14px;
+    font-family:inherit;
+    box-sizing:border-box;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus{
+    border-color:#168fb3;
+    box-shadow:0 0 0 2px rgba(22,143,179,.12);
+    outline:none;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .action-btn,
+  .ghost-btn,
+  button[type="submit"]{
+    min-height:40px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:bold;
+  }
+
+  .actions,
+  .form-actions,
+  .login-actions,
+  .card-actions,
+  .row-actions,
+  .scan-actions{
+    gap:10px;
+  }
+
+  .table-wrap,
+  .dashboard-table-wrap,
+  .orders-table-wrap{
+    overflow-x:auto;
+    border-radius:10px;
+  }
+
+  table{
+    border-collapse:collapse;
+  }
+
+  th{
+    background:#168fb3;
+    color:#fff;
+    font-weight:bold;
+  }
+
+  th,
+  td{
+    border-color:#e5e7eb;
+  }
+
+  @media (max-width:700px){
+    body{
+      padding:10px;
+      background:#fff;
+    }
+
+    .container,
+    .employee-shell{
+      padding:14px;
+      border-radius:0;
+      box-shadow:none;
+    }
+
+    .logo,
+    .official-logo{
+      width:84px;
+      height:84px;
+    }
+
+    .official-header h2,
+    .official-header h3{
+      font-size:12px;
+    }
+
+    .page-title,
+    .employee-page-title{
+      font-size:20px;
+      margin:16px 0 12px;
+    }
+
+    input,
+    select,
+    textarea{
+      width:100%;
+      font-size:13px;
+    }
+  }
+}
+
+
+/* Unified portal security/top-row integration */
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  direction:ltr
+}
+
+.meta-row .date-box{
+  justify-self:start
+}
+
+.meta-row .language-chip{
+  justify-self:end
+}
+
+.meta-row .employee-toolbar{
+  grid-column:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:auto;
+  margin:0;
+  padding:0;
+  direction:rtl
+}
+
+.meta-row .employee-name{
+  white-space:nowrap;
+  font-size:18px;
+  font-weight:bold;
+  color:#168fb3
+}
+
+.meta-row .portal-back-button,
+.meta-row .logout-icon{
+  width:34px;
+  height:34px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#168fb3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex:0 0 auto;
+  font-family:Arial,sans-serif
+}
+
+.meta-row .portal-back-button{
+  font-size:28px;
+  line-height:1
+}
+
+.meta-row .logout-icon{
+  font-size:0
+}
+
+.meta-row .portal-back-button:hover{
+  color:#0f7592;
+  transform:translateX(-1px)
+}
+
+.meta-row .logout-icon:hover{
+  transform:scale(1.06)
+}
+
+.meta-row .power-svg{
+  width:30px;
+  height:30px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+@media (max-width:700px){
+  .meta-row{
+    grid-template-columns:minmax(54px,1fr) auto minmax(54px,1fr);
+    gap:6px
+  }
+
+  .meta-row .employee-toolbar{
+    gap:6px
+  }
+
+  .meta-row .employee-name{
+    max-width:130px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:15px
+  }
+
+  .meta-row .portal-back-button,
+  .meta-row .logout-icon{
+    width:30px;
+    height:30px
+  }
+
+  .meta-row .power-svg{
+    width:25px;
+    height:25px
+  }
+
+  .meta-row .date-box,
+  .meta-row .language-chip{
+    font-size:11px
+  }
+
+  .meta-row .language-chip{
+    font-size:9px
+  }
+}
+
+
+/* Shared Kidney user toolbar: screen only, preserving print layout. */
+@media screen{
+  .meta-row .kidney-user-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:nowrap;
+    direction:ltr;
+    box-sizing:border-box;
+    width:246px;
+    max-width:calc(100vw - 156px);
+    min-width:86px;
+    height:42px;
+    gap:6px;
+    padding:4px 6px;
+    margin:0;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.06);
+    color:#168fb3;
+  }
+  .meta-row .kidney-user-toolbar #employeeName{
+    flex:1 1 auto;
+    min-width:0;
+    max-width:160px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-family:Arial,sans-serif;
+    font-size:15px;
+    font-weight:bold;
+    line-height:1.2;
+    text-align:center;
+    color:#168fb3;
+  }
+  .meta-row .kidney-user-toolbar .kidney-toolbar-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 30px;
+    box-sizing:border-box;
+    width:30px;
+    height:30px;
+    min-height:0;
+    padding:0;
+    margin:0;
+    border:0;
+    background:transparent;
+    color:#168fb3;
+    font-family:Arial,sans-serif;
+    font-size:28px;
+    line-height:1;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .meta-row .kidney-user-toolbar .power-svg{
+    width:25px;
+    height:25px;
+    display:block;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2.35;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+}
+@media screen and (max-width:700px){
+  .meta-row .kidney-user-toolbar #employeeName{
+    max-width:90px;
+  }
+
+  body{
+    padding-left:6px;
+    padding-right:6px
+  }
+}
+
+
+.medication-filter-group{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;width:max-content;max-width:100%}
+.medication-filter-group .combo-wrap{min-width:0}
+@media(max-width:768px){.medication-filter-group{flex-wrap:wrap}}
+.classification-filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;max-width:100%}
+.classification-filters label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:13px;color:#168fb3;margin:0}
+.classification-filters input[type="checkbox"]{width:16px;height:16px;min-height:0;margin:0;padding:0}
+#classificationStatus{color:#b91c1c;margin:8px 0}
+.print-selection{width:32px;padding:6px;text-align:center}
+.print-selection input{width:16px;height:16px;margin:0;vertical-align:middle}
+.session-control[hidden]{display:none!important}
+@media print{.classification-filters,#classificationStatus,.print-selection{display:none!important}}
+</style>
+<style id="unified-user-toolbar-style">.kidney-user-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;direction:rtl;min-width:0}.kidney-user-toolbar .portal-back-button{order:1}.kidney-user-toolbar .employee-name{order:2;min-width:0;max-width:min(42vw,260px);overflow:visible;text-overflow:clip;white-space:nowrap}.kidney-user-toolbar .logout-icon{order:3}.kidney-user-toolbar .employee-name{font-size:clamp(15px,2vw,21px)}@media(max-width:700px){.kidney-user-toolbar{gap:6px}.kidney-user-toolbar .employee-name{max-width:45vw;font-size:15px}}</style><style id="compact-user-toolbar-style">.portal-user-group{gap:3px;max-width:100%;min-width:0}.portal-session{height:32px;width:220px;max-width:calc(100vw - 54px);gap:4px;padding:2px 4px;border-radius:8px}.portal-user-name{font-size:13px;line-height:1.1;max-width:calc(100% - 56px)}.portal-back-btn,.portal-session .logout-btn{width:27px;height:27px}.portal-back-btn{font-size:19px}.portal-pin-outside,.toolbar-pin-button{width:30px;height:30px;min-width:30px;min-height:30px;font-size:16px;border-radius:50%}.employee-meta-tools{height:36px;gap:7px;direction:ltr}.employee-meta-tools .back-button,.employee-meta-tools .logout-icon{width:28px;height:28px}.employee-meta-tools .employee-name{font-size:13px;max-width:min(42vw,240px)}.employee-toolbar,.kidney-user-toolbar{min-height:32px;height:32px;gap:5px;padding:2px 5px;direction:ltr}.employee-toolbar .portal-back-button,.employee-toolbar .back-button,.kidney-user-toolbar .back-button{order:3}.employee-toolbar .portal-back-button,.employee-toolbar .back-button,.kidney-user-toolbar .back-button,.employee-toolbar .logout-icon,.kidney-user-toolbar .logout-icon{width:28px;height:28px}.employee-toolbar .logout-icon,.kidney-user-toolbar .logout-icon{order:1}.employee-toolbar .employee-name,.employee-toolbar strong,.kidney-user-toolbar .employee-name{order:2;font-size:13px;max-width:min(42vw,240px)}@media(max-width:430px){.portal-user-group{gap:3px}.portal-session{width:calc(100vw - 56px);max-width:calc(100vw - 56px);height:34px;padding:2px 3px}.portal-user-name{font-size:12px;max-width:calc(100% - 52px)}.portal-back-btn,.portal-session .logout-btn{width:25px;height:25px}.portal-pin-outside,.toolbar-pin-button{width:28px;height:28px;min-width:28px;min-height:28px;font-size:15px}.employee-meta-tools{height:34px;gap:5px}.employee-meta-tools .employee-name{font-size:12px;max-width:calc(100vw - 120px)}.employee-toolbar,.kidney-user-toolbar{gap:4px;padding:2px 4px;min-height:32px;height:32px}.employee-toolbar .employee-name,.employee-toolbar strong,.kidney-user-toolbar .employee-name{font-size:12px;max-width:calc(100vw - 120px)}}@media(max-width:340px){.portal-user-name{font-size:11px}.employee-meta-tools .employee-name,.employee-toolbar .employee-name,.employee-toolbar strong,.kidney-user-toolbar .employee-name{font-size:11px;max-width:calc(100vw - 112px)}}</style><style id="unified-user-card-final">.employee-toolbar,.kidney-user-toolbar,.employee-strip,.admin-strip,.dashboard-user-tools,.unified-user-tools{background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.06);height:32px;min-height:32px;width:220px;max-width:calc(100vw - 54px);box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:4px;padding:2px 4px;direction:ltr;overflow:hidden}.employee-toolbar .logout-icon,.kidney-user-toolbar .logout-icon,.employee-strip .logout-icon,.admin-strip .logout-btn,.dashboard-user-tools .logout-icon,.unified-user-tools .logout-icon{order:1;width:27px;height:27px;min-width:27px;min-height:27px;margin:0;padding:0;border:0;background:transparent;background-image:none;box-shadow:none;appearance:none;-webkit-appearance:none;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.employee-toolbar .employee-name,.kidney-user-toolbar .employee-name,.employee-strip .employee-name,.admin-strip .admin-name,.dashboard-user-tools strong,.unified-user-tools strong{order:2;flex:1 1 auto;min-width:0;max-width:calc(100% - 56px);overflow:visible;text-overflow:clip;white-space:nowrap;text-align:center;font-size:13px;line-height:1.1;color:#168fb3}.employee-toolbar .portal-back-button,.kidney-user-toolbar .portal-back-button,.employee-strip .portal-back-button,.admin-strip .portal-back-button,.dashboard-user-tools .portal-back-button,.unified-user-tools .portal-back-button{order:3;width:27px;height:27px;margin:0;padding:0;border:0;background:transparent;color:#168fb3;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:Arial,sans-serif;font-size:19px;line-height:1;text-decoration:none}.employee-toolbar .power-svg,.kidney-user-toolbar .power-svg,.employee-strip .power-svg,.admin-strip .power-svg,.dashboard-user-tools .power-svg,.unified-user-tools .power-svg{width:23px;height:23px;display:block;fill:none;stroke:currentColor;stroke-width:2.35;stroke-linecap:round;stroke-linejoin:round}@media(max-width:430px){.employee-toolbar,.kidney-user-toolbar,.employee-strip,.admin-strip,.dashboard-user-tools,.unified-user-tools{width:calc(100vw - 56px);max-width:calc(100vw - 56px);height:34px;min-height:34px;padding:2px 3px;gap:3px}.employee-toolbar .logout-icon,.kidney-user-toolbar .logout-icon,.employee-strip .logout-icon,.admin-strip .logout-btn,.dashboard-user-tools .logout-icon,.unified-user-tools .logout-icon,.employee-toolbar .portal-back-button,.kidney-user-toolbar .portal-back-button,.employee-strip .portal-back-button,.admin-strip .portal-back-button,.dashboard-user-tools .portal-back-button,.unified-user-tools .portal-back-button{width:25px;height:25px}.employee-toolbar .employee-name,.kidney-user-toolbar .employee-name,.employee-strip .employee-name,.admin-strip .admin-name,.dashboard-user-tools strong,.unified-user-tools strong{font-size:12px;max-width:calc(100% - 52px)}}@media(max-width:340px){.employee-toolbar .employee-name,.kidney-user-toolbar .employee-name,.employee-strip .employee-name,.admin-strip .admin-name,.dashboard-user-tools strong,.unified-user-tools strong{font-size:11px}}</style><style id="kidney-dashboard-user-card-final">
+.meta-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;direction:ltr}
+.meta-row .date-box{grid-column:1;justify-self:start}
+.meta-row .kidney-user-toolbar{grid-column:2;justify-self:center;width:220px;max-width:calc(100vw - 54px);height:32px;min-height:32px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:4px;padding:2px 4px;margin:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.06);direction:ltr;overflow:hidden;color:#168fb3}
+.meta-row .kidney-user-toolbar #employeeName{order:2;flex:1 1 auto;min-width:0;max-width:calc(100% - 56px);overflow:visible;text-overflow:clip;white-space:nowrap;font-size:13px;font-weight:700;line-height:1.1;text-align:center;color:#168fb3}
+.meta-row .kidney-user-toolbar .kidney-toolbar-button{display:inline-flex;align-items:center;justify-content:center;flex:0 0 27px;width:27px;height:27px;min-height:0;margin:0;padding:0;border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;appearance:none;-webkit-appearance:none;color:#168fb3;font-family:Arial,sans-serif;line-height:1;text-decoration:none;cursor:pointer}
+.meta-row .kidney-user-toolbar .logout-icon{order:1}
+.meta-row .kidney-user-toolbar .portal-back-button{order:3;font-size:19px}
+.meta-row .kidney-user-toolbar .power-svg{width:23px;height:23px;display:block;fill:none;stroke:currentColor;stroke-width:2.35;stroke-linecap:round;stroke-linejoin:round}
+.meta-row .kidney-user-toolbar .logout-icon:hover,.meta-row .kidney-user-toolbar .logout-icon:focus,.meta-row .kidney-user-toolbar .logout-icon:active{background:transparent!important;box-shadow:none!important;color:#168fb3}
+.meta-row .language-chip{grid-column:3;justify-self:end}
+@media(max-width:430px){.meta-row{gap:4px}.meta-row .date-box,.meta-row .language-chip{font-size:11px}.meta-row .kidney-user-toolbar{width:calc(100vw - 56px);max-width:calc(100vw - 56px);height:34px;min-height:34px;padding:2px 3px;gap:3px}.meta-row .kidney-user-toolbar .kidney-toolbar-button{flex-basis:25px;width:25px;height:25px}.meta-row .kidney-user-toolbar #employeeName{font-size:12px;max-width:calc(100% - 52px)}}
+@media(max-width:340px){.meta-row .kidney-user-toolbar #employeeName{font-size:11px}}
+</style>
+<style id="outpatient-footer-style">
+.developer-signature{max-width:760px;margin:28px auto 8px;padding:0 12px;text-align:center;line-height:1.5;font-family:inherit}
+.developer-signature .signature-unit,.developer-signature .signature-author{display:block;margin:0;font-size:11px;font-weight:400;white-space:normal}
+.developer-signature .signature-unit{color:#64748b}
+.developer-signature .signature-author{margin-top:2px;color:#168fb3;font-weight:600}
+@media(max-width:600px){.developer-signature{margin-top:22px;padding:0 8px}.developer-signature .signature-unit,.developer-signature .signature-author{font-size:10px}}
+@media print{.developer-signature{display:none!important}}
+</style>
+<style id="mobile-user-header-fix">
+@media (max-width:600px){
+html,body{overflow-x:hidden}
+.meta-row,.employee-meta,.meta-row.unified-meta{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr)!important;grid-template-rows:none!important;align-items:center!important;column-gap:4px!important;row-gap:0!important;width:100%!important;flex-wrap:nowrap!important}
+.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{grid-column:1!important;grid-row:auto!important;justify-self:start!important;min-width:0!important;max-width:100%!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;font-size:clamp(9px,2.8vw,11px)!important;line-height:1.2!important;padding:2px 0!important}
+.meta-row>.language-chip,.meta-row>.language-btn,.meta-row>.language-box,.employee-meta>.language-chip,.employee-meta>.language-btn,.employee-meta>.language-box,.meta-row.unified-meta>.language-chip,.meta-row.unified-meta>.language-btn,.meta-row.unified-meta>.language-box{grid-column:3!important;grid-row:auto!important;justify-self:end!important;white-space:nowrap!important;min-width:max-content!important;font-size:clamp(10px,3vw,11px)!important;padding:2px 0!important}
+.portal-user-group,.unified-user-group,.employee-meta-tools,.employee-toolbar,.employee-strip,.admin-strip,.dashboard-user-tools,.unified-user-tools,.meta-row>.employee-toolbar,.meta-row>.employee-strip,.meta-row>.admin-strip,.meta-row>.dashboard-user-tools,.meta-row>.unified-user-tools{grid-column:2!important;grid-row:auto!important;justify-self:center!important;min-width:0!important;width:max-content!important;max-width:calc(100vw - 110px)!important;box-sizing:border-box!important;overflow:visible!important;flex-wrap:nowrap!important;padding-left:5px!important;padding-right:5px!important;gap:4px!important}
+.portal-session,.portal-user-group .portal-session{max-width:calc(100vw - 110px)!important;min-width:0!important;width:max-content!important;overflow:visible!important;padding-left:5px!important;padding-right:5px!important;gap:4px!important}
+.portal-user-name,.employee-name,.admin-name,.dashboard-user-tools strong,.unified-user-tools strong,.employee-toolbar strong,.employee-strip .employee-name,.employee-meta-tools .employee-name{min-width:0!important;max-width:none!important;width:auto!important;overflow:visible!important;text-overflow:clip!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;font-weight:700!important;line-height:1.15!important;text-align:center!important;font-size:11px!important}
+.employee-toolbar .logout-icon,.employee-toolbar .logout-btn,.employee-strip .logout-icon,.admin-strip .logout-btn,.dashboard-user-tools .logout-icon,.unified-user-tools .logout-icon{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;padding:0!important;background:transparent!important;background-image:none!important;border:0!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;color:#168fb3!important}
+.employee-toolbar .portal-back-button,.employee-toolbar .back-button,.employee-strip .portal-back-button,.admin-strip .portal-back-button,.dashboard-user-tools .portal-back-button,.unified-user-tools .portal-back-button{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;font-size:16px!important;padding:0!important}.employee-toolbar .power-svg,.employee-strip .power-svg,.admin-strip .power-svg,.dashboard-user-tools .power-svg,.unified-user-tools .power-svg{width:16px!important;height:16px!important;fill:none!important;stroke:currentColor!important;stroke-width:2.35!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+}
+</style>
+<style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
+<style id="dashboard-master-header-sync">
+.top-bar{align-items:flex-start;min-height:0;margin-bottom:0}
+.top-bar .logo{margin-top:-20px;margin-bottom:-28px}
+.official-header{display:flex;flex-direction:column;justify-content:center;align-self:flex-start;transform:none!important;margin-top:0;padding-left:8px;border-left:4px solid #168fb3}
+html[dir="ltr"] .official-header{direction:ltr;text-align:left;padding-left:8px;padding-right:0;border-right:0}
+.top-bar + hr{margin-top:16px;margin-bottom:14px}
+.meta-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr)!important;align-items:center!important;column-gap:4px!important;row-gap:0!important;width:100%!important;margin-top:0;padding-top:0;margin-bottom:70px;direction:ltr}
+.meta-row .date-box{grid-column:1!important;justify-self:start!important;white-space:nowrap!important}
+.meta-row .kidney-user-toolbar{grid-column:2!important;justify-self:center!important;margin-top:15px;margin-bottom:-15px}
+.meta-row .language-chip{grid-column:3!important;justify-self:end!important}
+.meta-row + .page-title{font-size:24px;margin-top:28px;margin-bottom:30px}
+@media(max-width:700px){.top-bar .logo{margin-top:-12px;margin-bottom:-20px}.top-bar + hr{margin-top:12px;margin-bottom:12px}.meta-row{margin-bottom:45px}.page-title{font-size:20px;margin-top:28px;margin-bottom:30px}}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="dashboardContainer">
+
+  <div class="top-bar">
+
+    <img
+      class="logo"
+      src="../../logo.png"
+      alt="Logo">
+
+    <div class="official-header">
+      <h2 id="officialLine1">تجمع المدينة المنورة الصحي</h2>
+      <h3 id="officialLine2">مستشفى الملك فهد بالمدينة المنورة</h3>
+      <h3 id="officialLine3">إدارة الرعاية الصيدلانية</h3>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <div class="meta-row">
+
+    <div
+      class="date-box"
+      id="dateBox">
+    </div>
+
+    <div class="employee-toolbar kidney-user-toolbar">
+
+      <button type="button" class="logout-icon kidney-toolbar-button session-control" id="logoutBtn" hidden
+        onclick="logoutDashboard()" title="Logout" aria-label="Logout"><svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v9"></path>
+          <path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path>
+        </svg></button>
+
+      <span dir="auto"
+        class="employee-name"
+        id="employeeName"></span>
+
+      <button
+        type="button"
+        class="portal-back-button kidney-toolbar-button session-control"
+        hidden
+        id="portalBackBtn"
+        onclick="navigateFresh('../../expiry-dates.html'); return false;"
+        title="Back"
+        aria-label="Back">
+        ↩
+      </button>
+
+    </div>
+
+    <button
+      type="button"
+      class="language-chip"
+      id="languageToggle"
+      onclick="toggleLanguage()">
+      🌐 ع | E
+    </button>
+
+  </div>
+
+  <h1
+    class="page-title"
+    id="pageTitle">
+    Inspection Indicator
+  </h1>
+
+  <div class="dashboard-overview">
+
+  <div class="report-controls">
+
+    <select
+      id="reportType"
+      onchange="refreshReportView()">
+
+      <option value="inspection">
+        Inspection Report
+      </option>
+
+      <option value="removal">
+        Expiry Removal Report
+      </option>
+
+      <option value="nearlyExpire">
+        Nearly Expire Date
+      </option>
+
+      <option value="highAlertInspection">
+        High Alert Inspection
+      </option>
+
+      <option value="refrigeratorInspection">
+        Refrigerator Inspection
+      </option>
+
+    </select>
+
+    <select
+      id="reportMonth"
+      onchange="refreshReportView()">
+    </select>
+
+  </div>
+
+  <div class="stats">
+
+    <div
+      class="stat-card red"
+      id="cardExpired"
+      data-filter="expired"
+      role="button"
+      tabindex="0"
+      aria-pressed="false"
+      onclick="setFilter('expired')">
+
+      <div
+        class="label"
+        id="labelExpired">
+        This Month
+      </div>
+
+      <div
+        class="num"
+        id="countExpired">
+        -
+      </div>
+
+    </div>
+
+    <div
+      class="stat-card orange"
+      id="cardSoon"
+      data-filter="soon"
+      role="button"
+      tabindex="0"
+      aria-pressed="false"
+      onclick="setFilter('soon')">
+
+      <div
+        class="label"
+        id="labelSoon">
+        Within 3 Months
+      </div>
+
+      <div
+        class="num"
+        id="countSoon">
+        -
+      </div>
+
+    </div>
+
+    <div
+      class="stat-card green"
+      id="cardOk"
+      data-filter="ok"
+      role="button"
+      tabindex="0"
+      aria-pressed="false"
+      onclick="setFilter('ok')">
+
+      <div
+        class="label"
+        id="labelOk">
+        Within Safe Range
+      </div>
+
+      <div
+        class="num"
+        id="countOk">
+        -
+      </div>
+
+    </div>
+
+  </div>
+
+  </div>
+
+  <div class="action-row">
+
+    <div class="action-left">
+
+    <button
+      type="button"
+      class="action-btn"
+      id="printBtn"
+      onclick="printReport()"
+      title="Print"
+      aria-label="Print">
+      🖨️
+    </button>
+
+    <button
+      type="button"
+      class="action-btn remove-btn"
+      id="removeBtn"
+      onclick="removeSelectedMonth()"
+      title="Remove"
+      aria-label="Remove">
+      🗑️
+    </button>
+
+    </div>
+
+    <div class="medication-filter-group">
+    <div class="combo-wrap">
+
+      <input
+        type="text"
+        class="medicine-search"
+        id="medicineSearch"
+        autocomplete="off"
+        dir="ltr"
+        placeholder="Search by medication name">
+
+      <div
+        class="combo-options"
+        id="medicineSearchOptions">
+      </div>
+
+    </div>
+
+    <div class="classification-filters">
+      <label><input type="checkbox" id="highAlertFilter" onchange="renderTable()"><span id="highAlertFilterText">High Alert</span></label>
+      <label><input type="checkbox" id="refrigeratedFilter" onchange="renderTable()"><span id="refrigeratedFilterText">Refrigerated</span></label>
+    </div>
+    </div>
+
+    <div class="action-right">
+
+    <button
+      type="button"
+      class="action-btn"
+      id="refreshBtn"
+      onclick="window.location.reload()"
+      title="Refresh"
+      aria-label="Refresh">
+      🔄
+    </button>
+
+    </div>
+
+  </div>
+
+  <div id="classificationStatus" role="alert" style="display:none"></div>
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th class="print-selection"><input type="checkbox" id="selectVisiblePrintRows" aria-label="Select visible rows for printing" onchange="selectVisibleRowsForPrint(this.checked)"></th>
+          <th id="colName" class="sortable-header" role="button" tabindex="0" aria-sort="none" onclick="toggleSort('name')" onkeydown="handleSortHeaderKey(event,'name')">Medication</th>
+          <th id="colType">Type</th>
+          <th id="colExpiry" class="sortable-header" role="button" tabindex="0" aria-sort="none" onclick="toggleSort('expiry')" onkeydown="handleSortHeaderKey(event,'expiry')">Expiry Date</th>
+          <th id="colStatus">Status</th>
+          <th id="colEmployee">By</th>
+        </tr>
+      </thead>
+
+      <tbody id="tableBody"></tbody>
+
+    </table>
+
+  </div>
+
+  <div
+    class="empty-note"
+    id="emptyNote"
+    style="display:none">
+  </div>
+
+  <div
+    class="refresh-note"
+    id="refreshNote">
+    Auto-refreshes every 10 seconds
+  </div>
+
+</div>
+
+<div id="printPages"></div>
+
+<script src="medication-classification.js?v=20261014-lasa"></script>
+<script>
+
+function navigateFresh(target, replaceHistory = false){
+  const url = new URL(target, window.location.href);
+  url.searchParams.set("_r", Date.now().toString());
+  if (replaceHistory){
+    window.location.replace(url.toString());
+  } else {
+    window.location.assign(url.toString());
+  }
+}
+
+
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
+
+let dashboardRefreshTimer =
+  null;
+
+
+
+
+const MEDICATIONS = [
+  "Adenosine inj",
+  "Adrenaline inj",
+  "Alfacalcidol 0.25mcg",
+  "Alfacalcidol 1mcg",
+  "Allopurinol 100mg",
+  "Amiodarone inj",
+  "Amlodipine 10mg",
+  "Amlodipine 5mg",
+  "Amoxicilline 500mg",
+  "Amydramine syp",
+  "Apihist drops",
+  "Apixapan 2.5mg",
+  "Aspirin 81mg",
+  "Atenolol 50mg",
+  "Atorvastatine 20mg",
+  "Atropine solution",
+  "Atrovent Solution",
+  "Augmentin 625mg",
+  "Avopan Eye ointment",
+  "Azithromycine 250mg",
+  "Bactrim tab",
+  "Betahestine 8mg",
+  "Bethisten 16mg",
+  "Bisoprolol 5mg",
+  "Buscopan inj",
+  "Calcium Carbonate Tab",
+  "Calcium Chloride inj",
+  "Calcium Gluconate inj",
+  "Captopril 25mg",
+  "Carvedilol 25mg",
+  "Carvedilol 6.25mg",
+  "Caspofungin inj",
+  "Cefazolin inj",
+  "Cefepime inj",
+  "Ceftazidime inj",
+  "Celecoxib 200mg",
+  "Cinacalcet 30mg",
+  "Cinacalcet 60mg",
+  "Ciprofloxacin 500mg",
+  "Clexan inj 40",
+  "Clopidogrel 75mg",
+  "Darbepoetin 40",
+  "Darbepoetin 60",
+  "Darbepoetin 80",
+  "Defelikefalin 50",
+  "Dextromethorphan syp",
+  "Digoxine inj",
+  "Dimocrone MR 30mg",
+  "Diphenhydramine",
+  "Dobutamine inj",
+  "Dopamine inj",
+  "Enalapril 10mg",
+  "Eprex 2000",
+  "Eprex 4000",
+  "Esomeprazole 20mg",
+  "Ferinject inj",
+  "Finasteride 5mg",
+  "Fleet Enema",
+  "Fluconazole 50mg",
+  "Folic Acid 1mg",
+  "Fucibact Cream",
+  "Fucidine ointment",
+  "Furosemide 40mg",
+  "Gentamycin inj",
+  "Gentamycin oint",
+  "Heparine sodium inj",
+  "Histop 4mg",
+  "Hydralazine 25mg",
+  "Hydralazine inj",
+  "Hydrocortisone Cream",
+  "Hydrocortisone inj",
+  "Hydroxychloroquine 200mg",
+  "Innohep inj",
+  "Iron inj",
+  "Isosorbide 20mg",
+  "Isosorbide 5mg",
+  "Keppra tab",
+  "L.Thyroxine 100mcg",
+  "L.Thyroxine 25mcg",
+  "L.Thyroxine 50mcg",
+  "Labetalol 100mg",
+  "Labetalol inj",
+  "Lactulose syp",
+  "Lasix inj",
+  "Lidocaine 1% vial",
+  "Lidocaine 2% syringe",
+  "Lidocaine 2% vial",
+  "Loperamide 2mg",
+  "Loratadine 10mg",
+  "Losartan 50mg",
+  "Magnisium Sulphate inj",
+  "Mebeverine 200mg",
+  "Mebo",
+  "Meloxicam 7.5mg",
+  "Meropenem inj",
+  "Methyldopa 250mg",
+  "Metoclopramide 10mg",
+  "Metocloprmide inj",
+  "Metolazone",
+  "Metoprolol 50mg",
+  "Metoprolol inj",
+  "Metronidazole 500mg",
+  "Mircera 100",
+  "Mircera 50",
+  "Mouth wash",
+  "Moxifloxacin 400mg",
+  "Multivitamine",
+  "Nalaxone inj",
+  "Naphazoline Drops",
+  "Neurobion",
+  "Nifedipine 30mg LA",
+  "Nifedipine 60mg LA",
+  "Nitroglycerine Inj",
+  "Noradrenaline inj",
+  "Omeprazole 20mg",
+  "Omeprazole inj",
+  "One alpha",
+  "Paracetamol 500mg",
+  "Paracetamol inj",
+  "Paraffin",
+  "Paricalcitol 2mcg",
+  "Parsabiv",
+  "Perindopril 5mg",
+  "Plasma Protein 250ml",
+  "Potassium Chloride inj",
+  "Potassium chloride tab",
+  "Prazosin 1mg",
+  "Prazosin 5mg",
+  "Prednisolone 5mg",
+  "Procainamide inj",
+  "Promethazine inj",
+  "Pulmicort Solution",
+  "Renagel 800mg",
+  "Rosuvastatine 10mg",
+  "Salinose Nasal Spray",
+  "Senna",
+  "Sodium Bicarbonate 325mg",
+  "Sodium Bicarbonate vial",
+  "Sympicort inh",
+  "Tamsulosine 0.4mg",
+  "Telmisartan 40mg",
+  "Telmisartan 80mg",
+  "Tpa 18mg",
+  "Urea Cream",
+  "Valsartan 80mg",
+  "Vancomycin inj",
+  "Vasopressine inj",
+  "Veltasa",
+  "Veltasa 8.4",
+  "Ventoline inh",
+  "Ventoline Solution",
+  "Verapamil 80mg",
+  "Verapamil inj",
+  "Vit D 10.000",
+  "Voltaren Gel",
+  "Warfarine 1mg tab",
+  "Warfarine 2mg tab",
+  "Warfarine 5mg tab",
+  "Zemplar 1mcg",
+  "Zemplar inj"
+];
+
+
+let currentLang =
+  "en";
+
+let lastItems =
+  [];
+
+const selectedPrintRows = new Set();
+let printRowKeys = new Map();
+let verifiedToolbarToken = "";
+
+let activeFilter =
+  null;
+
+let medicineSearchTerm =
+  "";
+
+let activeSortColumn =
+  null;
+
+let activeSortDirection =
+  "asc";
+
+
+const text = {
+
+  ar:{
+    title:"مؤشر صلاحية الأدوية",
+    inspectionReport:"تقرير التفتيش",
+    removalReport:"تقرير الاستبعاد",
+    nearlyExpireReport:"الأدوية قريبة الانتهاء",
+    highAlertInspection:"High Alert Inspection",
+    refrigeratorInspection:"Refrigerator Inspection",
+    officialLine1:"تجمع المدينة المنورة الصحي",
+    officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
+    officialLine3:"إدارة الرعاية الصيدلانية",
+    labelExpired:"هذا الشهر",
+    labelSoon:"خلال 3 أشهر",
+    labelOk:"ضمن المدة الآمنة",
+    searchPlaceholder:"البحث باسم الدواء",
+    noMatches:"لا يوجد دواء مطابق في القائمة.",
+    colName:"اسم الدواء",
+    colType:"النوع",
+    colExpiry:"تاريخ الانتهاء",
+    colEmployee:"بواسطة",
+    colStatus:"الحالة",
+    printBtnText:"طباعة",
+    removeBtnText:"حذف",
+    removeConfirm:"سيتم حذف أدوية الشهر المختار من القائمة. هل تريد المتابعة؟",
+    removeSuccess:"تم حذف السجلات بنجاح.",
+    removeFailed:"تعذر حذف السجلات.",
+    removeAdminRequired:"هذه العملية تتطلب صلاحية الأدمن الرئيسي.",
+    refreshBtnText:"تحديث",
+    refreshNote:"يتحدث تلقائياً كل 10 ثواني",
+    emptyNote:"لا توجد بيانات لعرضها حالياً.",
+    loadError:"تعذر تحميل البيانات، حاول لاحقاً.",
+    expiredSince:" يوم منتهي منذ ",
+    daysLeft:" يوم متبقي "
+  },
+
+  en:{
+    title:"Inspection Indicator",
+    inspectionReport:"Inspection Report",
+    removalReport:"Expiry Removal Report",
+    nearlyExpireReport:"Nearly Expire Date",
+    highAlertInspection:"High Alert Inspection",
+    refrigeratorInspection:"Refrigerator Inspection",
+    officialLine1:"Madinah Health Cluster",
+    officialLine2:"King Fahad Hospital - Madinah",
+    officialLine3:"Pharmaceutical Care Administration",
+    labelExpired:"This Month",
+    labelSoon:"Within 3 Months",
+    labelOk:"Within Safe Range",
+    searchPlaceholder:"Search by medication name",
+    noMatches:"No matching medication in the list.",
+    colName:"Medication",
+    colType:"Type",
+    colExpiry:"Expiry Date",
+    colEmployee:"By",
+    colStatus:"Status",
+    printBtnText:"Print",
+    removeBtnText:"Remove",
+    removeConfirm:"Medications for the selected month will be removed from the list. Continue?",
+    removeSuccess:"Records removed successfully.",
+    removeFailed:"Could not remove records.",
+    removeAdminRequired:"This action requires main administrator permission.",
+    refreshBtnText:"Refresh",
+    refreshNote:"Auto-refreshes every 10 seconds",
+    emptyNote:"No data to display yet.",
+    loadError:"Could not load data, try again later.",
+    expiredSince:" days expired",
+    daysLeft:"Days left: "
+  }
+
+};
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+function setLanguage(lang){
+
+  currentLang =
+    lang;
+
+  document.documentElement.lang =
+    lang;
+
+  document.documentElement.dir =
+    lang === "ar"
+      ? "rtl"
+      : "ltr";
+
+  document.title =
+    text[lang].title;
+
+  document.getElementById("officialLine1").innerText =
+    text[lang].officialLine1;
+
+  document.getElementById("officialLine2").innerText =
+    text[lang].officialLine2;
+
+  document.getElementById("officialLine3").innerText =
+    text[lang].officialLine3;
+
+  document.getElementById("labelExpired").innerText =
+    text[lang].labelExpired;
+
+  document.getElementById("labelSoon").innerText =
+    text[lang].labelSoon;
+
+  document.getElementById("labelOk").innerText =
+    text[lang].labelOk;
+
+  document.getElementById("colName").innerText =
+    text[lang].colName;
+
+  document.getElementById("colType").innerText =
+    text[lang].colType;
+
+  document.getElementById("colExpiry").innerText =
+    text[lang].colExpiry;
+
+  document.getElementById("colEmployee").innerText =
+    text[lang].colEmployee;
+
+  document.getElementById("colStatus").innerText =
+    text[lang].colStatus;
+
+  updateSortHeaders();
+document.getElementById("refreshNote").innerText =
+    text[lang].refreshNote;
+
+  document.getElementById("highAlertFilterText").textContent =
+    lang === "ar" ? "عالي الخطورة" : "High Alert";
+  document.getElementById("refrigeratedFilterText").textContent =
+    lang === "ar" ? "ثلاجة" : "Refrigerated";
+  classificationReady();
+
+  document.getElementById("medicineSearch").placeholder =
+    text[lang].searchPlaceholder;
+
+  document.getElementById("reportType").options[0].textContent =
+    text[lang].inspectionReport;
+
+  document.getElementById("reportType").options[1].textContent =
+    text[lang].removalReport;
+
+  document.getElementById("reportType").options[2].textContent =
+    text[lang].nearlyExpireReport;
+
+  document.getElementById("reportType").options[3].textContent =
+    text[lang].highAlertInspection;
+
+  document.getElementById("reportType").options[4].textContent =
+    text[lang].refrigeratorInspection;
+
+document.getElementById("printBtn").title =
+    text[lang].printBtnText;
+
+  document.getElementById("printBtn").setAttribute(
+    "aria-label",
+    text[lang].printBtnText
+  );
+
+  document.getElementById("removeBtn").title =
+    text[lang].removeBtnText;
+
+  document.getElementById("removeBtn").setAttribute(
+    "aria-label",
+    text[lang].removeBtnText
+  );
+
+document.getElementById("refreshBtn").title =
+    text[lang].refreshBtnText;
+
+  document.getElementById("refreshBtn").setAttribute(
+    "aria-label",
+    text[lang].refreshBtnText
+  );
+
+  document.getElementById("languageToggle").innerText =
+    "🌐 ع | E";
+
+  renderDate();
+
+  updateReportTitle();
+
+  renderRows(
+    lastItems
+  );
+
+  updateRemoveButton();
+
+}
+
+
+function toggleLanguage(){
+
+  setLanguage(
+    currentLang === "ar"
+      ? "en"
+      : "ar"
+  );
+
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+function renderDate(){
+
+  const now =
+    new Date();
+
+  const date =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:"Asia/Riyadh"
+      }
+    ).format(
+      now
+    );
+
+  const dayName =
+    new Intl.DateTimeFormat(
+      currentLang === "ar"
+        ? "ar-SA"
+        : "en-US",
+      {
+        timeZone:"Asia/Riyadh",
+        weekday:"long"
+      }
+    ).format(
+      now
+    );
+
+  document.getElementById(
+    "dateBox"
+  ).innerText =
+    `${dayName} - ${date}`;
+
+}
+
+
+/* =========================================================
+   REPORT MONTH
+========================================================= */
+
+function buildReportMonthOptions(){
+
+  const select =
+    document.getElementById(
+      "reportMonth"
+    );
+
+  if (
+    !select ||
+    select.options.length
+  ){
+    return;
+  }
+
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  const today =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:"Asia/Riyadh"
+      }
+    ).format(
+      new Date()
+    );
+
+  const currentYear =
+    Number(
+      today.substring(
+        0,
+        4
+      )
+    );
+
+  for (
+    let year = currentYear - 1;
+    year <= currentYear + 1;
+    year++
+  ){
+
+    monthNames.forEach(
+      function(
+        monthName,
+        index
+      ){
+
+        const monthNumber =
+          String(
+            index + 1
+          ).padStart(
+            2,
+            "0"
+          );
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          year +
+          "-" +
+          monthNumber;
+
+        option.textContent =
+          monthName +
+          " " +
+          year;
+
+        select.appendChild(
+          option
+        );
+
+      }
+    );
+
+  }
+
+  select.value =
+    getCurrentMonthValue();
+
+}
+
+
+function getCurrentMonthValue(){
+
+  const today =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:"Asia/Riyadh"
+      }
+    ).format(
+      new Date()
+    );
+
+  return today.substring(
+    0,
+    7
+  );
+
+}
+
+
+function getReportMonth(){
+
+  const select =
+    document.getElementById(
+      "reportMonth"
+    );
+
+  return (
+    select &&
+    select.value
+  )
+    ? select.value
+    : getCurrentMonthValue();
+
+}
+
+
+function getReportType(){
+
+  const select =
+    document.getElementById(
+      "reportType"
+    );
+
+  return (
+    select &&
+    select.value
+  )
+    ? select.value
+    : "inspection";
+
+}
+
+
+function getReportMonthLabel(){
+
+  const select =
+    document.getElementById(
+      "reportMonth"
+    );
+
+  return (
+    select &&
+    select.selectedOptions.length
+  )
+    ? select.selectedOptions[0].textContent
+    : getReportMonth();
+
+}
+
+
+function updateReportTitle(){
+
+  const reportType =
+    getReportType();
+
+  const title =
+    reportType === "removal"
+      ? text[currentLang].removalReport
+      : reportType === "nearlyExpire"
+        ? text[currentLang].nearlyExpireReport
+        : reportType === "highAlertInspection"
+          ? text[currentLang].highAlertInspection
+          : reportType === "refrigeratorInspection"
+            ? text[currentLang].refrigeratorInspection
+            : text[currentLang].inspectionReport;
+
+  document.getElementById(
+    "pageTitle"
+  ).innerText =
+    title +
+    " - " +
+    getReportMonthLabel();
+
+}
+
+
+function refreshReportView(){
+
+  activeFilter =
+    null;
+
+  updateReportSelectColor();
+
+  updateHighAlertReportTheme();
+
+  updateClassificationFilterVisibility();
+
+  updateFilterCardsUI();
+
+  updateReportTitle();
+
+  updateRemoveButton();
+
+  renderRows(
+    lastItems
+  );
+
+}
+
+
+function updateReportSelectColor(){
+
+  const select =
+    document.getElementById(
+      "reportType"
+    );
+
+  if (
+    !select
+  ){
+    return;
+  }
+
+  select.classList.toggle(
+    "report-select-high-alert",
+    getReportType() === "highAlertInspection"
+  );
+
+  select.classList.toggle(
+    "report-select-nearly-expire",
+    getReportType() === "nearlyExpire"
+  );
+
+}
+
+
+function updateHighAlertReportTheme(){
+
+  const container =
+    document.getElementById(
+      "dashboardContainer"
+    );
+
+  if (
+    !container
+  ){
+    return;
+  }
+
+  container.classList.toggle(
+    "high-alert-report-theme",
+    getReportType() === "highAlertInspection"
+  );
+
+  container.classList.toggle(
+    "nearly-expire-report-theme",
+    getReportType() === "nearlyExpire"
+  );
+
+}
+
+
+function updateClassificationFilterVisibility(){
+
+  const filters =
+    document.querySelector(
+      ".classification-filters"
+    );
+
+  const highAlert =
+    document.getElementById(
+      "highAlertFilter"
+    );
+
+  const refrigerated =
+    document.getElementById(
+      "refrigeratedFilter"
+    );
+
+  if (
+    !filters ||
+    !highAlert ||
+    !refrigerated
+  ){
+    return;
+  }
+
+  const show =
+    getReportType() === "inspection";
+
+  if (
+    !show
+  ){
+    highAlert.checked =
+      false;
+
+    refrigerated.checked =
+      false;
+  }
+
+  filters.style.display =
+    show
+      ? ""
+      : "none";
+
+}
+
+
+function updateRemoveButton(){
+
+  const removeBtn =
+    document.getElementById(
+      "removeBtn"
+    );
+
+  if (!removeBtn){
+    return;
+  }
+
+  removeBtn.classList.toggle(
+    "visible",
+    getReportType() === "removal"
+  );
+
+}
+
+
+/* =========================================================
+   REPORT FILTER
+========================================================= */
+
+function reportBaseItems(){
+
+  const month =
+    getReportMonth();
+
+  const reportType =
+    getReportType();
+
+  return lastItems.filter(
+    function(item){
+
+      const itemMonth =
+        String(
+          item.expiry ||
+          ""
+        ).substring(
+          0,
+          7
+        );
+
+      if (
+        reportType === "removal"
+      ){
+
+        return (
+          itemMonth ===
+          month
+        );
+
+      }
+
+      if (
+        reportType === "nearlyExpire"
+      ){
+
+        const distance =
+          monthDistance(
+            month,
+            itemMonth
+          );
+
+        return (
+          distance > 0 &&
+          distance <= 3
+        );
+
+      }
+
+      if (
+        reportType === "highAlertInspection"
+      ){
+
+        if (
+          !classificationReady()
+        ){
+          return false;
+        }
+
+        return (
+          itemMonth >=
+          month &&
+          window.KidneyMedicationClassification.isHighAlertMedication(
+            item.name
+          )
+        );
+
+      }
+
+      if (
+        reportType === "refrigeratorInspection"
+      ){
+
+        if (
+          !classificationReady()
+        ){
+          return false;
+        }
+
+        return (
+          itemMonth >=
+          month &&
+          window.KidneyMedicationClassification.isRefrigeratedMedication(
+            item.name
+          )
+        );
+
+      }
+
+      return (
+        itemMonth >=
+        month
+      );
+
+    }
+  );
+
+}
+
+
+function itemBucket(item){
+
+  const itemMonth =
+    String(
+      item.expiry ||
+      ""
+    ).substring(
+      0,
+      7
+    );
+
+  const reportMonth =
+    getReportMonth();
+
+  if (
+    getReportType() === "removal"
+  ){
+
+    return "expired";
+
+  }
+
+  if (
+    itemMonth === reportMonth
+  ){
+
+    return "expired";
+
+  }
+
+  const distance =
+    monthDistance(
+      reportMonth,
+      itemMonth
+    );
+
+  if (
+    distance > 0 &&
+    distance <= 3
+  ){
+
+    return "soon";
+
+  }
+
+  return "ok";
+
+}
+
+
+function monthDistance(
+  fromMonth,
+  toMonth
+){
+
+  const from =
+    String(
+      fromMonth ||
+      ""
+    ).split(
+      "-"
+    );
+
+  const to =
+    String(
+      toMonth ||
+      ""
+    ).split(
+      "-"
+    );
+
+  if (
+    from.length < 2 ||
+    to.length < 2
+  ){
+
+    return 999;
+
+  }
+
+  return (
+    (
+      Number(
+        to[0]
+      ) -
+      Number(
+        from[0]
+      )
+    ) * 12
+  ) +
+  (
+    Number(
+      to[1]
+    ) -
+    Number(
+      from[1]
+    )
+  );
+
+}
+
+
+function setFilter(status){
+
+  activeFilter =
+    activeFilter === status
+      ? null
+      : status;
+
+  updateFilterCardsUI();
+
+  renderTable();
+
+}
+
+
+function updateFilterCardsUI(){
+
+  document.querySelectorAll(
+    ".stat-card"
+  ).forEach(
+    function(card){
+
+      const isActive =
+        activeFilter &&
+        card.getAttribute(
+          "data-filter"
+        ) === activeFilter;
+
+      card.classList.toggle(
+        "active-filter",
+        Boolean(
+          isActive
+        )
+      );
+
+      card.setAttribute(
+        "aria-pressed",
+        isActive
+          ? "true"
+          : "false"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   MEDICATION SEARCH
+========================================================= */
+
+function renderMedicationOptions(
+  filterText
+){
+
+  const box =
+    document.getElementById(
+      "medicineSearchOptions"
+    );
+
+  const q =
+    String(
+      filterText ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const matches =
+    q
+      ? MEDICATIONS.filter(
+          function(name){
+
+            return name
+              .toLowerCase()
+              .includes(
+                q
+              );
+
+          }
+        )
+      : MEDICATIONS;
+
+  box.innerHTML =
+    "";
+
+  if (
+    !matches.length
+  ){
+
+    const empty =
+      document.createElement(
+        "div"
+      );
+
+    empty.className =
+      "combo-empty";
+
+    empty.innerText =
+      text[currentLang].noMatches;
+
+    box.appendChild(
+      empty
+    );
+
+  }else{
+
+    matches
+      .slice(
+        0,
+        50
+      )
+      .forEach(
+        function(name){
+
+          const option =
+            document.createElement(
+              "div"
+            );
+
+          option.className =
+            "combo-option";
+
+          option.innerText =
+            name;
+
+          option.onmousedown =
+            function(event){
+
+              event.preventDefault();
+
+              selectMedicationSearch(
+                name
+              );
+
+            };
+
+          box.appendChild(
+            option
+          );
+
+        }
+      );
+
+  }
+
+  box.style.display =
+    "block";
+
+}
+
+
+function selectMedicationSearch(
+  name
+){
+
+  const input =
+    document.getElementById(
+      "medicineSearch"
+    );
+
+  input.value =
+    name;
+
+  medicineSearchTerm =
+    name.toLowerCase();
+
+  document.getElementById(
+    "medicineSearchOptions"
+  ).style.display =
+    "none";
+
+  renderTable();
+
+}
+
+
+function matchesMedicineSearch(
+  item
+){
+
+  if (
+    !medicineSearchTerm
+  ){
+
+    return true;
+
+  }
+
+  return String(
+    item.name ||
+    ""
+  )
+    .toLowerCase()
+    .includes(
+      medicineSearchTerm
+    );
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function statusLabel(
+  daysLeft
+){
+
+  if (
+    Number(
+      daysLeft
+    ) < 0
+  ){
+
+    return (
+      Math.abs(
+        Number(
+          daysLeft
+        )
+      ) +
+      text[currentLang].expiredSince
+    );
+
+  }
+
+  return (
+    text[currentLang].daysLeft +
+    daysLeft
+  );
+
+}
+
+
+function rowClass(item){
+
+  const bucket =
+    itemBucket(
+      item
+    );
+
+  if (
+    bucket === "expired"
+  ){
+
+    return "row-expired";
+
+  }
+
+  if (
+    bucket === "soon"
+  ){
+
+    return "row-soon";
+
+  }
+
+  return "";
+
+}
+
+
+function dateClass(item){
+
+  const bucket =
+    itemBucket(
+      item
+    );
+
+  if (
+    bucket === "expired"
+  ){
+
+    return "date-expired";
+
+  }
+
+  if (
+    bucket === "soon"
+  ){
+
+    return "date-soon";
+
+  }
+
+  return "date-ok";
+
+}
+
+
+function pillClass(item){
+
+  return itemBucket(
+    item
+  );
+
+}
+
+
+/* =========================================================
+   VISIBLE ITEMS
+========================================================= */
+
+function classificationReady(){
+  const ready = Boolean(window.KidneyMedicationClassification);
+  const status = document.getElementById("classificationStatus");
+  status.textContent = ready ? "" : (currentLang === "ar"
+    ? "تعذر تحميل تصنيف الأدوية. أعد تحميل الصفحة قبل التصفية أو الطباعة."
+    : "Medication classification could not load. Reload before filtering or printing.");
+  status.style.display = ready ? "none" : "block";
+  document.getElementById("highAlertFilter").disabled = !ready;
+  document.getElementById("refrigeratedFilter").disabled = !ready;
+  return ready;
+}
+
+function matchesClassification(item){
+  const highAlert = document.getElementById("highAlertFilter").checked;
+  const refrigerated = document.getElementById("refrigeratedFilter").checked;
+  if (!highAlert && !refrigerated) return true;
+  if (!classificationReady()) return false;
+  const classification = window.KidneyMedicationClassification;
+  return (!highAlert || classification.isHighAlertMedication(item.name)) &&
+    (!refrigerated || classification.isRefrigeratedMedication(item.name));
+}
+
+function getVisibleItems(){
+
+  const visible =
+    reportBaseItems().filter(
+    function(item){
+
+      const statusMatch =
+        !activeFilter ||
+        itemBucket(
+          item
+        ) === activeFilter;
+
+      return (
+        statusMatch &&
+        matchesClassification(item) &&
+        matchesMedicineSearch(
+          item
+        )
+      );
+
+    }
+  );
+
+  return sortedVisibleItems(
+    visible
+  );
+
+}
+
+
+function sortedVisibleItems(items){
+
+  const sorted =
+    items.slice();
+
+  if (
+    !activeSortColumn
+  ){
+    return sorted;
+  }
+
+  sorted.sort(
+    function(a, b){
+
+      let result =
+        0;
+
+      if (
+        activeSortColumn === "name"
+      ){
+
+        result =
+          String(
+            a.name ||
+            ""
+          ).localeCompare(
+            String(
+              b.name ||
+              ""
+            ),
+            "en",
+            {
+              sensitivity:"base"
+            }
+          );
+
+      }else if (
+        activeSortColumn === "expiry"
+      ){
+
+        result =
+          String(
+            a.expiry ||
+            ""
+          ).localeCompare(
+            String(
+              b.expiry ||
+              ""
+            )
+          );
+
+      }
+
+      return activeSortDirection === "desc"
+        ? result * -1
+        : result;
+
+    }
+  );
+
+  return sorted;
+
+}
+
+
+function toggleSort(column){
+
+  if (
+    activeSortColumn === column
+  ){
+
+    activeSortDirection =
+      activeSortDirection === "asc"
+        ? "desc"
+        : "asc";
+
+  }else{
+
+    activeSortColumn =
+      column;
+
+    activeSortDirection =
+      "asc";
+
+  }
+
+  updateSortHeaders();
+  renderTable();
+
+}
+
+
+function handleSortHeaderKey(event, column){
+
+  if (
+    event.key === "Enter" ||
+    event.key === " "
+  ){
+
+    event.preventDefault();
+    toggleSort(column);
+
+  }
+
+}
+
+
+function updateSortHeaders(){
+
+  const nameHeader =
+    document.getElementById(
+      "colName"
+    );
+
+  const expiryHeader =
+    document.getElementById(
+      "colExpiry"
+    );
+
+  if (
+    !nameHeader ||
+    !expiryHeader
+  ){
+    return;
+  }
+
+  updateSortHeader(
+    nameHeader,
+    text[currentLang].colName,
+    "name"
+  );
+
+  updateSortHeader(
+    expiryHeader,
+    text[currentLang].colExpiry,
+    "expiry"
+  );
+
+}
+
+
+function updateSortHeader(header, label, column){
+
+  const active =
+    activeSortColumn === column;
+
+  const indicator =
+    active
+      ? (
+          activeSortDirection === "asc"
+            ? "↑"
+            : "↓"
+        )
+      : "↕";
+
+  header.innerHTML =
+    escapeHtml(
+      label
+    ) +
+    '<span class="sort-indicator">' +
+    indicator +
+    '</span>';
+
+  header.setAttribute(
+    "aria-sort",
+    active
+      ? (
+          activeSortDirection === "asc"
+            ? "ascending"
+            : "descending"
+        )
+      : "none"
+  );
+
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+function rebuildPrintRowKeys(){
+  const counts = new Map();
+  const previousCounts = new Map();
+  printRowKeys.forEach(function(key){
+    const identity = JSON.parse(key)[0];
+    previousCounts.set(identity, (previousCounts.get(identity) || 0) + 1);
+  });
+  printRowKeys = new Map();
+  lastItems.forEach(function(item){
+    const identity = JSON.stringify([item.name, item.expiry, item.registeredBy || ""]);
+    const occurrence = counts.get(identity) || 0;
+    counts.set(identity, occurrence + 1);
+    printRowKeys.set(item, JSON.stringify([identity, occurrence]));
+  });
+  const available = new Set(printRowKeys.values());
+  selectedPrintRows.forEach(function(key){
+    const identity = JSON.parse(key)[0];
+    if (!available.has(key) || counts.get(identity) !== previousCounts.get(identity)){
+      selectedPrintRows.delete(key);
+    }
+  });
+}
+
+function updatePrintSelectionHeader(){
+  const visible = getVisibleItems();
+  const count = visible.filter(function(item){ return selectedPrintRows.has(printRowKeys.get(item)); }).length;
+  const checkbox = document.getElementById("selectVisiblePrintRows");
+  checkbox.checked = visible.length > 0 && count === visible.length;
+  checkbox.indeterminate = count > 0 && count < visible.length;
+  checkbox.disabled = visible.length === 0;
+  checkbox.setAttribute("aria-label", currentLang === "ar" ? "تحديد الصفوف الظاهرة للطباعة" : "Select visible rows for printing");
+}
+
+function selectVisibleRowsForPrint(checked){
+  getVisibleItems().forEach(function(item){
+    const key = printRowKeys.get(item);
+    if (checked) selectedPrintRows.add(key);
+    else selectedPrintRows.delete(key);
+  });
+  renderTable();
+}
+
+function getPrintableItems(){
+  const visible = getVisibleItems();
+  const selected = visible.filter(function(item){ return selectedPrintRows.has(printRowKeys.get(item)); });
+  return selected.length ? selected : visible;
+}
+
+function medicationTypeMarkup(name){
+  const classification = window.KidneyMedicationClassification;
+  if (!classification) return "";
+  const highAlert = classification.isHighAlertMedication(name);
+  const refrigerated = classification.isRefrigeratedMedication(name);
+  const lasa = classification.isLasaMedication(name);
+  if (!highAlert && !refrigerated && !lasa) return "";
+  const parts = [];
+  if (highAlert) parts.push('<span class="high-alert-indicator">HIGH ALERT</span>');
+  if (lasa) parts.push('<span class="lasa-indicator">LASA</span>');
+  if (refrigerated){
+    parts.push('<svg class="refrigerated-indicator" viewBox="0 0 24 24" role="img" aria-label="Refrigerated"><path d="M12 2v20M3.34 7l17.32 10M3.34 17L20.66 7M12 2l-2 2m2-2 2 2m-2 18-2-2m2 2 2-2M3.34 7l2.73-.73M3.34 7l.73 2.73M20.66 17l-2.73.73M20.66 17l-.73-2.73M3.34 17l2.73.73M3.34 17l.73-2.73M20.66 7l-2.73-.73M20.66 7l-.73 2.73"></path></svg>');
+  }
+  return '<span class="medication-type">' + parts.join('<span>+</span>') + '</span>';
+}
+
+
+function medicationNameMarkup(name){
+
+  const classification =
+    window.KidneyMedicationClassification;
+
+  const highAlert =
+    classification &&
+    classification.isHighAlertMedication(
+      name
+    );
+
+  return '<span' +
+    (
+      highAlert
+        ? ' class="high-alert-medication-name"'
+        : ""
+    ) +
+    '>' +
+    escapeHtml(
+      name
+    ) +
+    '</span>';
+
+}
+
+function renderTable(){
+
+  const tbody =
+    document.getElementById(
+      "tableBody"
+    );
+
+  const emptyNote =
+    document.getElementById(
+      "emptyNote"
+    );
+
+  tbody.innerHTML =
+    "";
+
+  const filtered =
+    getVisibleItems();
+
+  filtered.forEach(
+    function(m){
+
+      const tr =
+        document.createElement(
+          "tr"
+        );
+
+      tr.className =
+        rowClass(
+          m
+        );
+
+      tr.innerHTML =
+        "<td>" +
+        medicationNameMarkup(m.name) +
+        "</td>" +
+
+        "<td>" +
+        medicationTypeMarkup(m.name) +
+        "</td>" +
+
+        "<td class=\"" +
+        dateClass(
+          m
+        ) +
+        "\">" +
+        escapeHtml(
+          m.expiry
+        ) +
+        "</td>" +
+
+        "<td><span class=\"status-pill " +
+        pillClass(
+          m
+        ) +
+        "\">" +
+        escapeHtml(
+          statusLabel(
+            m.daysLeft
+          )
+        ) +
+        "</span></td>" +
+
+        "<td>" +
+        escapeHtml(
+          m.registeredBy ||
+          ""
+        ) +
+        "</td>";
+
+      const selectionCell = document.createElement("td");
+      selectionCell.className = "print-selection";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selectedPrintRows.has(printRowKeys.get(m));
+      checkbox.setAttribute("aria-label", (currentLang === "ar" ? "طباعة: " : "Print: ") + m.name + " — " + m.expiry);
+      checkbox.addEventListener("change", function(){
+        const key = printRowKeys.get(m);
+        if (checkbox.checked) selectedPrintRows.add(key);
+        else selectedPrintRows.delete(key);
+        updatePrintSelectionHeader();
+      });
+      selectionCell.appendChild(checkbox);
+      tr.insertBefore(selectionCell, tr.firstChild);
+
+      tbody.appendChild(
+        tr
+      );
+
+    }
+  );
+
+  emptyNote.style.display =
+    filtered.length
+      ? "none"
+      : "block";
+
+  emptyNote.innerText =
+    text[currentLang].emptyNote;
+
+  updatePrintSelectionHeader();
+
+}
+
+
+function renderRows(items){
+
+  lastItems =
+    items ||
+    [];
+
+  rebuildPrintRowKeys();
+
+  let expired =
+    0;
+
+  let soon =
+    0;
+
+  let ok =
+    0;
+
+  reportBaseItems().forEach(
+    function(m){
+
+      const bucket =
+        itemBucket(
+          m
+        );
+
+      if (
+        bucket === "expired"
+      ){
+
+        expired++;
+
+      }else if (
+        bucket === "soon"
+      ){
+
+        soon++;
+
+      }else{
+
+        ok++;
+
+      }
+
+    }
+  );
+
+  document.getElementById(
+    "countExpired"
+  ).textContent =
+    expired;
+
+  document.getElementById(
+    "countSoon"
+  ).textContent =
+    soon;
+
+  document.getElementById(
+    "countOk"
+  ).textContent =
+    ok;
+
+  renderTable();
+
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+function printReport(){
+
+  if (!classificationReady()) return;
+
+  buildPrintPages();
+
+  window.print();
+
+}
+
+
+function buildPrintPages(){
+
+  const printPages =
+    document.getElementById(
+      "printPages"
+    );
+
+  printPages.innerHTML =
+    "";
+
+  const items =
+    getPrintableItems();
+
+  const ROWS_PER_PAGE =
+    19;
+
+  const pageCount =
+    Math.max(
+      1,
+      Math.ceil(
+        items.length /
+        ROWS_PER_PAGE
+      )
+    );
+
+  for (
+    let pageIndex = 0;
+    pageIndex < pageCount;
+    pageIndex++
+  ){
+
+    const start =
+      pageIndex *
+      ROWS_PER_PAGE;
+
+    const pageItems =
+      items.slice(
+        start,
+        start +
+        ROWS_PER_PAGE
+      );
+
+    printPages.appendChild(
+      createPrintPage(
+        pageItems,
+        pageIndex + 1,
+        pageCount
+      )
+    );
+
+  }
+
+}
+
+
+function createPrintPage(
+  pageItems,
+  pageNumber,
+  totalPages
+){
+
+  const page =
+    document.createElement(
+      "section"
+    );
+
+  page.className =
+    "print-page";
+
+  page.classList.toggle(
+    "high-alert-report-theme",
+    getReportType() === "highAlertInspection"
+  );
+
+  page.classList.toggle(
+    "nearly-expire-report-theme",
+    getReportType() === "nearlyExpire"
+  );
+
+
+  const header =
+    document.createElement(
+      "div"
+    );
+
+  header.className =
+    "print-header";
+
+  header.innerHTML =
+    '<img class="print-logo" src="../../logo.png" alt="Logo">' +
+
+    '<div class="print-official" dir="' +
+      (currentLang === "ar" ? "rtl" : "ltr") +
+      '">' +
+
+      '<h2>' +
+      escapeHtml(
+        text[currentLang].officialLine1
+      ) +
+      '</h2>' +
+
+      '<h3>' +
+      escapeHtml(
+        text[currentLang].officialLine2
+      ) +
+      '</h3>' +
+
+      '<h3>' +
+      escapeHtml(
+        text[currentLang].officialLine3
+      ) +
+      '</h3>' +
+
+    '</div>';
+
+  page.appendChild(
+    header
+  );
+
+
+  const divider =
+    document.createElement(
+      "hr"
+    );
+
+  divider.className =
+    "print-divider";
+
+  page.appendChild(
+    divider
+  );
+
+
+  const date =
+    document.createElement(
+      "div"
+    );
+
+  date.className =
+    "print-date";
+
+  date.innerText =
+    document.getElementById(
+      "dateBox"
+    ).innerText;
+
+  page.appendChild(
+    date
+  );
+
+
+  const title =
+    document.createElement(
+      "div"
+    );
+
+  title.className =
+    "print-title";
+
+  title.innerText =
+    document.getElementById(
+      "pageTitle"
+    ).innerText;
+
+  page.appendChild(
+    title
+  );
+
+
+  const tableWrap =
+    document.createElement(
+      "div"
+    );
+
+  tableWrap.className =
+    "print-table-wrap";
+
+
+  const table =
+    document.createElement(
+      "table"
+    );
+
+  table.className =
+    "print-table";
+
+  table.innerHTML =
+    "<thead>" +
+      "<tr>" +
+
+        "<th>" +
+        escapeHtml(
+          text[currentLang].colName
+        ) +
+        "</th>" +
+
+        "<th>" +
+        escapeHtml(
+          text[currentLang].colType
+        ) +
+        "</th>" +
+
+        "<th>" +
+        escapeHtml(
+          text[currentLang].colExpiry
+        ) +
+        "</th>" +
+
+        "<th>" +
+        escapeHtml(
+          text[currentLang].colStatus
+        ) +
+        "</th>" +
+
+        "<th>" +
+        escapeHtml(
+          text[currentLang].colEmployee
+        ) +
+        "</th>" +
+
+      "</tr>" +
+    "</thead>" +
+    "<tbody></tbody>";
+
+
+  const tbody =
+    table.querySelector(
+      "tbody"
+    );
+
+
+  if (
+    !pageItems.length
+  ){
+
+    const tr =
+      document.createElement(
+        "tr"
+      );
+
+    tr.innerHTML =
+      '<td colspan="5">' +
+      escapeHtml(
+        text[currentLang].emptyNote
+      ) +
+      '</td>';
+
+    tbody.appendChild(
+      tr
+    );
+
+  }else{
+
+    pageItems.forEach(
+      function(item){
+
+        const tr =
+          document.createElement(
+            "tr"
+          );
+
+        tr.className =
+          rowClass(
+            item
+          );
+
+        tr.innerHTML =
+          "<td>" +
+          medicationNameMarkup(item.name) +
+          "</td>" +
+
+          "<td>" +
+          medicationTypeMarkup(item.name) +
+          "</td>" +
+
+          "<td class=\"" +
+          dateClass(
+            item
+          ) +
+          "\">" +
+          escapeHtml(
+            item.expiry
+          ) +
+          "</td>" +
+
+          "<td>" +
+          escapeHtml(
+            statusLabel(
+              item.daysLeft
+            )
+          ) +
+          "</td>" +
+
+          "<td>" +
+          escapeHtml(
+            item.registeredBy ||
+            ""
+          ) +
+          "</td>";
+
+        tbody.appendChild(
+          tr
+        );
+
+      }
+    );
+
+  }
+
+
+  tableWrap.appendChild(
+    table
+  );
+
+  page.appendChild(
+    tableWrap
+  );
+
+
+  const footer =
+    document.createElement(
+      "div"
+    );
+
+  footer.className =
+    "print-footer";
+
+
+  const pageNumberBox =
+    document.createElement(
+      "div"
+    );
+
+  pageNumberBox.className =
+    "print-page-number";
+
+  pageNumberBox.innerText =
+    "Page " +
+    pageNumber +
+    " of " +
+    totalPages;
+
+
+  footer.appendChild(
+    pageNumberBox
+  );
+
+  const signature =
+    document.createElement(
+      "div"
+    );
+
+  signature.className =
+    "print-signature";
+
+  signature.innerHTML =
+    '<span class="signature-unit">Pharmacy Services - Kidney Pharmacy</span>' +
+    '<span class="signature-author">Developed by Abdullah Alattas</span>';
+
+  footer.appendChild(
+    signature
+  );
+
+  page.appendChild(
+    footer
+  );
+
+
+  return page;
+
+}
+
+
+/* =========================================================
+   REFRESH
+========================================================= */
+
+function refreshData(){
+
+  activeFilter =
+    null;
+
+  updateFilterCardsUI();
+
+  loadData();
+
+}
+
+
+async function logoutDashboard(){
+  const token = sessionStorage.getItem("unifiedPortalSessionToken") || "";
+  if (token){
+    try {
+      await fetch("https://script.google.com/macros/s/AKfycbzg9PCeoJQl0ifbng_aam6u5mTePD0872wqZ5ilZYqcFV9QypiyopulgPPyO3nqLpez/exec", {
+        method:"POST",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify({action:"revokeSession", sessionToken:token})
+      });
+    } catch (error) {}
+  }
+  ["unifiedPortalUsername", "unifiedPortalSessionToken", "unifiedPortalUser"]
+    .forEach(function(key){ sessionStorage.removeItem(key); });
+  ["kidneyEmployeeName", "kidneyEmployeeUsername", "kidneySessionToken"]
+    .forEach(function(key){
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
+    });
+  stopDashboardRefresh();
+  document.getElementById("employeeName").innerText = "";
+  document.querySelector(".container").style.display = "none";
+  navigateFresh("../../index.html", true);
+}
+
+function restorePortalIdentity(){
+
+  const employeeName =
+    document.getElementById(
+      "employeeName"
+    );
+
+  if (!employeeName){
+    return;
+  }
+
+  let portalUser =
+    null;
+
+  try{
+    portalUser =
+      JSON.parse(
+        sessionStorage.getItem(
+          "unifiedPortalUser"
+        ) || "null"
+      );
+  }catch(error){}
+
+  employeeName.innerText =
+    (
+      portalUser &&
+      (
+        portalUser.name ||
+        portalUser.username
+      )
+    ) ||
+    sessionStorage.getItem(
+      "kidneyEmployeeName"
+    ) ||
+    sessionStorage.getItem(
+      "unifiedPortalUsername"
+    ) ||
+    "";
+
+}
+
+
+async function loadData(){
+
+  try{
+
+    const data =
+      await loadDashboardData();
+
+    if (
+      !data ||
+      !data.success
+    ){
+
+      document.getElementById(
+        "emptyNote"
+      ).style.display =
+        "block";
+
+      document.getElementById(
+        "emptyNote"
+      ).innerText =
+        text[currentLang].loadError;
+
+      return;
+    }
+
+    renderRows(
+      data.items ||
+      data.medications ||
+      []
+    );
+
+  }catch(error){
+
+    document.getElementById(
+      "emptyNote"
+    ).style.display =
+      "block";
+
+    document.getElementById(
+      "emptyNote"
+    ).innerText =
+      text[currentLang].loadError;
+
+  }
+
+}
+
+
+function updateSessionControls(token){
+  verifiedToolbarToken = token;
+  const visible = Boolean(token) && token === sessionStorage.getItem("unifiedPortalSessionToken");
+  document.getElementById("portalBackBtn").hidden = !visible;
+  document.getElementById("logoutBtn").hidden = !visible;
+}
+
+async function loadDashboardData(){
+
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (!sessionToken || sessionToken !== verifiedToolbarToken){
+    updateSessionControls("");
+  }
+
+  if (sessionToken){
+    try{
+      const protectedResponse =
+        await fetch(
+          API_URL,
+          {
+            method:"POST",
+            headers:{
+              "Content-Type":
+                "text/plain;charset=utf-8"
+            },
+            body:
+              JSON.stringify({
+                action:
+                  "dashboardWithEmployee",
+                sessionToken:
+                  sessionToken,
+                token:
+                  sessionToken
+              })
+          }
+        );
+
+      if (protectedResponse.ok){
+        const protectedData =
+          await protectedResponse.json();
+
+        if (
+          protectedData &&
+          protectedData.success
+        ){
+          if (sessionToken === sessionStorage.getItem("unifiedPortalSessionToken")){
+            updateSessionControls(sessionToken);
+          }
+          return protectedData;
+        }
+      }
+    }catch(error){}
+  }
+
+  if (sessionToken === (sessionStorage.getItem("unifiedPortalSessionToken") || "")){
+    updateSessionControls("");
+  }
+
+  const publicResponse =
+    await fetch(
+      API_URL +
+      "?action=dashboard&t=" +
+      Date.now(),
+      {
+        method:"GET",
+        cache:"no-store"
+      }
+    );
+
+  return await publicResponse.json();
+}
+
+
+async function removeSelectedMonth(){
+
+  if (
+    getReportType() !== "removal"
+  ){
+    return;
+  }
+
+  if (
+    !window.confirm(
+      text[currentLang].removeConfirm
+    )
+  ){
+    return;
+  }
+
+  const sessionToken =
+    sessionStorage.getItem(
+      "unifiedPortalSessionToken"
+    ) || "";
+
+  if (!sessionToken){
+    window.alert(
+      text[currentLang].removeAdminRequired
+    );
+    return;
+  }
+
+  const removeBtn =
+    document.getElementById(
+      "removeBtn"
+    );
+
+  removeBtn.disabled =
+    true;
+
+  try{
+
+    const response =
+      await fetch(
+        API_URL,
+        {
+          method:"POST",
+          headers:{
+            "Content-Type":
+              "text/plain;charset=utf-8"
+          },
+          body:JSON.stringify({
+            action:
+              "removeExpiredMonth",
+            reportMonth:
+              getReportMonth(),
+            month:
+              getReportMonth(),
+            sessionToken:
+              sessionToken,
+            token:
+              sessionToken
+          })
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (
+      !result ||
+      !result.success
+    ){
+
+      window.alert(
+        result &&
+        (
+          result.code === "NO_ADMIN_PERMISSION" ||
+          result.code === "NO_PERMISSION" ||
+          result.code === "MISSING_SESSION" ||
+          result.code === "INVALID_SESSION"
+        )
+          ? text[currentLang].removeAdminRequired
+          : text[currentLang].removeFailed
+      );
+
+      return;
+    }
+
+    window.alert(
+      text[currentLang].removeSuccess
+    );
+
+    await loadData();
+
+  }catch(error){
+
+    window.alert(
+      text[currentLang].removeFailed
+    );
+
+  }finally{
+
+    removeBtn.disabled =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   ESCAPE
+========================================================= */
+
+function escapeHtml(value){
+
+  return String(
+    value === null ||
+    value === undefined
+      ? ""
+      : value
+  )
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   PUBLIC DASHBOARD REFRESH
+========================================================= */
+
+function stopDashboardRefresh(){
+
+  if (
+    dashboardRefreshTimer
+  ){
+
+    window.clearInterval(
+      dashboardRefreshTimer
+    );
+
+    dashboardRefreshTimer =
+      null;
+
+  }
+
+}
+
+
+function startDashboardRefresh(){
+
+  if (
+    dashboardRefreshTimer
+  ){
+    return;
+  }
+
+  dashboardRefreshTimer =
+    window.setInterval(
+      loadData,
+      10000
+    );
+
+}
+
+
+/* =========================================================
+   SEARCH EVENTS
+========================================================= */
+
+document.getElementById(
+  "medicineSearch"
+).addEventListener(
+  "input",
+  function(){
+
+    medicineSearchTerm =
+      this.value
+        .trim()
+        .toLowerCase();
+
+    renderMedicationOptions(
+      this.value
+    );
+
+    renderTable();
+
+  }
+);
+
+
+document.getElementById(
+  "medicineSearch"
+).addEventListener(
+  "focus",
+  function(){
+
+    renderMedicationOptions(
+      this.value
+    );
+
+  }
+);
+
+
+document.addEventListener(
+  "click",
+  function(event){
+
+    if (
+      !event.target.closest(
+        ".combo-wrap"
+      )
+    ){
+
+      document.getElementById(
+        "medicineSearchOptions"
+      ).style.display =
+        "none";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   START
+========================================================= */
+
+function init(){
+
+  if (new URLSearchParams(location.search).get("from") === "expiry-dates") {
+    const back = document.querySelector(".portal-back-button");
+    if (back) back.href = "../../expiry-dates.html";
+  }
+
+  buildReportMonthOptions();
+  restorePortalIdentity();
+  updateReportSelectColor();
+  updateHighAlertReportTheme();
+  updateClassificationFilterVisibility();
+
+  setLanguage(
+    "en"
+  );
+
+  loadData();
+  startDashboardRefresh();
+
+}
+
+
+document.addEventListener(
+  "DOMContentLoaded",
+  init
+);
+
+</script>
+
+<script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[logout,name,back].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script>
+<footer class="developer-signature" aria-label="Project signature"><span class="signature-unit">Pharmacy Services - Outpatient Pharmacy</span><span class="signature-author">Developed by Abdullah Alattas</span></footer>
+<script id="mobile-date-compact-fix">(function(){function compactDate(){var el=document.getElementById('dateBox');if(!el)return;var raw=el.dataset.fullDate||el.textContent.trim();if(raw)el.dataset.fullDate=raw;var m=raw.match(/^(.*?)\s*-\s*(\d{4})-(\d{2})-(\d{2})$/);if(!m)return;var mobile=window.innerWidth<=600;var next=mobile?'<span class="mobile-day">'+m[1]+'</span><span class="mobile-date">'+m[2]+'-'+m[3]+'-'+m[4]+'</span>':m[1]+' - '+m[2]+'-'+m[3]+'-'+m[4];if(el.innerHTML!==next)el.innerHTML=next;}function run(){compactDate();var el=document.getElementById('dateBox');if(el&&!el.dataset.mobileObserver){el.dataset.mobileObserver='1';new MutationObserver(compactDate).observe(el,{childList:true,characterData:true,subtree:true});}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();window.addEventListener('resize',compactDate,{passive:true});})();</script>
+</body>
+</html>
