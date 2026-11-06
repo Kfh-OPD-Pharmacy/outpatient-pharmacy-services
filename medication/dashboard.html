@@ -605,7 +605,7 @@ html,body{overflow-x:hidden}
         </svg>
       </button>
       <span id="dashboardEmployeeName" class="employee-name"></span>
-      <a class="portal-back-button" href="portal.html" title="رجوع" aria-label="رجوع">↩</a>
+      <a class="portal-back-button" href="../medication-booking.html" title="رجوع" aria-label="رجوع">↩</a>
     </div>
 
     <button
@@ -955,7 +955,7 @@ async function validateDashboardSession(){
 
       if (code === "NO_PERMISSION"){
         hideDashboardData();
-        window.location.replace("portal.html");
+        window.location.replace("../medication-booking.html");
         return false;
       }
 
@@ -967,7 +967,7 @@ async function validateDashboardSession(){
 
     if (!hasIndicatorAccess(result.user)){
       hideDashboardData();
-      window.location.replace("portal.html");
+      window.location.replace("../medication-booking.html");
       return false;
     }
 
@@ -996,7 +996,7 @@ async function validateDashboardSession(){
     }
 
     hideDashboardData();
-    window.location.replace("portal.html");
+    window.location.replace("../medication-booking.html");
     return false;
   }
 }
@@ -1041,7 +1041,7 @@ async function loadDashboard(){
       data.code === "NO_PERMISSION"
     ){
       hideDashboardData();
-      window.location.replace("portal.html");
+      window.location.replace("../medication-booking.html");
       return;
     }
 
