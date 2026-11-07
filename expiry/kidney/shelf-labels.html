@@ -1431,7 +1431,7 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-</head>
+<style>.pharmacy-selector-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px auto;max-width:320px;color:#168fb3;font-weight:700}.pharmacy-selector-wrap select{padding:7px 10px;border:1px solid #168fb3;border-radius:6px;background:#fff;color:#18324b}</style></head>
 
 <body>
 <div class="container">
@@ -1477,6 +1477,8 @@ html,body{overflow-x:hidden}
   <div class="title-row">
     <h1 class="page-title" id="pageTitle">Labels Generator</h1>
   </div>
+
+  <div class="pharmacy-selector-wrap"><label for="pharmacySelector">Pharmacy</label><select id="pharmacySelector" disabled><option value="">Select pharmacy</option></select></div>
 
   <div id="loginView" class="login-card" style="display:none">
     <label id="usernameLabel" for="username">Username</label>
@@ -1944,9 +1946,46 @@ function clearStoredSession(){
   currentSessionToken = "";
 }
 
+let selectedPharmacyId = sessionStorage.getItem("selectedPharmacyId") || "";
+let pharmacyRequestVersion = 0;
+
+function selectedPharmacyService(){
+  return selectedPharmacyId === "diabetes" ? "diabetesLabels" : selectedPharmacyId === "outpatient" ? "outpatientLabels" : "kidneyLabels";
+}
+
+function initPharmacySelector(){
+  const selector = document.getElementById("pharmacySelector");
+  if (!selector) return;
+  let user = null;
+  try { user = JSON.parse(sessionStorage.getItem("unifiedPortalUser") || "null"); } catch (error) {}
+  const allowed = user && user.isAdmin === true ? ["kidney", "diabetes", "outpatient"] : [
+    user && user.kidneyLabelsAccess ? "kidney" : "",
+    user && user.diabetesLabelsAccess ? "diabetes" : "",
+    user && user.outpatientLabelsAccess ? "outpatient" : ""
+  ].filter(Boolean);
+  if (allowed.indexOf(selectedPharmacyId) === -1) selectedPharmacyId = "";
+  selector.innerHTML = '<option value="">Select pharmacy</option>' + allowed.map(function(id){ return '<option value="' + id + '">' + id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy</option>'; }).join("");
+  selector.value = selectedPharmacyId;
+  selector.disabled = !allowed.length;
+  selector.addEventListener("change", function(){
+    selectedPharmacyId = selector.value;
+    sessionStorage.setItem("selectedPharmacyId", selectedPharmacyId);
+    pharmacyRequestVersion += 1;
+    centralMedicationList = [];
+    centralMedicationIdByName = {};
+    expiryRecords = [];
+    renderSearchResults();
+    renderBatchList();
+    renderPreview();
+    if (selectedPharmacyId) loadPageData();
+  });
+}
+
 async function postApi(action, payload = {}, includeSession = true){
+  if (!selectedPharmacyId) throw new Error("PHARMACY_REQUIRED");
   const requestData = {
     action:action,
+    pharmacyId:selectedPharmacyId,
     ...payload
   };
 
@@ -2101,11 +2140,14 @@ function getCachedPortalUser(){
 function hasKidneyLabelsPermission(user){
   return Boolean(
     user &&
-    user.kidneyLabelsAccess === true
+    (user.isAdmin === true || user.kidneyLabelsAccess === true || user.diabetesLabelsAccess === true || user.outpatientLabelsAccess === true)
   );
 }
 
 function clearUnifiedPortalSession(){
+  selectedPharmacyId = "";
+  pharmacyRequestVersion += 1;
+  sessionStorage.removeItem("selectedPharmacyId");
   sessionStorage.removeItem(
     "unifiedPortalUsername"
   );
@@ -2197,6 +2239,7 @@ async function restoreSession(){
 
     saveStoredSession();
     showEmployeeView();
+    initPharmacySelector();
     await loadPageData();
   }
 
@@ -2206,7 +2249,7 @@ async function restoreSession(){
         "validateSession",
         {
           service:
-            "kidneyLabels"
+            ""
         },
         true
       );
@@ -2251,6 +2294,7 @@ async function restoreSession(){
 
     saveStoredSession();
     showEmployeeView();
+    initPharmacySelector();
 
     if (!cachedAllowed){
       await loadPageData();
@@ -2377,6 +2421,8 @@ function resetInactivityTimer(){
 }
 
 async function loadPageData(){
+  if (!selectedPharmacyId) return;
+  const requestVersion = pharmacyRequestVersion;
   setStatus(text[currentLang].loading, "");
 
   try{
@@ -2385,6 +2431,7 @@ async function loadPageData(){
       loadExpiryRecords()
     ]);
 
+    if (requestVersion !== pharmacyRequestVersion || !selectedPharmacyId) return;
     setStatus(text[currentLang].loaded, "success");
     renderSearchResults();
     renderBatchList();
@@ -2395,13 +2442,16 @@ async function loadPageData(){
 }
 
 async function loadCentralMedicationList(){
+  const requestVersion = pharmacyRequestVersion;
   const response =
     await fetch(
       CENTRAL_MEDICATIONS_API_URL +
-      "?action=listMedications&service=kidney"
+      "?action=listMedications&service=" + encodeURIComponent(selectedPharmacyId)
     );
   const data =
     await response.json();
+
+  if (requestVersion !== pharmacyRequestVersion || !selectedPharmacyId) return;
 
   centralMedicationIdByName = {};
 
@@ -2432,12 +2482,15 @@ async function loadCentralMedicationList(){
 }
 
 async function loadExpiryRecords(){
+  const requestVersion = pharmacyRequestVersion;
   const data =
     await postApi(
       "labelsExpiryData",
-      {},
+      {pharmacyId:selectedPharmacyId},
       true
     );
+
+  if (requestVersion !== pharmacyRequestVersion || !selectedPharmacyId) return;
 
   if (
     !data ||
@@ -3617,6 +3670,7 @@ window.addEventListener(
 migrateOldSession();
 buildLabelSizeOptions();
 setLanguage("en");
+initPharmacySelector();
 restoreSession();
 </script>
 <script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[logout,name,back].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script>
