@@ -2751,10 +2751,19 @@ async function saveOrder(){
         return;
       }
 
+      const failureCode =
+        typeof result.code === "string" && result.code
+          ? result.code
+          : "SAVE_FAILED";
+      const failureMessage =
+        failureCode === "AUTH_UNAVAILABLE"
+          ? "Authentication service is temporarily unavailable (AUTH_UNAVAILABLE). Your order remains here; please retry."
+          : text[currentLang].saveFailed + " (" + failureCode + "). Your order remains here; please retry.";
+
       showResult(
         "orderResult",
         "error",
-        text[currentLang].saveFailed
+        failureMessage
       );
 
       return;
@@ -2780,7 +2789,7 @@ async function saveOrder(){
     showResult(
       "orderResult",
       "error",
-      text[currentLang].saveFailed
+      text[currentLang].saveFailed + " (NETWORK_ERROR). Your order remains here; please retry."
     );
   }finally{
     button.disabled =
@@ -3074,8 +3083,7 @@ function isSessionError(result){
     [
       "MISSING_SESSION",
       "INVALID_SESSION",
-      "SESSION_EXPIRED",
-      "AUTH_UNAVAILABLE"
+      "SESSION_EXPIRED"
     ].includes(result.code);
 }
 
