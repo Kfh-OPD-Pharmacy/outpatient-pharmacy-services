@@ -2099,6 +2099,12 @@ async function openOrderScanner(){
   const video = document.getElementById("orderScanVideo");
   const status = document.getElementById("orderScanStatus");
   if (!selectedPharmacyId){ status.innerText = "Select a pharmacy first."; dialog.classList.add("visible"); return; }
+  if (!window.isSecureContext){ status.innerText = "Camera requires HTTPS (or localhost). Use manual entry or shelf-label scan."; dialog.classList.add("visible"); return; }
+  if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function"){
+    status.innerText = "Camera access is unavailable in this browser. Use manual entry or shelf-label scan.";
+    dialog.classList.add("visible");
+    return;
+  }
   if (!("BarcodeDetector" in window)){ status.innerText = "Barcode scanning is not supported. Use manual entry or shelf-label scan."; dialog.classList.add("visible"); return; }
   dialog.classList.add("visible");
   try{
@@ -2416,12 +2422,18 @@ async function loadMedicationDatabase(){
          "?action=listMedications&service=" + encodeURIComponent(selectedPharmacyId)
       );
 
-    const result =
-      await response.json();
+    if (!response.ok) throw new Error("MEDICATIONS_HTTP_" + response.status);
+    const result = await response.json();
+    if (!result || result.success === false) throw new Error(result && result.message || "MEDICATIONS_API_FAILED");
+    const medicationRows = Array.isArray(result.medications)
+      ? result.medications
+      : result.data && Array.isArray(result.data.medications)
+        ? result.data.medications
+        : [];
 
     if (requestVersion !== orderRequestVersion || !selectedPharmacyId) return;
     medications =
-      (result.medications || [])
+      medicationRows
         .map(
           function(item){
             return item.name || item.medicationName || "";
