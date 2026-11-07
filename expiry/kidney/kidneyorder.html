@@ -1361,7 +1361,7 @@ html,body{overflow-x:hidden}
 
   <div class="title-row">
     <h1 class="page-title" id="pageTitle">
-      Kidney Order
+      Pharmacy Orders
     </h1>
   </div>
 
@@ -1595,7 +1595,7 @@ let savedOrder =
 
 const text = {
   ar:{
-    title:"الطلبية",
+    title:"طلبات الأدوية",
     officialLine1:"تجمع المدينة المنورة الصحي",
     officialLine2:"مستشفى الملك فهد بالمدينة المنورة",
     officialLine3:"إدارة الرعاية الصيدلانية",
@@ -1631,7 +1631,7 @@ const text = {
   },
 
   en:{
-    title:"Kidney Order",
+    title:"Pharmacy Orders",
     officialLine1:"Madinah Health Cluster",
     officialLine2:"King Fahad Hospital - Madinah",
     officialLine3:"Pharmaceutical Care Administration",
@@ -2260,7 +2260,7 @@ async function restoreSession(){
       "";
 
     currentEmployeeName =
-      cachedUser.name ||
+      cachedUser.name || cachedUser.fullName || cachedUser.displayName ||
       cachedUser.username ||
       "";
 
@@ -2315,7 +2315,7 @@ async function restoreSession(){
       "";
 
     currentEmployeeName =
-      result.user.name ||
+      result.user.name || result.user.fullName || result.user.displayName ||
       result.user.username ||
       "";
 
@@ -3182,6 +3182,10 @@ restoreSession();
 <script id="unified-user-toolbar-normalizer">(function(){function normalizeUserToolbars(){document.querySelectorAll(".employee-toolbar").forEach(function(toolbar){var back=toolbar.querySelector(".portal-back-button,.back-button"),name=toolbar.querySelector(".employee-name,strong"),logout=toolbar.querySelector(".logout-icon");[logout,name,back].forEach(function(item){if(item)toolbar.appendChild(item)});});}if(document.readyState === "loading"){document.addEventListener("DOMContentLoaded",normalizeUserToolbars,{once:true});}else{normalizeUserToolbars();}})();</script>
 <footer class="developer-signature" aria-label="Project signature"><span class="signature-unit">Pharmacy Services - Outpatient Pharmacy</span><span class="signature-author">Developed by Abdullah Alattas</span></footer>
 <script id="mobile-date-compact-fix">(function(){function compactDate(){var el=document.getElementById('dateBox');if(!el)return;var raw=el.dataset.fullDate||el.textContent.trim();if(raw)el.dataset.fullDate=raw;var m=raw.match(/^(.*?)\s*-\s*(\d{4})-(\d{2})-(\d{2})$/);if(!m)return;var mobile=window.innerWidth<=600;var next=mobile?'<span class="mobile-day">'+m[1]+'</span><span class="mobile-date">'+m[2]+'-'+m[3]+'-'+m[4]+'</span>':m[1]+' - '+m[2]+'-'+m[3]+'-'+m[4];if(el.innerHTML!==next)el.innerHTML=next;}function run(){compactDate();var el=document.getElementById('dateBox');if(el&&!el.dataset.mobileObserver){el.dataset.mobileObserver='1';new MutationObserver(compactDate).observe(el,{childList:true,characterData:true,subtree:true});}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();window.addEventListener('resize',compactDate,{passive:true});})();</script>
+<style>
+.title-row .page-title{margin:18px 0 10px}
+.pharmacy-selector-wrap{margin:0 auto 16px}
+</style>
 </body>
 </html>
 
