@@ -2058,21 +2058,25 @@ function initOrderSummaryScope(allowed, isAdmin){
   if (scope.value) loadOrderSummary();
 }
 
-async function loadOrderSummary(){
+async function loadOrderSummary(scopeOverride){
   const scope = document.getElementById("summaryScope");
   const body = document.getElementById("orderSummaryBody");
   const message = document.getElementById("orderSummaryMessage");
   const period = document.getElementById("orderSummaryPeriod");
-  if (!scope || !scope.value) return;
+  const requestedScope = scopeOverride || (scope && scope.value);
+  if (!scope || !requestedScope) return;
   message.innerText = "Loading summary…";
   try{
-    const result = await postApi("orderReport", {pharmacy:scope.value === "all" ? "" : scope.value});
+    const result = await postApi("orderReport", {pharmacy:requestedScope === "all" ? "" : requestedScope});
     if (!result.success) throw new Error(result.code || "REPORT_FAILED");
     body.innerHTML = (result.items || []).map(function(item){ return "<tr><td>" + escapeHtml(item.medicationName || item.medicationId || "-") + "</td><td>" + Number(item.kidney || 0) + "</td><td>" + Number(item.diabetes || 0) + "</td><td>" + Number(item.outpatient || 0) + "</td><td>" + Number(item.grandTotal || 0) + "</td></tr>"; }).join("");
     const keys = Object.keys(result.periodStart || {});
     period.innerText = keys.map(function(k){ const reset=result.lastReset && result.lastReset[k]; return k + " period: " + result.periodStart[k] + (reset ? " | Last reset: " + reset.resetAt + " by " + reset.resetBy : ""); }).join(" • ");
     message.innerText = result.items && result.items.length ? "Summary loaded." : "No submitted orders in the active period.";
-  }catch(error){ message.innerText = "Could not load summary."; }
+  }catch(error){
+    const code = error && error.message ? error.message : "REPORT_FAILED";
+    message.innerText = "Could not load summary (" + code + ").";
+  }
 }
 
 async function resetOrderTotals(){
@@ -2085,8 +2089,11 @@ async function resetOrderTotals(){
     const resetKey = window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random();
     const result = await postApi("resetOrderPeriod", {pharmacy:scope === "all" ? "" : scope, idempotencyKey:resetKey});
     if (!result.success) throw new Error(result.code || "RESET_FAILED");
-    await loadOrderSummary();
-  }catch(error){ document.getElementById("orderSummaryMessage").innerText = "Reset failed."; }
+    await loadOrderSummary(scope);
+  }catch(error){
+    const code = error && error.message ? error.message : "RESET_FAILED";
+    document.getElementById("orderSummaryMessage").innerText = "Reset failed (" + code + ").";
+  }
   finally{ orderResetInProgress = false; }
 }
 
@@ -3027,8 +3034,12 @@ async function postApi(
   };
 
   if (includeSession){
-    requestData.service = orderServiceName();
-    requestData.pharmacy = orderServiceName();
+    if (!Object.prototype.hasOwnProperty.call(requestData, "service")){
+      requestData.service = orderServiceName();
+    }
+    if (!Object.prototype.hasOwnProperty.call(requestData, "pharmacy")){
+      requestData.pharmacy = orderServiceName();
+    }
   }
 
   if (
