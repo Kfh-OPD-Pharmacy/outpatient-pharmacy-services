@@ -1300,7 +1300,8 @@ html,body{overflow-x:hidden}
 }
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
-</head>
+<style>.pharmacy-selector-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px auto;max-width:320px;color:#168fb3;font-weight:700}.pharmacy-selector-wrap select{padding:7px 10px;border:1px solid #168fb3;border-radius:6px;background:#fff;color:#18324b}.order-scan-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.order-scan-actions button{flex:1 1 180px}.scan-dialog{position:fixed;inset:0;background:rgba(15,35,50,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}.scan-dialog.visible{display:flex}.scan-dialog-card{background:#fff;border-radius:12px;padding:16px;max-width:480px;width:100%;text-align:center}.scan-dialog video{width:100%;max-height:320px;background:#111;border-radius:8px}.scan-dialog canvas{display:none}</style></head>
+<style>.order-summary-panel{margin-top:16px;padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}.order-summary-toolbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}.order-summary-toolbar select,.order-summary-toolbar button{min-height:36px}.order-summary-table{width:100%;border-collapse:collapse;margin-top:12px}.order-summary-table th,.order-summary-table td{border:1px solid #e5e7eb;padding:7px;text-align:center;font-size:13px}.order-summary-message{margin-top:8px;color:#168fb3;font-weight:700;text-align:center}</style></head>
 
 <body>
 <div class="container">
@@ -1363,6 +1364,8 @@ html,body{overflow-x:hidden}
       Kidney Order
     </h1>
   </div>
+
+  <div class="pharmacy-selector-wrap"><label for="pharmacySelector">Pharmacy</label><select id="pharmacySelector" disabled><option value="">Select pharmacy</option></select></div>
 
   <div id="loginView" class="login-card hidden">
     <div class="field-row">
@@ -1434,6 +1437,11 @@ html,body{overflow-x:hidden}
 
             <div class="combo-options" id="medicationOptions"></div>
           </div>
+          <div class="order-scan-actions">
+            <button type="button" class="secondary-btn" id="scanCameraBtn" onclick="openOrderScanner()">Scan with Camera</button>
+            <button type="button" class="secondary-btn" id="scanLabelBtn" onclick="document.getElementById('shelfLabelInput').click()">Scan Shelf Label</button>
+            <input type="file" id="shelfLabelInput" accept="image/*" capture="environment" hidden onchange="readShelfLabel(this.files[0])">
+          </div>
         </div>
 
         <div class="field-row">
@@ -1498,6 +1506,30 @@ html,body{overflow-x:hidden}
       </div>
 
       <div id="orderResult" class="result-box"></div>
+    </div>
+  </div>
+
+  <section class="order-summary-panel" id="orderSummaryPanel" hidden>
+    <h2 style="color:#168fb3;font-size:18px;text-align:center">Order Summary</h2>
+    <div class="order-summary-toolbar">
+      <select id="summaryScope" aria-label="Summary scope"></select>
+      <button type="button" class="secondary-btn" onclick="loadOrderSummary()">Refresh Summary</button>
+      <button type="button" class="secondary-btn" onclick="resetOrderTotals()">Reset Totals</button>
+    </div>
+    <div class="order-summary-message" id="orderSummaryPeriod"></div>
+    <div class="order-summary-message" id="orderSummaryMessage"></div>
+    <div class="table-wrap">
+      <table class="order-summary-table"><thead><tr><th>Medication</th><th>Kidney</th><th>Diabetes</th><th>Outpatient</th><th>Grand Total</th></tr></thead><tbody id="orderSummaryBody"></tbody></table>
+    </div>
+  </section>
+
+  <div class="scan-dialog" id="orderScanDialog" aria-hidden="true">
+    <div class="scan-dialog-card">
+      <h2>Scan Medication</h2>
+      <video id="orderScanVideo" autoplay playsinline></video>
+      <canvas id="orderScanCanvas"></canvas>
+      <p id="orderScanStatus">Point the camera at a barcode or QR code.</p>
+      <button type="button" class="secondary-btn" onclick="closeOrderScanner()">Close</button>
     </div>
   </div>
 
@@ -1914,6 +1946,7 @@ async function loginUser(){
       "";
 
     showOrderView();
+    initOrderPharmacySelector();
     loadMedicationDatabase();
 
   }catch(error){
@@ -1974,12 +2007,151 @@ function hasKidneyOrderPermission(
 ){
   return Boolean(
     user &&
-    user.kidneyOrderAccess === true
+    (user.isAdmin === true || user.kidneyOrderAccess === true || user.diabetesOrderAccess === true || user.outpatientOrderAccess === true)
   );
 }
 
+let selectedPharmacyId = sessionStorage.getItem("selectedPharmacyId") || "";
+let orderRequestVersion = 0;
+let orderScanStream = null;
+let orderScanTimer = null;
+
+function orderServiceName(){
+  return selectedPharmacyId || "kidney";
+}
+
+function initOrderPharmacySelector(){
+  const selector = document.getElementById("pharmacySelector");
+  if (!selector) return;
+  let user = null;
+  try { user = JSON.parse(sessionStorage.getItem("unifiedPortalUser") || "null"); } catch (error) {}
+  const allowed = user && user.isAdmin === true ? ["kidney","diabetes","outpatient"] : [
+    user && user.kidneyOrderAccess ? "kidney" : "",
+    user && user.diabetesOrderAccess ? "diabetes" : "",
+    user && user.outpatientOrderAccess ? "outpatient" : ""
+  ].filter(Boolean);
+  if (allowed.indexOf(selectedPharmacyId) === -1) selectedPharmacyId = "";
+  selector.innerHTML = '<option value="">Select pharmacy</option>' + allowed.map(function(id){ return '<option value="' + id + '">' + id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy</option>'; }).join("");
+  selector.value = selectedPharmacyId;
+  selector.disabled = !allowed.length;
+  selector.addEventListener("change", function(){
+    selectedPharmacyId = selector.value;
+    sessionStorage.setItem("selectedPharmacyId", selectedPharmacyId);
+    orderRequestVersion += 1;
+    orderItems = [];
+    savedOrder = null;
+    medications = [];
+    renderOrderTable();
+    updateSummary();
+    if (selectedPharmacyId) loadMedicationDatabase();
+  });
+  initOrderSummaryScope(allowed, user && user.isAdmin === true);
+}
+
+let orderResetInProgress = false;
+
+function initOrderSummaryScope(allowed, isAdmin){
+  const scope = document.getElementById("summaryScope");
+  const panel = document.getElementById("orderSummaryPanel");
+  if (!scope || !panel) return;
+  scope.innerHTML = allowed.map(function(id){ return '<option value="' + id + '">' + id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy</option>'; }).join("");
+  if (isAdmin) scope.insertAdjacentHTML("beforeend", '<option value="all">All Pharmacies</option>');
+  scope.value = isAdmin ? "all" : (selectedPharmacyId || allowed[0] || "");
+  panel.hidden = !allowed.length;
+  scope.onchange = loadOrderSummary;
+  if (scope.value) loadOrderSummary();
+}
+
+async function loadOrderSummary(){
+  const scope = document.getElementById("summaryScope");
+  const body = document.getElementById("orderSummaryBody");
+  const message = document.getElementById("orderSummaryMessage");
+  const period = document.getElementById("orderSummaryPeriod");
+  if (!scope || !scope.value) return;
+  message.innerText = "Loading summary…";
+  try{
+    const result = await postApi("orderReport", {pharmacy:scope.value === "all" ? "" : scope.value});
+    if (!result.success) throw new Error(result.code || "REPORT_FAILED");
+    body.innerHTML = (result.items || []).map(function(item){ return "<tr><td>" + escapeHtml(item.medicationName || item.medicationId || "-") + "</td><td>" + Number(item.kidney || 0) + "</td><td>" + Number(item.diabetes || 0) + "</td><td>" + Number(item.outpatient || 0) + "</td><td>" + Number(item.grandTotal || 0) + "</td></tr>"; }).join("");
+    const keys = Object.keys(result.periodStart || {});
+    period.innerText = keys.map(function(k){ const reset=result.lastReset && result.lastReset[k]; return k + " period: " + result.periodStart[k] + (reset ? " | Last reset: " + reset.resetAt + " by " + reset.resetBy : ""); }).join(" • ");
+    message.innerText = result.items && result.items.length ? "Summary loaded." : "No submitted orders in the active period.";
+  }catch(error){ message.innerText = "Could not load summary."; }
+}
+
+async function resetOrderTotals(){
+  if (orderResetInProgress) return;
+  const scope = document.getElementById("summaryScope").value;
+  if (!scope) return;
+  if (!window.confirm("Reset totals for " + (scope === "all" ? "all pharmacies" : scope + " pharmacy") + "? Historical orders will remain unchanged.")) return;
+  orderResetInProgress = true;
+  try{
+    const resetKey = window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random();
+    const result = await postApi("resetOrderPeriod", {pharmacy:scope === "all" ? "" : scope, idempotencyKey:resetKey});
+    if (!result.success) throw new Error(result.code || "RESET_FAILED");
+    await loadOrderSummary();
+  }catch(error){ document.getElementById("orderSummaryMessage").innerText = "Reset failed."; }
+  finally{ orderResetInProgress = false; }
+}
+
+async function openOrderScanner(){
+  const dialog = document.getElementById("orderScanDialog");
+  const video = document.getElementById("orderScanVideo");
+  const status = document.getElementById("orderScanStatus");
+  if (!selectedPharmacyId){ status.innerText = "Select a pharmacy first."; dialog.classList.add("visible"); return; }
+  if (!("BarcodeDetector" in window)){ status.innerText = "Barcode scanning is not supported. Use manual entry or shelf-label scan."; dialog.classList.add("visible"); return; }
+  dialog.classList.add("visible");
+  try{
+    orderScanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    video.srcObject = orderScanStream;
+    const detector = new BarcodeDetector({formats:["qr_code","code_128","code_39","ean_13","ean_8","upc_a","upc_e"]});
+    orderScanTimer = window.setInterval(async function(){
+      try{
+        const codes = await detector.detect(video);
+        if (!codes.length) return;
+        const value = String(codes[0].rawValue || "").trim();
+        if (value){ document.getElementById("medicationName").value = value; status.innerText = "Scanned value: " + value + ". Confirm or search the medication name."; closeOrderScanner(); }
+      }catch(error){}
+    }, 600);
+  }catch(error){ status.innerText = error && error.name === "NotAllowedError" ? "Camera permission was denied. Use manual entry." : "Camera unavailable. Use manual entry."; }
+}
+
+function closeOrderScanner(){
+  if (orderScanTimer) window.clearInterval(orderScanTimer);
+  orderScanTimer = null;
+  if (orderScanStream) orderScanStream.getTracks().forEach(function(track){ track.stop(); });
+  orderScanStream = null;
+  const video = document.getElementById("orderScanVideo");
+  if (video) video.srcObject = null;
+  const dialog = document.getElementById("orderScanDialog");
+  if (dialog) { dialog.classList.remove("visible"); dialog.setAttribute("aria-hidden","true"); }
+}
+
+async function readShelfLabel(file){
+  if (!file) return;
+  const status = document.getElementById("orderScanStatus");
+  const dialog = document.getElementById("orderScanDialog");
+  dialog.classList.add("visible");
+  status.innerText = "Reading label locally…";
+  try{
+    if (!window.Tesseract){
+      await new Promise(function(resolve,reject){ const script=document.createElement("script"); script.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"; script.onload=resolve; script.onerror=reject; document.head.appendChild(script); });
+    }
+    const result = await window.Tesseract.recognize(file,"eng");
+    const text = String(result && result.data && result.data.text || "").replace(/\s+/g," ").trim();
+    if (!text) throw new Error("NO_TEXT");
+    document.getElementById("medicationName").value = text;
+    status.innerText = "Review the detected text and confirm the medication manually.";
+  }catch(error){ status.innerText = "Could not read the label locally. Use manual entry."; }
+}
+
+window.addEventListener("pagehide", closeOrderScanner);
+
 
 function clearUnifiedPortalSession(){
+  selectedPharmacyId = "";
+  orderRequestVersion += 1;
+  sessionStorage.removeItem("selectedPharmacyId");
   sessionStorage.removeItem(
     "unifiedPortalUsername"
   );
@@ -2078,6 +2250,7 @@ async function restoreSession(){
 
     saveStoredSession();
     showOrderView();
+    initOrderPharmacySelector();
     loadMedicationDatabase();
   }
 
@@ -2088,8 +2261,8 @@ async function restoreSession(){
           "validateSession",
         sessionToken:
           unifiedSessionToken,
-        service:
-          "kidneyOrder"
+         service:
+           ""
       });
 
     if (
@@ -2132,6 +2305,7 @@ async function restoreSession(){
 
     saveStoredSession();
     showOrderView();
+    initOrderPharmacySelector();
 
     if (
       !cachedAllowed
@@ -2233,16 +2407,19 @@ function stopInactivityTimer(){
 }
 
 async function loadMedicationDatabase(){
+  if (!selectedPharmacyId) return;
+  const requestVersion = orderRequestVersion;
   try{
     const response =
       await fetch(
         CENTRAL_MEDICATIONS_API_URL +
-        "?action=listMedications&service=kidney"
+         "?action=listMedications&service=" + encodeURIComponent(selectedPharmacyId)
       );
 
     const result =
       await response.json();
 
+    if (requestVersion !== orderRequestVersion || !selectedPharmacyId) return;
     medications =
       (result.medications || [])
         .map(
@@ -2535,11 +2712,14 @@ async function saveOrder(){
     true;
 
   try{
+    const idempotencyKey = sessionStorage.getItem("activeOrderIdempotencyKey") || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random());
+    sessionStorage.setItem("activeOrderIdempotencyKey", idempotencyKey);
     const result =
       await postApi(
         "saveOrder",
         {
-          items:orderItems
+          items:orderItems,
+          idempotencyKey:idempotencyKey
         },
         true
       );
@@ -2569,6 +2749,7 @@ async function saveOrder(){
       requestedBy:result.requestedBy,
       status:result.status || "Requested"
     };
+    sessionStorage.removeItem("activeOrderIdempotencyKey");
 
     updateSummary();
 
@@ -2818,6 +2999,11 @@ async function postApi(
     action:action,
     ...payload
   };
+
+  if (includeSession){
+    requestData.service = orderServiceName();
+    requestData.pharmacy = orderServiceName();
+  }
 
   if (
     includeSession
