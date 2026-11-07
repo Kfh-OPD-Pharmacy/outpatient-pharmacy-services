@@ -2015,6 +2015,7 @@ let selectedPharmacyId = sessionStorage.getItem("selectedPharmacyId") || "";
 let orderRequestVersion = 0;
 let orderScanStream = null;
 let orderScanTimer = null;
+let orderScannerReader = null;
 
 function orderServiceName(){
   return selectedPharmacyId || "kidney";
@@ -2105,20 +2106,32 @@ async function openOrderScanner(){
     dialog.classList.add("visible");
     return;
   }
-  if (!("BarcodeDetector" in window)){ status.innerText = "Barcode scanning is not supported. Use manual entry or shelf-label scan."; dialog.classList.add("visible"); return; }
   dialog.classList.add("visible");
   try{
     orderScanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
     video.srcObject = orderScanStream;
-    const detector = new BarcodeDetector({formats:["qr_code","code_128","code_39","ean_13","ean_8","upc_a","upc_e"]});
-    orderScanTimer = window.setInterval(async function(){
-      try{
-        const codes = await detector.detect(video);
-        if (!codes.length) return;
-        const value = String(codes[0].rawValue || "").trim();
+    if ("BarcodeDetector" in window){
+      const detector = new BarcodeDetector({formats:["qr_code","code_128","code_39","ean_13","ean_8","upc_a","upc_e"]});
+      orderScanTimer = window.setInterval(async function(){
+        try{
+          const codes = await detector.detect(video);
+          if (!codes.length) return;
+          const value = String(codes[0].rawValue || "").trim();
+          if (value){ document.getElementById("medicationName").value = value; status.innerText = "Scanned value: " + value + ". Confirm or search the medication name."; closeOrderScanner(); }
+        }catch(error){}
+      }, 600);
+    }else{
+      if (!window.ZXing){
+        await new Promise(function(resolve,reject){ const script=document.createElement("script"); script.src="https://unpkg.com/@zxing/library@0.21.2/umd/index.min.js"; script.onload=resolve; script.onerror=reject; document.head.appendChild(script); });
+      }
+      if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) throw new Error("SCANNER_LIBRARY_UNAVAILABLE");
+      orderScannerReader = new window.ZXing.BrowserMultiFormatReader();
+      orderScannerReader.decodeFromVideoElement(video, function(result){
+        if (!result) return;
+        const value = String(result.getText ? result.getText() : "").trim();
         if (value){ document.getElementById("medicationName").value = value; status.innerText = "Scanned value: " + value + ". Confirm or search the medication name."; closeOrderScanner(); }
-      }catch(error){}
-    }, 600);
+      });
+    }
   }catch(error){ status.innerText = error && error.name === "NotAllowedError" ? "Camera permission was denied. Use manual entry." : "Camera unavailable. Use manual entry."; }
 }
 
@@ -2127,6 +2140,8 @@ function closeOrderScanner(){
   orderScanTimer = null;
   if (orderScanStream) orderScanStream.getTracks().forEach(function(track){ track.stop(); });
   orderScanStream = null;
+  if (orderScannerReader && typeof orderScannerReader.reset === "function") orderScannerReader.reset();
+  orderScannerReader = null;
   const video = document.getElementById("orderScanVideo");
   if (video) video.srcObject = null;
   const dialog = document.getElementById("orderScanDialog");
