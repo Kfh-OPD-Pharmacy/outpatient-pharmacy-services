@@ -2434,7 +2434,7 @@ async function loadMedicationDatabase(){
     const response =
       await fetch(
         CENTRAL_MEDICATIONS_API_URL +
-         "?action=listMedications&service=" + encodeURIComponent(selectedPharmacyId)
+         "?action=listSharedMedications"
       );
 
     if (!response.ok) throw new Error("MEDICATIONS_HTTP_" + response.status);
