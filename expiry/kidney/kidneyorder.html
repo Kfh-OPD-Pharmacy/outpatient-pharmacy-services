@@ -1445,11 +1445,6 @@ html,body{overflow-x:hidden}
         </div>
 
         <div class="field-row">
-          <label id="stockLabel" for="currentStock">Current Stock</label>
-          <input type="text" id="currentStock" inputmode="numeric">
-        </div>
-
-        <div class="field-row">
           <label id="quantityLabel" for="requestedQuantity">Requested Quantity</label>
           <input type="text" id="requestedQuantity" inputmode="numeric">
         </div>
@@ -1472,8 +1467,8 @@ html,body{overflow-x:hidden}
             <tr>
               <th id="colNo">No.</th>
               <th id="colMedication">Medication Name</th>
-              <th id="colStock">Current Stock</th>
               <th id="colQuantity">Requested Quantity</th>
+              <th id="colDispensed">Dispensed Quantity</th>
               <th id="colNotes">Notes</th>
               <th id="colAction">Action</th>
             </tr>
@@ -2586,7 +2581,7 @@ function addItemToOrder(){
 
   orderItems.push({
     medicationName:name,
-    currentStock:document.getElementById("currentStock").value.trim(),
+     currentStock:"",
     requestedQuantity:document.getElementById("requestedQuantity").value.trim(),
     notes:document.getElementById("notes").value.trim()
   });
@@ -2595,9 +2590,6 @@ function addItemToOrder(){
     null;
 
   document.getElementById("medicationName").value =
-    "";
-
-  document.getElementById("currentStock").value =
     "";
 
   document.getElementById("requestedQuantity").value =
@@ -2643,12 +2635,10 @@ function renderOrderTable(){
         "</td>" +
 
         "<td>" +
-        escapeHtml(item.currentStock || "-") +
-        "</td>" +
-
-        "<td>" +
         escapeHtml(item.requestedQuantity || "-") +
         "</td>" +
+
+        "<td>-</td>" +
 
         "<td>" +
         escapeHtml(item.notes || "-") +
@@ -2956,8 +2946,8 @@ function createPrintPage(
       "<tr>" +
         "<th>No.</th>" +
         "<th>Medication Name</th>" +
-        "<th>Current Stock</th>" +
         "<th>Requested Quantity</th>" +
+     "<th>Dispensed Quantity</th>" +
         "<th>Notes</th>" +
       "</tr>" +
     "</thead>" +
@@ -2974,8 +2964,8 @@ function createPrintPage(
       tr.innerHTML =
         "<td>" + (startIndex + index + 1) + "</td>" +
         "<td>" + escapeHtml(item.medicationName) + "</td>" +
-        "<td>" + escapeHtml(item.currentStock || "-") + "</td>" +
         "<td>" + escapeHtml(item.requestedQuantity || "-") + "</td>" +
+       "<td>-</td>" +
         "<td>" + escapeHtml(item.notes || "-") + "</td>";
 
       tbody.appendChild(tr);
@@ -3085,8 +3075,6 @@ function isSessionError(result){
       "MISSING_SESSION",
       "INVALID_SESSION",
       "SESSION_EXPIRED",
-      "NO_ORDER_PERMISSION",
-      "NO_PERMISSION",
       "AUTH_UNAVAILABLE"
     ].includes(result.code);
 }
