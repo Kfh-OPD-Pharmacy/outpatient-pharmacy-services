@@ -1718,8 +1718,8 @@ function setLanguage(lang){
   document.getElementById("medicationLabel").innerText =
     text[lang].medicationName;
 
-  document.getElementById("stockLabel").innerText =
-    text[lang].currentStock;
+  const stockLabel = document.getElementById("stockLabel");
+  if (stockLabel) stockLabel.innerText = text[lang].currentStock;
 
   document.getElementById("quantityLabel").innerText =
     text[lang].requestedQuantity;
@@ -1742,8 +1742,8 @@ function setLanguage(lang){
   document.getElementById("colMedication").innerText =
     text[lang].medicationName;
 
-  document.getElementById("colStock").innerText =
-    text[lang].currentStock;
+  const colStock = document.getElementById("colStock");
+  if (colStock) colStock.innerText = text[lang].currentStock;
 
   document.getElementById("colQuantity").innerText =
     text[lang].requestedQuantity;
