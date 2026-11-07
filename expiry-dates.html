@@ -1,26 +1,83 @@
 <!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Expiry Dates</title><style>
-*{box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#f3f4f6;margin:0;padding:16px;color:#168fb3}
-.container{max-width:980px;margin:auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,.1);min-height:calc(100vh - 32px)}
+*{box-sizing:border-box}body{margin:0;padding:10px;background:#f3f4f6;font-family:Arial,sans-serif;color:#111827}.container{max-width:980px;margin:auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,.1);min-height:calc(100vh - 32px)}
 .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;direction:ltr}
 .logo{width:120px;height:120px;object-fit:contain}
 .official-header{width:fit-content;max-width:100%;text-align:right;transform:translateY(14px);padding-left:8px;border-left:4px solid #168fb3;direction:rtl}
 .official-header h2,.official-header h3{margin:2px 0;font-size:13px;line-height:1.4;color:#168fb3}
 hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
-.meta-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin-bottom:65px;direction:ltr}
-.date-box{grid-column:1;justify-self:start;font-size:13px;font-weight:bold;padding:4px 0}
-.language-chip{grid-column:3;justify-self:end;color:#168fb3;font-size:13px;font-weight:bold;padding:4px 0;background:none;border:0;cursor:pointer;font-family:inherit;white-space:nowrap}
-.user{grid-column:2;justify-self:center;width:220px;max-width:calc(100vw - 56px);height:32px;display:flex;align-items:center;gap:4px;padding:2px 4px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.06);direction:ltr;font-size:13px;font-weight:bold}
-.user .logout{order:1;flex:0 0 27px;width:27px;height:27px;border:0;background:none;color:#168fb3;font-size:22px;line-height:1;cursor:pointer;padding:0}
-.user #name{order:2;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
-.user .back{order:3;flex:0 0 27px;width:27px;text-align:center;color:#168fb3;text-decoration:none;font-size:22px;line-height:27px}
-.title{text-align:center;font-size:24px;font-weight:bold;margin:20px 0 42px;color:#168fb3}
-.grid{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,360px));grid-template-rows:174px;justify-content:center;gap:6px;max-width:760px;margin:auto}
-.grid:before{content:"";position:absolute;left:50%;top:50%;width:90px;height:90px;transform:translate(-50%,-50%);background:url('outpatient-pharmacy-icon.png') center/contain no-repeat;z-index:2;pointer-events:none}
+.meta-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+  direction:ltr
+}
+.date-box{
+  grid-column:1;
+  justify-self:start;
+  color:#168fb3;
+  padding:4px 0;
+  font-size:13px;
+  font-weight:bold;
+  text-align:center
+}
+.language-chip{
+  grid-column:3;
+  justify-self:end;
+  color:#168fb3;
+  font-size:13px;
+  font-weight:bold;
+  padding:4px 0;
+  white-space:nowrap;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  font-family:inherit
+}
+.page-title{text-align:center;font-size:24px;font-weight:bold;margin:20px 0 10px;color:#168fb3}
+.portal-session{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  width:246px;
+  max-width:calc(100vw - 40px);
+  height:42px;
+  gap:6px;
+  padding:4px 6px;
+  margin:0;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+  color:#168fb3;
+  direction:ltr
+}
+.portal-user-group{display:flex;align-items:center;justify-content:center;gap:8px;grid-column:2;min-width:0;direction:ltr}
+.portal-user-group .portal-session{flex:0 1 auto}
+.portal-back-btn,.logout-btn{width:30px;height:30px;min-height:0;padding:0;margin:0;border:0;background:transparent;color:#168fb3;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.portal-back-btn{font-size:22px}
+.portal-user-name{flex:1 1 auto;max-width:calc(100% - 60px);overflow:visible;text-overflow:clip;white-space:nowrap}
+.power-svg{
+  width:25px;
+  height:25px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+/* Page-specific cards: main portal dimensions */
+.grid{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,360px));grid-template-rows:174px;justify-content:center;gap:6px;max-width:760px;margin:32px auto 0}
 .card{height:174px;background:#168fb3;border:1px solid #168fb3;border-radius:15px;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;text-align:center;font-size:24px;font-weight:bold;padding:20px;box-shadow:0 4px 10px rgba(0,0,0,.04)}
-.card:first-child{-webkit-mask:radial-gradient(circle 48px at 100% 50%,transparent 0 46px,#000 48px);mask:radial-gradient(circle 48px at 100% 50%,transparent 0 46px,#000 48px)}
-.card:last-child{-webkit-mask:radial-gradient(circle 48px at 0 50%,transparent 0 46px,#000 48px);mask:radial-gradient(circle 48px at 0 50%,transparent 0 46px,#000 48px)}
-@media(max-width:700px){body{padding:0}.container{padding:14px;border-radius:0;min-height:100vh}.logo{width:84px;height:84px}.official-header{transform:translateY(10px)}.official-header h2,.official-header h3{font-size:12px}.meta-row{gap:5px;margin-bottom:45px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:104px;width:min(100%,360px);gap:4px}.card{height:104px;font-size:15px;padding:8px;border-radius:10px}.grid:before{width:44px;height:44px}.card:first-child{-webkit-mask:radial-gradient(circle 24px at 100% 50%,transparent 0 22px,#000 24px);mask:radial-gradient(circle 24px at 100% 50%,transparent 0 22px,#000 24px)}.card:last-child{-webkit-mask:radial-gradient(circle 24px at 0 50%,transparent 0 22px,#000 24px);mask:radial-gradient(circle 24px at 0 50%,transparent 0 22px,#000 24px)}}
-</style></head><body><main class="container"><header class="top-bar"><img class="logo" src="logo.png" alt="Logo"><div class="official-header"><h2 id="line1">Madinah Health Cluster</h2><h3 id="line2">King Fahad Hospital - Madinah</h3><h3 id="line3">Pharmaceutical Care Administration</h3></div></header><hr><div class="meta-row"><div class="date-box" id="date"></div><div class="user"><button class="logout" onclick="logout()">⏻</button><span id="name"></span><a class="back" href="pharmacy-medications.html">↩</a></div><button class="language-chip" onclick="toggleLanguage()">🌐 ع | E</button></div><h1 class="title" id="title">Expiry Dates</h1><section class="grid"><a class="card" href="expiry/kidney/dashboard.html?from=expiry-dates" id="indexCard">Expiry Index</a><a class="card" href="expiry/kidney/form.html?from=expiry-dates" id="formCard">Registration Form</a></section></main><script>
+.grid:before{content:"";position:absolute;left:50%;top:50%;width:92px;height:92px;transform:translate(-50%,-50%);background:url('outpatient-pharmacy-icon.png') center/contain no-repeat;z-index:2;pointer-events:none}
+.card:first-child{-webkit-mask:radial-gradient(circle 49px at 100% 50%,transparent 0 47px,#000 49px),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle 49px at 100% 50%,transparent 0 47px,#000 49px),linear-gradient(#000 0 0);mask-composite:intersect}
+.card:last-child{-webkit-mask:radial-gradient(circle 49px at 0 50%,transparent 0 47px,#000 49px),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle 49px at 0 50%,transparent 0 47px,#000 49px),linear-gradient(#000 0 0);mask-composite:intersect}
+.portal-session .back{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;color:#168fb3;text-decoration:none;font-size:24px;font-weight:bold}
+.portal-session .portal-user-name{flex:1;min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px;font-weight:bold;color:#168fb3}
+@media(max-width:700px){.container{padding:14px;border-radius:0;min-height:100vh}.logo{width:84px;height:84px}.official-header{transform:translateY(10px)}.official-header h2,.official-header h3{font-size:12px}.meta-row{grid-template-columns:minmax(70px,1fr) minmax(150px,246px) minmax(54px,1fr);gap:8px}.portal-session{width:100%;max-width:246px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,520px);grid-template-rows:130px;gap:4px}.card{height:130px;font-size:17px;padding:8px;border-radius:12px}.grid:before{width:60px;height:60px}.card:first-child{-webkit-mask:radial-gradient(circle 33px at 100% 50%,transparent 0 31px,#000 33px),linear-gradient(#000 0 0);mask:radial-gradient(circle 33px at 100% 50%,transparent 0 31px,#000 33px),linear-gradient(#000 0 0)}.card:last-child{-webkit-mask:radial-gradient(circle 33px at 0 50%,transparent 0 31px,#000 33px),linear-gradient(#000 0 0);mask:radial-gradient(circle 33px at 0 50%,transparent 0 31px,#000 33px),linear-gradient(#000 0 0)}}
+</style></head><body><main class="container"><div class="top-bar"><img class="logo" src="logo.png" alt="Logo"><div class="official-header"><h2 id="line1">Madinah Health Cluster</h2><h3 id="line2">King Fahad Hospital - Madinah</h3><h3 id="line3">Pharmaceutical Care Administration</h3></div></div><hr><div class="meta-row"><div class="date-box" id="date"></div><div class="portal-user-group"><div class="portal-session"><button class="logout-btn" onclick="logout()" aria-label="Logout" title="Logout"><svg class="power-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"></path><path d="M7.1 6.8a8 8 0 1 0 9.8 0"></path></svg></button><span class="portal-user-name" id="name"></span><a class="back" href="pharmacy-medications.html" aria-label="Back" title="Back">↩</a></div></div><button class="language-chip" onclick="toggleLanguage()">🌐 ع | E</button></div><h1 class="page-title" id="title">Expiry Dates</h1><section class="grid"><a class="card" href="expiry/kidney/dashboard.html?from=expiry-dates" id="indexCard">Expiry Index</a><a class="card" href="expiry/kidney/form.html?from=expiry-dates" id="formCard">Registration Form</a></section></main><script>
 const API="https://script.google.com/macros/s/AKfycbzg9PCeoJQl0ifbng_aam6u5mTePD0872wqZ5ilZYqcFV9QypiyopulgPPyO3nqLpez/exec";let lang="en";function user(){try{return JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null")}catch(e){return null}}function ok(u,k){return u&&(u.isAdmin===true||u[k]===true)}async function boot(){const t=sessionStorage.getItem("unifiedPortalSessionToken"),u=user();if(!t||!u){location.replace("index.html");return}document.getElementById("name").textContent=u.name||u.username||"";try{const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"validateSession",sessionToken:t,service:""})}).then(x=>x.json());if(!r.success){location.replace("index.html");return}const v=r.user;document.getElementById("name").textContent=v.name||v.username||"";document.getElementById("indexCard").style.display=ok(v,"kidneyExpiryDashboardAccess")?"flex":"none";document.getElementById("formCard").style.display=ok(v,"kidneyExpiryRegisterAccess")?"flex":"none"}catch(e){}}function logout(){sessionStorage.clear();location.replace("index.html")}function toggleLanguage(){lang=lang==="en"?"ar":"en";document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";document.getElementById("title").textContent=lang==="ar"?"تواريخ الانتهاء":"Expiry Dates";document.getElementById("indexCard").textContent=lang==="ar"?"مؤشر الانتهاء":"Expiry Index";document.getElementById("formCard").textContent=lang==="ar"?"نموذج التسجيل":"Registration Form";document.getElementById("line1").textContent=lang==="ar"?"تجمع المدينة المنورة الصحي":"Madinah Health Cluster";document.getElementById("line2").textContent=lang==="ar"?"مستشفى الملك فهد بالمدينة المنورة":"King Fahad Hospital - Madinah";document.getElementById("line3").textContent=lang==="ar"?"إدارة الرعاية الصيدلانية":"Pharmaceutical Care Administration";renderDate()}function renderDate(){const n=new Date(),d=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Riyadh"}).format(n),day=new Intl.DateTimeFormat(lang==="ar"?"ar-SA":"en-US",{timeZone:"Asia/Riyadh",weekday:"long"}).format(n);document.getElementById("date").textContent=day+" - "+d}renderDate();boot();
 </script></body></html>
