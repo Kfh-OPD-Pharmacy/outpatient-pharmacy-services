@@ -31,7 +31,7 @@ body{
   align-items:flex-start;
   justify-content:space-between;
   gap:12px;
-  margin-bottom:8px;
+   margin-bottom:0;
   direction:ltr
 }
 
@@ -45,7 +45,7 @@ body{
   width:fit-content;
   max-width:100%;
   text-align:right;
-  transform:translateY(14px);
+   transform:none;
   padding-left:8px;
   border-left:4px solid #168fb3;
   direction:rtl
@@ -65,12 +65,14 @@ hr{
   margin:14px 0
 }
 
+.top-bar + hr{margin-top:16px;margin-bottom:14px}
+
 .meta-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  margin-bottom:14px;
+  margin-bottom:70px;
   direction:ltr
 }
 
@@ -394,13 +396,16 @@ td:first-child{
   }
 
   .official-header{
-    transform:translateY(10px)
+    transform:none
   }
 
   .official-header h2,
   .official-header h3{
     font-size:12px
   }
+
+  .top-bar + hr{margin-top:12px;margin-bottom:12px}
+  .meta-row{margin-bottom:45px}
 
   .page-title{
     font-size:20px
@@ -805,16 +810,16 @@ html,body{overflow-x:hidden}
 
     <div class="official-header">
 
-      <h2 id="officialLine1">
-        تجمع المدينة المنورة الصحي
+   <h2 id="officialLine1">
+        Madinah Health Cluster
       </h2>
 
       <h3 id="officialLine2">
-        مستشفى الملك فهد بالمدينة المنورة
+        King Fahad Hospital - Madinah
       </h3>
 
       <h3 id="officialLine3">
-        إدارة الرعاية الصيدلانية
+        Pharmaceutical Care Administration
       </h3>
 
     </div>
@@ -840,7 +845,7 @@ html,body{overflow-x:hidden}
         </svg>
       </button>
       <span class="admin-name" id="adminName">Admin</span>
-      <a class="portal-back-button" href="control-panel.html" title="رجوع" aria-label="رجوع">↩</a>
+      <a class="portal-back-button" href="index.html" title="Back to Main Portal" aria-label="Back to Main Portal">↩</a>
     </div>
 
     <button
@@ -1544,7 +1549,7 @@ function handleSessionFailure(code){
     clearPortalSession();
     window.location.replace("index.html");
   } else if (code === "NO_PERMISSION"){
-    window.location.replace("control-panel.html");
+    window.location.replace("index.html");
   } else {
     const result = document.getElementById("loginResult");
     result.className = "error";
@@ -2319,7 +2324,7 @@ function escapeAttr(
 
 
 setLanguage(
-  "ar"
+  "en"
 );
 
 
