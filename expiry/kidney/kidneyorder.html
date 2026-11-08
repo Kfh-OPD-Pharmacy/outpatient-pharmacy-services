@@ -2100,7 +2100,10 @@ function previewApprovedOrder(order){
 function printApprovedOrder(order){
   if (!order) return;
   const printPages = document.getElementById("printPages");
-  printPages.innerHTML = "<section class=\"print-page\"><h1>Outpatient Pharmacy Services</h1><h2>Approved Order</h2><p><strong>Reference:</strong> " + escapeHtml(order.reference) + "</p><p><strong>Pharmacy:</strong> " + escapeHtml(order.pharmacy + " Pharmacy") + "</p><p><strong>Date:</strong> " + escapeHtml(order.date) + "</p><table><thead><tr><th>Medication</th><th>Requested Quantity</th><th>Notes</th></tr></thead><tbody>" + order.items.map(function(item){ return "<tr><td>" + escapeHtml(item.medicationName || "-") + "</td><td>" + escapeHtml(item.requestedQuantity || "-") + "</td><td>" + escapeHtml(item.notes || "-") + "</td></tr>"; }).join("") + "</tbody></table></section>";
+  printPages.innerHTML = "";
+  const items = order.items.map(function(item){ return {medicationName:item.medicationName || "-", requestedQuantity:item.requestedQuantity || "", notes:item.notes || "", dispensedQuantity:item.dispensedQuantity || ""}; });
+  const meta = {orderNo:order.reference, orderDate:order.date, requestedBy:order.items[0] && order.items[0].requestedBy || "-", status:order.items[0] && order.items[0].status || "Requested", pharmacy:order.pharmacy};
+  printPages.appendChild(createPrintPage(items, 0, 1, 1, meta));
   requestAnimationFrame(function(){ window.print(); });
 }
 
@@ -3067,7 +3070,8 @@ function buildPrintPages(){
         pageItems,
         start,
         pageIndex + 1,
-        pageCount
+        pageCount,
+        savedOrder
       )
     );
   }
@@ -3077,7 +3081,8 @@ function createPrintPage(
   pageItems,
   startIndex,
   pageNumber,
-  totalPages
+  totalPages,
+  orderMeta
 ){
   const page =
     document.createElement("section");
@@ -3094,9 +3099,9 @@ function createPrintPage(
   header.innerHTML =
     '<img class="print-logo" src="../../logo.png" alt="Logo">' +
     '<div class="print-official">' +
-    '<h2>' + escapeHtml(text.ar.officialLine1) + '</h2>' +
-    '<h3>' + escapeHtml(text.ar.officialLine2) + '</h3>' +
-    '<h3>' + escapeHtml(text.ar.officialLine3) + '</h3>' +
+      '<h2>Madinah Health Cluster</h2>' +
+      '<h3>King Fahad Hospital</h3>' +
+      '<h3>Pharmaceutical Care Administration</h3>' +
     '</div>';
 
   page.appendChild(header);
@@ -3115,8 +3120,8 @@ function createPrintPage(
   title.className =
     "print-title";
 
-  title.innerText =
-    "Kidney Order";
+  const pharmacyTitle = orderMeta && orderMeta.pharmacy ? String(orderMeta.pharmacy).charAt(0).toUpperCase() + String(orderMeta.pharmacy).slice(1) : "Kidney";
+  title.innerText = pharmacyTitle + " Order";
 
   page.appendChild(title);
 
@@ -3127,23 +3132,23 @@ function createPrintPage(
     "print-info";
 
   const orderNo =
-    savedOrder && savedOrder.orderNo
-      ? savedOrder.orderNo
+    orderMeta && orderMeta.orderNo
+      ? orderMeta.orderNo
       : text[currentLang].draftOrder;
 
   const orderDate =
-    savedOrder && savedOrder.orderDate
-      ? savedOrder.orderDate
+    orderMeta && orderMeta.orderDate
+      ? orderMeta.orderDate
       : "-";
 
   const requestedBy =
-    savedOrder && savedOrder.requestedBy
-      ? savedOrder.requestedBy
+    orderMeta && orderMeta.requestedBy
+      ? orderMeta.requestedBy
       : currentEmployeeName || currentEmployeeUsername || "-";
 
   const status =
-    savedOrder && savedOrder.status
-      ? savedOrder.status
+    orderMeta && orderMeta.status
+      ? orderMeta.status
       : "Requested";
 
   info.innerHTML =
@@ -3190,7 +3195,7 @@ function createPrintPage(
         "<td>" + (startIndex + index + 1) + "</td>" +
         "<td>" + escapeHtml(item.medicationName) + "</td>" +
         "<td>" + escapeHtml(item.requestedQuantity || "-") + "</td>" +
-       "<td>-</td>" +
+       "<td>" + escapeHtml(item.dispensedQuantity || "-") + "</td>" +
         "<td>" + escapeHtml(item.notes || "-") + "</td>";
 
       tbody.appendChild(tr);
