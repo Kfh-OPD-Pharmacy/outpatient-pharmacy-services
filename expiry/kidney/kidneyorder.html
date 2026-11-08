@@ -346,6 +346,38 @@ textarea:focus{
   transform:scale(1.06)
 }
 
+.approved-print-btn{
+  color:#7c3aed;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  width:36px;
+  height:36px;
+  min-width:36px;
+  padding:0;
+  border-radius:50%;
+  transition:color .18s ease,background-color .18s ease,transform .18s ease
+}
+
+.approved-print-btn svg{
+  width:17px;
+  height:17px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+.approved-print-btn:hover,
+.approved-print-btn:focus-visible{
+  color:#6d28d9;
+  background:rgba(124,58,237,.09);
+  transform:scale(1.06);
+  outline:none
+}
+
 .login-svg,
 .power-svg,
 .trash-svg,
@@ -503,15 +535,13 @@ td:nth-child(2){
 .print-header{
   display:flex;
   align-items:center;
-  justify-content:flex-start;
+  justify-content:space-between;
   direction:ltr;
-  gap:8px;
-  width:max-content;
+  gap:0;
+  width:100%;
   max-width:100%;
-  margin-left:auto;
-  margin-right:0;
   min-height:23mm;
-  margin-bottom:4mm
+  margin:0 0 4mm
 }
 
 .print-logo{
@@ -522,10 +552,10 @@ td:nth-child(2){
 }
 
 .print-official{
-  text-align:right;
-  direction:rtl;
-  padding:2mm 6px 2mm 0;
-  border-right:3px solid #168fb3;
+  text-align:left;
+  direction:ltr;
+  padding:2mm 0 2mm 6px;
+  border-left:3px solid #168fb3;
 }
 
 .print-official h2{
@@ -2178,7 +2208,7 @@ async function loadApprovedOrders(){
     });
     body.innerHTML = Object.keys(grouped).map(function(ref){
       const order = grouped[ref];
-      return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(order.pharmacy + " Pharmacy") + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview Order\" title=\"Preview Order\">◉</button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print Order\" title=\"Print Order\">⎙</button></td></tr>";
+       return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(order.pharmacy + " Pharmacy") + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview Order\" title=\"Preview Order\">◉</button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
     }).join("");
     body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(grouped[button.dataset.orderRef]); }; });
     body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(grouped[button.dataset.orderRef]); }; });
@@ -3151,7 +3181,7 @@ function createPrintPage(
     '<img class="print-logo" src="../../logo.png" alt="Logo">' +
     '<div class="print-official">' +
       '<h2>Madinah Health Cluster</h2>' +
-      '<h3>King Fahad Hospital</h3>' +
+      '<h3>King Fahad Hospital - Madinah</h3>' +
       '<h3>Pharmaceutical Care Administration</h3>' +
     '</div>';
 
