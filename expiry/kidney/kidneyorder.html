@@ -1365,7 +1365,12 @@ html,body{overflow-x:hidden}
     </h1>
   </div>
 
-  <div class="pharmacy-selector-wrap"><label for="pharmacySelector">Pharmacy</label><select id="pharmacySelector" disabled><option value="">Select pharmacy</option></select></div>
+  <div class="pharmacy-selector-wrap"><label for="pharmacySelector">Pharmacy</label><select id="pharmacySelector" disabled><option value="">Select Pharmacy</option></select></div>
+  <div id="draftRecovery" class="order-summary-message" hidden>
+    <span id="draftRecoveryText">A saved draft is available.</span>
+    <button type="button" class="secondary-btn" id="restoreDraftBtn">Restore Draft</button>
+    <button type="button" class="secondary-btn" id="discardDraftBtn">Discard Draft</button>
+  </div>
 
   <div id="loginView" class="login-card hidden">
     <div class="field-row">
@@ -1498,6 +1503,10 @@ html,body{overflow-x:hidden}
           </svg>
           <span id="printText">Print</span>
         </button>
+
+        <button type="button" class="secondary-btn" id="newOrderBtn" onclick="startNewOrder()" hidden>
+          New Order
+        </button>
       </div>
 
       <div id="orderResult" class="result-box"></div>
@@ -1592,6 +1601,8 @@ let orderItems =
 
 let savedOrder =
   null;
+let submissionUncertain = false;
+const ORDER_DRAFT_STORAGE_KEY = "pharmacyOrdersDraft";
 
 const text = {
   ar:{
@@ -1942,7 +1953,7 @@ async function loginUser(){
 
     showOrderView();
     initOrderPharmacySelector();
-    loadMedicationDatabase();
+    if (selectedPharmacyId) loadMedicationDatabase();
 
   }catch(error){
     showResult(
@@ -2006,7 +2017,7 @@ function hasKidneyOrderPermission(
   );
 }
 
-let selectedPharmacyId = sessionStorage.getItem("selectedPharmacyId") || "";
+let selectedPharmacyId = "";
 let orderRequestVersion = 0;
 let orderScanStream = null;
 let orderScanTimer = null;
@@ -2014,6 +2025,13 @@ let orderScannerReader = null;
 
 function orderServiceName(){
   return selectedPharmacyId || "kidney";
+}
+
+function setOrderActionsEnabled(enabled){
+  ["scanCameraBtn","scanLabelBtn","addItemBtn","saveOrderBtn","printBtn"].forEach(function(id){
+    const button = document.getElementById(id);
+    if (button) button.disabled = !enabled;
+  });
 }
 
 function initOrderPharmacySelector(){
@@ -2027,9 +2045,10 @@ function initOrderPharmacySelector(){
     user && user.outpatientOrderAccess ? "outpatient" : ""
   ].filter(Boolean);
   if (allowed.indexOf(selectedPharmacyId) === -1) selectedPharmacyId = "";
-  selector.innerHTML = '<option value="">Select pharmacy</option>' + allowed.map(function(id){ return '<option value="' + id + '">' + id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy</option>'; }).join("");
+  selector.innerHTML = '<option value="">Select Pharmacy</option>' + allowed.map(function(id){ return '<option value="' + id + '">' + id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy</option>'; }).join("");
   selector.value = selectedPharmacyId;
   selector.disabled = !allowed.length;
+  setOrderActionsEnabled(Boolean(selectedPharmacyId));
   selector.addEventListener("change", function(){
     selectedPharmacyId = selector.value;
     sessionStorage.setItem("selectedPharmacyId", selectedPharmacyId);
@@ -2039,9 +2058,11 @@ function initOrderPharmacySelector(){
     medications = [];
     renderOrderTable();
     updateSummary();
+    setOrderActionsEnabled(Boolean(selectedPharmacyId));
     if (selectedPharmacyId) loadMedicationDatabase();
   });
   initOrderSummaryScope(allowed, user && user.isAdmin === true);
+  showDraftRecoveryIfAvailable(allowed);
 }
 
 let orderResetInProgress = false;
@@ -2070,19 +2091,8 @@ async function loadOrderSummary(scopeOverride){
     const result = await postApi("orderReport", {pharmacy:requestedScope === "all" ? "" : requestedScope});
     if (!result.success) throw new Error(result.code || "REPORT_FAILED");
     body.innerHTML = (result.items || []).map(function(item){ return "<tr><td>" + escapeHtml(item.medicationName || item.medicationId || "-") + "</td><td>" + Number(item.kidney || 0) + "</td><td>" + Number(item.diabetes || 0) + "</td><td>" + Number(item.outpatient || 0) + "</td><td>" + Number(item.grandTotal || 0) + "</td></tr>"; }).join("");
-    const labels = {kidney:"Kidney", diabetes:"Diabetes", outpatient:"Outpatient"};
-    const formatDate = function(value){
-      if (!value) return "-";
-      const date = new Date(value);
-      return isNaN(date.getTime()) ? "-" : date.toLocaleString(undefined, {year:"numeric", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
-    };
-    const keys = Object.keys(result.periodStart || {});
-    period.innerText = keys.map(function(k){
-      const reset = result.lastReset && result.lastReset[k];
-      let line = (labels[k] || k) + " · Since " + formatDate(result.periodStart[k]);
-      if (reset) line += " · Reset " + formatDate(reset.resetAt) + (reset.resetBy ? " by " + reset.resetBy : "");
-      return line;
-    }).join("\n");
+    period.innerText = "";
+    period.hidden = true;
     message.innerText = result.items && result.items.length ? "" : "No submitted orders in the active period.";
   }catch(error){
     const code = error && error.message ? error.message : "REPORT_FAILED";
@@ -2179,7 +2189,75 @@ async function readShelfLabel(file){
   }catch(error){ status.innerText = "Could not read the label locally. Use manual entry."; }
 }
 
-window.addEventListener("pagehide", closeOrderScanner);
+function persistOrderDraft(status){
+  if (!orderItems.length || !selectedPharmacyId || (savedOrder && savedOrder.status === "SUBMITTED")) return;
+  localStorage.setItem(ORDER_DRAFT_STORAGE_KEY, JSON.stringify({
+    pharmacy:selectedPharmacyId,
+    items:orderItems,
+    idempotencyKey:sessionStorage.getItem("activeOrderIdempotencyKey") || "",
+    status:status || "UNSAVED",
+    savedAt:new Date().toISOString()
+  }));
+}
+
+function clearPersistedOrderDraft(){
+  localStorage.removeItem(ORDER_DRAFT_STORAGE_KEY);
+  const recovery = document.getElementById("draftRecovery");
+  if (recovery) recovery.hidden = true;
+}
+
+function showDraftRecoveryIfAvailable(allowed){
+  let draft = null;
+  try { draft = JSON.parse(localStorage.getItem(ORDER_DRAFT_STORAGE_KEY) || "null"); } catch (error) {}
+  const recovery = document.getElementById("draftRecovery");
+  if (!recovery || !draft || !allowed.includes(draft.pharmacy) || !Array.isArray(draft.items) || !draft.items.length) return;
+  recovery.hidden = false;
+  document.getElementById("restoreDraftBtn").onclick = function(){
+    selectedPharmacyId = draft.pharmacy;
+    const selector = document.getElementById("pharmacySelector");
+    selector.value = selectedPharmacyId;
+    orderItems = draft.items;
+    submissionUncertain = draft.status === "PENDING";
+    if (draft.idempotencyKey) sessionStorage.setItem("activeOrderIdempotencyKey", draft.idempotencyKey);
+    renderOrderTable();
+    updateSummary();
+    setOrderActionsEnabled(!submissionUncertain);
+    clearPersistedOrderDraft();
+    loadMedicationDatabase();
+  };
+  document.getElementById("discardDraftBtn").onclick = function(){
+    if (window.confirm("Discard this saved draft?")) clearPersistedOrderDraft();
+  };
+}
+
+function resetOrderPageSelection(clearDraft){
+  selectedPharmacyId = "";
+  orderRequestVersion += 1;
+  sessionStorage.removeItem("selectedPharmacyId");
+  const selector = document.getElementById("pharmacySelector");
+  if (selector) selector.value = "";
+  setOrderActionsEnabled(false);
+  if (clearDraft){
+    orderItems = [];
+    savedOrder = null;
+    medications = [];
+    renderOrderTable();
+    updateSummary();
+  }
+}
+
+window.addEventListener("beforeunload", function(event){
+  if (orderItems && orderItems.length){
+    event.preventDefault();
+    event.returnValue = "";
+  }
+});
+
+window.addEventListener("pagehide", function(){
+  closeOrderScanner();
+  persistOrderDraft(submissionUncertain ? "PENDING" : "UNSAVED");
+  resetOrderPageSelection(true);
+});
 
 
 function clearUnifiedPortalSession(){
@@ -2285,7 +2363,7 @@ async function restoreSession(){
     saveStoredSession();
     showOrderView();
     initOrderPharmacySelector();
-    loadMedicationDatabase();
+    if (selectedPharmacyId) loadMedicationDatabase();
   }
 
   try{
@@ -2570,6 +2648,8 @@ function medicationExists(name){
 function addItemToOrder(){
   clearResult("orderResult");
 
+  if (savedOrder && savedOrder.status === "SUBMITTED") return;
+
   const name =
     document.getElementById("medicationName").value.trim();
 
@@ -2622,6 +2702,7 @@ function addItemToOrder(){
 }
 
 function removeOrderItem(index){
+  if (savedOrder && savedOrder.status === "SUBMITTED") return;
   orderItems.splice(index,1);
   savedOrder = null;
   renderOrderTable();
@@ -2663,7 +2744,7 @@ function renderOrderTable(){
         "</td>" +
 
         "<td>" +
-        '<button type="button" class="icon-btn" onclick="removeOrderItem(' +
+         '<button type="button" class="icon-btn" ' + (savedOrder && savedOrder.status === "SUBMITTED" ? "disabled " : "") + 'onclick="removeOrderItem(' +
         index +
         ')" title="' +
         escapeHtml(text[currentLang].remove) +
@@ -2710,11 +2791,36 @@ function updateSummary(){
     "-";
 
   document.getElementById("statusValue").innerText =
-    text[currentLang].requested;
+    savedOrder && savedOrder.status === "SUBMITTED"
+      ? "SUBMITTED"
+      : text[currentLang].requested;
+}
+
+function startNewOrder(){
+  if (!selectedPharmacyId) return;
+  orderItems = [];
+  savedOrder = null;
+  submissionUncertain = false;
+  sessionStorage.removeItem("activeOrderIdempotencyKey");
+  clearPersistedOrderDraft();
+  document.getElementById("medicationName").value = "";
+  document.getElementById("requestedQuantity").value = "";
+  document.getElementById("notes").value = "";
+  document.getElementById("newOrderBtn").hidden = true;
+  setOrderActionsEnabled(true);
+  renderOrderTable();
+  updateSummary();
+  clearResult("orderResult");
 }
 
 async function saveOrder(){
   clearResult("orderResult");
+
+  if (savedOrder && savedOrder.status === "SUBMITTED") return;
+  if (submissionUncertain){
+    showResult("orderResult", "error", "Submission status is uncertain. Restore the draft and verify the order before retrying.");
+    return;
+  }
 
   if (
     !ordersApiReady()
@@ -2749,6 +2855,8 @@ async function saveOrder(){
   try{
     const idempotencyKey = sessionStorage.getItem("activeOrderIdempotencyKey") || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random());
     sessionStorage.setItem("activeOrderIdempotencyKey", idempotencyKey);
+    submissionUncertain = true;
+    persistOrderDraft("PENDING");
     const result =
       await postApi(
         "saveOrder",
@@ -2783,6 +2891,8 @@ async function saveOrder(){
         "error",
         failureMessage
       );
+      submissionUncertain = false;
+      persistOrderDraft("UNSAVED");
 
       return;
     }
@@ -2791,27 +2901,34 @@ async function saveOrder(){
       orderNo:result.orderNo,
       orderDate:result.orderDate,
       requestedBy:result.requestedBy,
-      status:result.status || "Requested"
+      status:"SUBMITTED"
     };
+    submissionUncertain = false;
+    clearPersistedOrderDraft();
     sessionStorage.removeItem("activeOrderIdempotencyKey");
 
     updateSummary();
+    setOrderActionsEnabled(false);
+    document.getElementById("printBtn").disabled = false;
+    document.getElementById("newOrderBtn").hidden = false;
+    const summaryPanel = document.getElementById("orderSummaryPanel");
+    if (summaryPanel && !summaryPanel.hidden) loadOrderSummary();
 
     showResult(
       "orderResult",
       "success",
-      text[currentLang].saved
+      "Order Submitted Successfully — Reference: " + (result.orderNo || "-")
     );
 
   }catch(error){
+    persistOrderDraft("PENDING");
     showResult(
       "orderResult",
       "error",
       text[currentLang].saveFailed + " (NETWORK_ERROR). Your order remains here; please retry."
     );
   }finally{
-    button.disabled =
-      false;
+    button.disabled = Boolean(savedOrder && savedOrder.status === "SUBMITTED") || !selectedPharmacyId;
   }
 }
 
@@ -3184,6 +3301,8 @@ document.getElementById("password").addEventListener(
 window.addEventListener(
   "pageshow",
   function(){
+
+    resetOrderPageSelection(true);
 
     const unifiedSessionToken =
       sessionStorage.getItem(
