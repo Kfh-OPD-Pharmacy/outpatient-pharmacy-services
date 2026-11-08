@@ -562,15 +562,15 @@ html[dir="ltr"] .official-header h2,html[dir="ltr"] .official-header h3{margin:2
 .page-title{margin-top:28px;margin-bottom:30px}
  .portal-grid{--portal-gap:4px;--portal-cutout:30px;position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(104px,116px));gap:var(--portal-gap);max-width:760px;width:min(100%,760px);margin:0 auto;align-items:stretch;justify-items:stretch;direction:ltr}
 .portal-grid .pharmacy-center-icon{position:absolute;z-index:2;left:50%;top:50%;width:54px;height:54px;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none}
-.portal-grid #pharmacyMedicationsCard{grid-area:1/1}.portal-grid #bookingCard{grid-area:1/2}.portal-grid #mailCard{grid-area:2/1}.portal-grid #controlCard{grid-area:2/2}
+ .portal-grid #pharmacyMedicationsCard{grid-area:1/1}.portal-grid #bookingCard{grid-area:1/2}.portal-grid #mailCard{grid-area:2/1}.portal-grid #medicationManagementCard{grid-area:2/2}
 .portal-grid .portal-card{position:relative;overflow:hidden}
  html[dir="ltr"] .portal-grid .portal-card{direction:ltr}
  html[dir="rtl"] .portal-grid .portal-card{direction:rtl}
 .portal-grid #pharmacyMedicationsCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
 .portal-grid #bookingCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
 .portal-grid #mailCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 100% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
-.portal-grid #controlCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
-@media(max-width:700px){.top-bar .logo{margin-top:-12px;margin-bottom:-20px}.top-bar + hr{margin-top:12px;margin-bottom:12px}.meta-row{margin-bottom:45px}.portal-grid{--portal-gap:4px;--portal-cutout:26px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(88px,104px));gap:var(--portal-gap);width:min(100%,360px)}.portal-grid .pharmacy-center-icon{width:44px;height:44px}.portal-grid #pharmacyMedicationsCard,.portal-grid #bookingCard,.portal-grid #mailCard,.portal-grid #controlCard{-webkit-mask-size:100% 100%;mask-size:100% 100%}}
+ .portal-grid #medicationManagementCard{-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+ @media(max-width:700px){.top-bar .logo{margin-top:-12px;margin-bottom:-20px}.top-bar + hr{margin-top:12px;margin-bottom:12px}.meta-row{margin-bottom:45px}.portal-grid{--portal-gap:4px;--portal-cutout:26px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(88px,104px));gap:var(--portal-gap);width:min(100%,360px)}.portal-grid .pharmacy-center-icon{width:44px;height:44px}.portal-grid #pharmacyMedicationsCard,.portal-grid #bookingCard,.portal-grid #mailCard,.portal-grid #medicationManagementCard{-webkit-mask-size:100% 100%;mask-size:100% 100%}}
 </style>
 </head>
 <body>
@@ -683,8 +683,8 @@ html[dir="ltr"] .official-header h2,html[dir="ltr"] .official-header h3{margin:2
         <p class="card-title" id="mailTitle">Mail Pharmacy</p>
       </a>
 
-      <a class="portal-card" id="controlCard" href="control-panel.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
-        <p class="card-title" id="controlTitle">لوحة التحكم</p>
+      <a class="portal-card" id="medicationManagementCard" href="medications-admin.html" onclick="navigateFresh(this.getAttribute('href')); return false;" style="display:none">
+        <p class="card-title" id="medicationManagementTitle">إدارة الأدوية الموحدة</p>
       </a>
     </div>
 
@@ -738,8 +738,7 @@ const text = {
     pharmacyMedicationsTitle: "أدوية الصيدلية",
     bookingTitle: "حجز الأدوية",
     mailTitle: "البريد الدوائي",
-    controlTitle: "لوحة التحكم",
-    controlDesc: "إدارة المستخدمين والأدوية المركزية.",
+    medicationManagementTitle: "إدارة الأدوية الموحدة",
     noAccess: "لا توجد خدمات متاحة لهذا المستخدم."
   },
 
@@ -770,8 +769,7 @@ const text = {
     pharmacyMedicationsTitle: "Pharmacy Medications",
     bookingTitle: "Medication Booking",
     mailTitle: "Mail Pharmacy",
-    controlTitle: "Control Panel",
-    controlDesc: "Unified users and central medications management.",
+    medicationManagementTitle: "Medication Management",
     noAccess: "No services are available for this user."
   }
 };
@@ -799,8 +797,7 @@ function setLanguage(lang) {
     "pharmacyMedicationsTitle",
     "bookingTitle",
     "mailTitle",
-    "controlTitle",
-    "controlDesc"
+    "medicationManagementTitle"
   ].forEach(
     function(id) {
       const element =
@@ -1396,7 +1393,7 @@ function hideAllPortalCards() {
     "pharmacyMedicationsCard",
     "bookingCard",
     "mailCard",
-    "controlCard"
+    "medicationManagementCard"
   ].forEach(
     function(id) {
       document.getElementById(
@@ -1417,7 +1414,7 @@ function hideAllPortalCards() {
 function updatePortalGridLayout() {
   const grid = document.querySelector(".portal-grid");
   if (!grid) return;
-  const cards = ["pharmacyMedicationsCard", "bookingCard", "mailCard", "controlCard"]
+  const cards = ["pharmacyMedicationsCard", "bookingCard", "mailCard", "medicationManagementCard"]
     .map(function(id) { return document.getElementById(id); })
     .filter(Boolean);
   const visible = cards.filter(function(card) {
@@ -1465,14 +1462,7 @@ function renderPortalCards(user) {
     "opdMailRxAccess", "opdMailDailyListAccess", "opdMailIndicatorAccess"
   ]);
 
-  const controlAllowed =
-    hasAny(
-      user,
-      [
-        "userManagementAccess",
-        "medicationManagementAccess"
-      ]
-    );
+  const medicationManagementAllowed = hasAny(user, ["medicationManagementAccess"]);
 
   document.getElementById(
     "pharmacyMedicationsCard"
@@ -1496,9 +1486,9 @@ function renderPortalCards(user) {
       : "none";
 
   document.getElementById(
-    "controlCard"
+    "medicationManagementCard"
   ).style.display =
-    controlAllowed
+    medicationManagementAllowed
       ? "flex"
       : "none";
 
@@ -1508,7 +1498,7 @@ function renderPortalCards(user) {
     pharmacyMedicationsAllowed ||
     bookingAllowed ||
     mailAllowed ||
-    controlAllowed;
+    medicationManagementAllowed;
 
   document.getElementById(
     "noAccessMessage"
