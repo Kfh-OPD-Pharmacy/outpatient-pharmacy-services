@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة الأدوية الموحدة</title>
+<title>Medication Management</title>
 
 <style>
 *{box-sizing:border-box}
@@ -98,7 +98,7 @@ hr{
   align-items:center;
   justify-content:center;
   gap:10px;
-  margin:18px 0 8px
+   margin:18px 0 18px
 }
 
 .page-title{
@@ -796,6 +796,13 @@ html,body{overflow-x:hidden}
 </head>
 
 
+<style>
+.actions button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bulk-medication-section{margin:18px auto 0;padding:16px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;max-width:760px}
+.bulk-medication-section h2{margin:0 0 10px;color:#168fb3;font-size:18px;text-align:center}
+.bulk-medication-section textarea{width:100%;box-sizing:border-box;resize:vertical;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;direction:ltr}
+#bulkMedicationPreview{margin-top:12px;line-height:1.6}
+</style>
 <body>
 
 <div class="container">
@@ -863,17 +870,10 @@ html,body{overflow-x:hidden}
     <h1
       class="page-title"
       id="pageTitle">
-      إدارة الأدوية الموحدة
+      Medication Management
     </h1>
 
   </div>
-
-
-  <p
-    class="subtitle"
-    id="subtitle">
-    قاعدة مركزية لأسماء الأدوية المستخدمة في القوائم المنسدلة.
-  </p>
 
 
   <div id="loginResult" role="status"></div>
@@ -983,16 +983,16 @@ html,body{overflow-x:hidden}
           type="button"
           class="primary-btn"
           id="saveBtn"
-          onclick="saveMedication()">
-          إضافة
+          onclick="saveMedication()" aria-label="Add medication" title="Add medication">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
         </button>
 
         <button
           type="button"
           class="secondary-btn"
           id="clearBtn"
-          onclick="clearForm()">
-          مسح
+          onclick="clearForm()" aria-label="Clear form" title="Clear form">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3m-9 0 1 13h8l1-13"></path></svg>
         </button>
 
       </div>
@@ -1002,6 +1002,17 @@ html,body{overflow-x:hidden}
 
 
     <div id="result"></div>
+
+    <section class="bulk-medication-section" aria-labelledby="bulkMedicationTitle">
+      <h2 id="bulkMedicationTitle">Add Medication List</h2>
+      <textarea id="bulkMedicationInput" rows="7" placeholder="Paste one medication name per line"></textarea>
+      <div class="actions">
+        <button type="button" class="secondary-btn" id="bulkPreviewBtn" onclick="previewBulkMedications()" aria-label="Preview medication list" title="Preview medication list">◉</button>
+        <button type="button" class="primary-btn" id="bulkConfirmBtn" onclick="confirmBulkMedications()" aria-label="Confirm medication list" title="Confirm medication list" disabled>✓</button>
+        <button type="button" class="secondary-btn" id="bulkCancelBtn" onclick="cancelBulkMedications()" aria-label="Cancel medication list" title="Cancel medication list">×</button>
+      </div>
+      <div id="bulkMedicationPreview" aria-live="polite"></div>
+    </section>
 
 
     <div class="tools">
@@ -1017,8 +1028,8 @@ html,body{overflow-x:hidden}
         type="button"
         class="secondary-btn"
         id="refreshBtn"
-        onclick="loadMedications()">
-        تحديث
+        onclick="loadMedications()" aria-label="Refresh medications" title="Refresh medications">
+        ↻
       </button>
 
     </div>
@@ -1111,7 +1122,7 @@ const text = {
   ar:{
 
     title:
-      "إدارة الأدوية الموحدة",
+      "Medication Management",
 
     subtitle:
       "قاعدة مركزية لأسماء الأدوية المستخدمة في القوائم المنسدلة.",
@@ -1188,7 +1199,7 @@ const text = {
   en:{
 
     title:
-      "Unified Medication Management",
+      "Medication Management",
 
     subtitle:
       "Central medication database for dropdown lists.",
@@ -1310,12 +1321,6 @@ function setLanguage(
 
 
   document.getElementById(
-    "subtitle"
-  ).innerText =
-    text[lang].subtitle;
-
-
-  document.getElementById(
     "usernameLabel"
   ).innerText =
     text[lang].username;
@@ -1369,24 +1374,16 @@ function setLanguage(
     text[lang].actions;
 
 
-  document.getElementById(
-    "saveBtn"
-  ).innerText =
-    editingId
-      ? text[lang].update
-      : text[lang].add;
+  document.getElementById("saveBtn").title = editingId ? text[lang].update : text[lang].add;
+  document.getElementById("saveBtn").setAttribute("aria-label", editingId ? text[lang].update : text[lang].add);
 
 
-  document.getElementById(
-    "clearBtn"
-  ).innerText =
-    text[lang].clear;
+  document.getElementById("clearBtn").title = text[lang].clear;
+  document.getElementById("clearBtn").setAttribute("aria-label", text[lang].clear);
 
 
-  document.getElementById(
-    "refreshBtn"
-  ).innerText =
-    text[lang].refresh;
+  document.getElementById("refreshBtn").title = text[lang].refresh;
+  document.getElementById("refreshBtn").setAttribute("aria-label", text[lang].refresh);
 
 
   renderDate();
@@ -2087,6 +2084,34 @@ async function deleteMedication(
 }
 
 
+
+function previewBulkMedications(){
+  const preview = document.getElementById("bulkMedicationPreview");
+  const names = document.getElementById("bulkMedicationInput").value.split(/\r?\n/).map(function(value){ return value.trim(); }).filter(Boolean);
+  const seen = {};
+  const existing = {};
+  medications.forEach(function(item){ existing[String(item.name || item.medicationName || item).trim().toLowerCase()] = true; });
+  const rows = names.map(function(name){
+    const key = name.toLowerCase();
+    const duplicate = Boolean(seen[key] || existing[key]);
+    seen[key] = true;
+    return {name:name, duplicate:duplicate};
+  });
+  window.pendingBulkMedications = rows.filter(function(row){ return !row.duplicate; }).map(function(row){ return row.name; });
+  preview.innerHTML = rows.length ? rows.map(function(row){ return "<div>" + escapeHtml(row.name) + " — " + (row.duplicate ? "Duplicate" : "Ready for review") + "</div>"; }).join("") : "No medication names found.";
+  document.getElementById("bulkConfirmBtn").disabled = !window.pendingBulkMedications.length;
+}
+
+function confirmBulkMedications(){
+  document.getElementById("bulkMedicationPreview").innerText = "Bulk saving is not available in the current Medication Database API. No records were changed.";
+}
+
+function cancelBulkMedications(){
+  window.pendingBulkMedications = [];
+  document.getElementById("bulkMedicationInput").value = "";
+  document.getElementById("bulkMedicationPreview").innerText = "";
+  document.getElementById("bulkConfirmBtn").disabled = true;
+}
 
 function clearForm(){
 
