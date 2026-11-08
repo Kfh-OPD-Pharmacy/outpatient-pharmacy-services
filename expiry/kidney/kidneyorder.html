@@ -1487,25 +1487,24 @@ html,body{overflow-x:hidden}
       </div>
 
       <div class="order-actions">
-        <button type="button" class="primary-btn" id="saveOrderBtn" onclick="saveOrder()">
-          Save Order
+        <button type="button" class="primary-btn" id="saveOrderBtn" onclick="saveOrder()" aria-label="Save Order" title="Save Order">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"></path><path d="M8 4v6h8V4M8 20v-6h8v6"></path></svg>
         </button>
 
         <button
           type="button"
           class="secondary-btn"
           id="printBtn"
-          onclick="printOrder()">
+          onclick="printOrder()" aria-label="Print Order" title="Print Order">
           <svg class="print-svg" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M6 9V2h12v7"></path>
             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
             <path d="M6 14h12v8H6z"></path>
           </svg>
-          <span id="printText">Print</span>
         </button>
 
-        <button type="button" class="secondary-btn" id="newOrderBtn" onclick="startNewOrder()" hidden>
-          New Order
+        <button type="button" class="secondary-btn" id="newOrderBtn" onclick="startNewOrder()" aria-label="New Order" title="New Order" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"></path><path d="M15 3v5h4M12 11v7M8.5 14.5h7"></path></svg>
         </button>
       </div>
 
@@ -1751,10 +1750,10 @@ function setLanguage(lang){
   document.getElementById("addItemBtn").innerText =
     text[lang].addMedication;
 
-  document.getElementById("saveOrderBtn").innerText =
+  document.getElementById("saveOrderBtn").title =
     text[lang].saveOrder;
 
-  document.getElementById("printText").innerText =
+  document.getElementById("printBtn").title =
     text[lang].print;
 
   document.getElementById("colNo").innerText =
@@ -2838,10 +2837,16 @@ function updateSummary(){
 
 function startNewOrder(){
   if (!selectedPharmacyId) return;
+  if (submissionUncertain){
+    if (!window.confirm("The previous submission outcome is uncertain. Discard this draft without retrying?")) return;
+  } else if (orderItems.length && !window.confirm("Discard the current draft and start a new order?")) {
+    return;
+  }
   orderItems = [];
   savedOrder = null;
   submissionUncertain = false;
-  sessionStorage.removeItem("activeOrderIdempotencyKey");
+  const newIdempotencyKey = window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random();
+  sessionStorage.setItem("activeOrderIdempotencyKey", newIdempotencyKey);
   clearPersistedOrderDraft();
   document.getElementById("medicationName").value = "";
   document.getElementById("requestedQuantity").value = "";
