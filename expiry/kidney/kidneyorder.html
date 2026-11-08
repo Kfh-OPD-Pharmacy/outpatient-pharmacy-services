@@ -1194,6 +1194,48 @@ td:nth-child(2){
   .field-grid input[inputmode="numeric"]{
     text-align:center;
   }
+
+  .medication-entry-grid{
+    grid-template-columns:minmax(0,3fr) minmax(0,1fr);
+    column-gap:12px;
+    row-gap:10px;
+  }
+
+  .medication-entry-grid > .field-row{
+    min-width:0;
+  }
+
+  .medication-entry-grid input{
+    min-width:0;
+    box-sizing:border-box;
+    height:44px;
+  }
+
+  .medication-entry-grid .combo-wrap,
+  .medication-entry-grid .combo-wrap input{
+    min-width:0;
+    max-width:100%;
+  }
+
+  .medication-entry-grid .combo-wrap input{
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    overflow:hidden;
+  }
+}
+
+@media screen and (max-width:600px){
+  .medication-entry-grid{
+    grid-template-columns:minmax(0,13fr) minmax(0,7fr);
+    column-gap:8px;
+    row-gap:8px;
+  }
+
+  .medication-entry-grid input{
+    height:44px;
+    min-height:44px;
+    font-size:16px;
+  }
 }
 
 /* Unified portal security/top-row integration */
@@ -1545,7 +1587,7 @@ html,body{overflow-x:hidden}
         </div>
       </div>
 
-      <div class="field-grid">
+      <div class="field-grid medication-entry-grid">
         <div class="field-row">
           <label id="medicationLabel" for="medicationName">Medication Name</label>
           <div class="combo-wrap">
