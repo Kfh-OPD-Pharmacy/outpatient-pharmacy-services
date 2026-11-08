@@ -267,6 +267,51 @@ textarea:focus{
   gap:8px
 }
 
+.order-actions > .primary-btn,
+.order-actions > .secondary-btn{
+  width:44px;
+  min-width:44px;
+  height:40px;
+  min-height:40px;
+  padding:0;
+  border-radius:8px;
+  transition:background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease
+}
+
+.order-actions > .primary-btn svg,
+.order-actions > .secondary-btn svg{
+  width:21px;
+  height:21px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.1;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+.order-actions > .primary-btn:hover:not(:disabled),
+.order-actions > .primary-btn:focus-visible:not(:disabled){
+  background:#117b9a;
+  box-shadow:0 0 0 3px rgba(22,143,179,.2);
+  transform:translateY(-1px)
+}
+
+.order-actions > .secondary-btn:hover:not(:disabled),
+.order-actions > .secondary-btn:focus-visible:not(:disabled){
+  color:#117b9a;
+  border-color:#168fb3;
+  box-shadow:0 0 0 3px rgba(22,143,179,.14);
+  transform:translateY(-1px)
+}
+
+.order-actions > button:disabled{
+  opacity:.48;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none
+}
+
 .primary-btn{
   background:#168fb3;
   color:#fff
@@ -1629,6 +1674,7 @@ const text = {
     addMedication:"إضافة الدواء",
     saveOrder:"Save Order",
     print:"Print",
+    newOrder:"طلب جديد",
     no:"No.",
     action:"Action",
     remove:"حذف",
@@ -1665,6 +1711,7 @@ const text = {
     addMedication:"Add Medication",
     saveOrder:"Save Order",
     print:"Print",
+    newOrder:"New Order",
     no:"No.",
     action:"Action",
     remove:"Remove",
@@ -1749,6 +1796,12 @@ function setLanguage(lang){
 
   document.getElementById("printBtn").title =
     text[lang].print;
+
+  document.getElementById("newOrderBtn").title =
+    text[lang].newOrder;
+  document.getElementById("newOrderBtn").setAttribute("aria-label", text[lang].newOrder);
+  document.getElementById("saveOrderBtn").setAttribute("aria-label", text[lang].saveOrder);
+  document.getElementById("printBtn").setAttribute("aria-label", text[lang].print);
 
   document.getElementById("colNo").innerText =
     text[lang].no;
