@@ -955,27 +955,7 @@ html,body{overflow-x:hidden}
       </div>
 
 
-      <div>
-
-        <label
-          id="serviceLabel"
-          for="serviceInput">
-          الخدمة
-        </label>
-
-        <select id="serviceInput">
-
-          <option value="kidney">
-            Kidney Pharmacy
-          </option>
-
-          <option value="all">
-            All Future Services
-          </option>
-
-        </select>
-
-      </div>
+      <input id="serviceInput" type="hidden" value="all">
 
 
       <div class="actions">
@@ -1006,6 +986,8 @@ html,body{overflow-x:hidden}
 
     <section class="bulk-medication-section" aria-labelledby="bulkMedicationTitle">
       <h2 id="bulkMedicationTitle">Add Medication List</h2>
+      <label class="secondary-btn" for="medicationFileInput" aria-label="Upload Medication List" title="Upload Medication List">⇧</label>
+      <input id="medicationFileInput" type="file" accept=".xlsx" hidden onchange="handleMedicationFileImport(this.files[0])">
       <textarea id="bulkMedicationInput" rows="7" placeholder="Paste one medication name per line"></textarea>
       <div class="actions">
         <button type="button" class="secondary-btn" id="bulkPreviewBtn" onclick="previewBulkMedications()" aria-label="Preview medication list" title="Preview medication list">◉</button>
@@ -1079,6 +1061,7 @@ html,body{overflow-x:hidden}
 </div>
 
 
+<script src="vendor/exceljs-4.4.0.min.js"></script>
 <script>
 
 const UNIFIED_API_URL =
@@ -1343,12 +1326,6 @@ function setLanguage(
     "medNameLabel"
   ).innerText =
     text[lang].medName;
-
-
-  document.getElementById(
-    "serviceLabel"
-  ).innerText =
-    text[lang].service;
 
 
   document.getElementById(
@@ -1813,10 +1790,9 @@ async function saveMedication(){
     ).value.trim();
 
 
-  const service =
-    document.getElementById(
-      "serviceInput"
-    ).value;
+  const service = editingId
+    ? document.getElementById("serviceInput").value
+    : "all";
 
 
   if (
@@ -2086,25 +2062,159 @@ async function deleteMedication(
 
 
 
-function previewBulkMedications(){
-  const preview = document.getElementById("bulkMedicationPreview");
-  const names = document.getElementById("bulkMedicationInput").value.split(/\r?\n/).map(function(value){ return value.trim(); }).filter(Boolean);
-  const seen = {};
-  const existing = {};
-  medications.forEach(function(item){ existing[String(item.name || item.medicationName || item).trim().toLowerCase()] = true; });
-  const rows = names.map(function(name){
-    const key = name.toLowerCase();
-    const duplicate = Boolean(seen[key] || existing[key]);
-    seen[key] = true;
-    return {name:name, duplicate:duplicate};
-  });
-  window.pendingBulkMedications = rows.filter(function(row){ return !row.duplicate; }).map(function(row){ return row.name; });
-  preview.innerHTML = rows.length ? rows.map(function(row){ return "<div>" + escapeHtml(row.name) + " — " + (row.duplicate ? "Duplicate" : "Ready for review") + "</div>"; }).join("") : "No medication names found.";
-  document.getElementById("bulkConfirmBtn").disabled = !window.pendingBulkMedications.length;
+function medicationNameCanonical(name){
+  return String(name || "").toLowerCase().trim()
+    .replace(/([0-9])\s+(?=mg|mcg|g|kg|ml|l|%\b)/gi, "$1")
+    .replace(/\s+/g, " ")
+    .replace(/[.,;:()\[\]{}\-_/]+/g, " ")
+    .replace(/\s+/g, " ").trim();
 }
 
-function confirmBulkMedications(){
-  document.getElementById("bulkMedicationPreview").innerText = "Bulk saving is not available in the current Medication Database API. No records were changed.";
+function medicationNameTokenSignature(name){
+  return medicationNameCanonical(name).split(" ").filter(Boolean).sort().join(" ");
+}
+
+function classifyMedicationName(name, existing){
+  const canonical = medicationNameCanonical(name);
+  const signature = medicationNameTokenSignature(name);
+  for (let i = 0; i < existing.length; i++){
+    const item = existing[i];
+    const existingName = String(item.name || item.medicationName || item || "");
+    if (canonical === medicationNameCanonical(existingName)){
+      return {status:"Formatting Match", item:item};
+    }
+    if (signature && signature === medicationNameTokenSignature(existingName)){
+      return {status:"Exact Match", item:item};
+    }
+  }
+  return {status:"New Medication", item:null};
+}
+
+function previewBulkMedications(){
+  const preview = document.getElementById("bulkMedicationPreview");
+  const names = document.getElementById("bulkMedicationInput").value.split(/\r?\n/).map(function(value){ return value.replace(/\s+/g, " ").trim(); }).filter(Boolean);
+  const previous = window.bulkReviewRows || {};
+  const seen = {};
+  const rows = names.map(function(name){
+    const key = medicationNameCanonical(name);
+    const withinFile = seen[key];
+    seen[key] = true;
+    const match = classifyMedicationName(name, medications);
+    if (withinFile) return {name:name, status:"Exact Match", detail:"Duplicate in uploaded list", decision:"same"};
+    const prior = previous[key];
+    const decision = prior && prior.name === name && prior.matchId === (match.item && match.item.id || "") ? prior.decision : (match.status === "Possible Match — Review Required" ? "pending" : "new");
+    return {name:name, status:match.status, item:match.item, decision:decision};
+  });
+  window.bulkReviewRows = {};
+  rows.forEach(function(row){ if(row.status === "Possible Match — Review Required") window.bulkReviewRows[medicationNameCanonical(row.name)] = {name:row.name, matchId:row.item && row.item.id || "", decision:row.decision}; });
+  const blocked = rows.some(function(row){ return row.status === "Possible Match — Review Required" && row.decision === "pending"; });
+  window.pendingBulkMedications = rows.filter(function(row){ return row.status === "New Medication" || (row.status === "Possible Match — Review Required" && row.decision === "different"); }).map(function(row){ return {name:row.name, decision:row.status === "New Medication" ? "new" : "different", matchId:row.item && row.item.id || "", matchName:row.item && (row.item.name || row.item.medicationName) || ""}; });
+  preview.innerHTML = rows.length ? rows.map(function(row){
+    const match = row.item ? " — Existing: " + escapeHtml(row.item.id || "") + " " + escapeHtml(row.item.name || row.item.medicationName || "") : "";
+    if (row.status !== "Possible Match — Review Required") return "<div>" + escapeHtml(row.name) + " — " + escapeHtml(row.status) + match + "</div>";
+    return "<div>" + escapeHtml(row.name) + " — " + escapeHtml(row.status) + match + " <button type=\"button\" onclick=\"setBulkReviewDecision('" + escapeAttr(row.name) + "','same')\" title=\"Same Medication\" aria-label=\"Same Medication\">Same</button> <button type=\"button\" onclick=\"setBulkReviewDecision('" + escapeAttr(row.name) + "','different')\" title=\"Different Medication\" aria-label=\"Different Medication\">Different</button> <strong>" + escapeHtml(row.decision === "same" ? "Same Medication — existing record retained" : row.decision === "different" ? "Different Medication — approved" : "Pending Review") + "</strong></div>";
+  }).join("") : "No medication names found.";
+  document.getElementById("bulkConfirmBtn").disabled = !window.pendingBulkMedications.length || blocked;
+}
+
+function setBulkReviewDecision(name, decision){
+  const key = medicationNameCanonical(name);
+  if (!window.bulkReviewRows || !window.bulkReviewRows[key]) return;
+  window.bulkReviewRows[key].decision = decision;
+  previewBulkMedications();
+}
+
+function handleMedicationFileImport(file){
+  if (!file) return;
+  const extension = file.name.toLowerCase().split(".").pop();
+  const preview = document.getElementById("bulkMedicationPreview");
+  if (extension !== "xlsx"){
+    preview.innerText = "Select an Excel .xlsx file.";
+    return;
+  }
+  if (!window.ExcelJS || !ExcelJS.Workbook){
+    preview.innerText = "Excel parser failed to load. You can still paste medication names manually.";
+    return;
+  }
+  preview.innerText = "Reading workbook…";
+  file.arrayBuffer().then(function(buffer){
+    const workbook = new ExcelJS.Workbook();
+    return workbook.xlsx.load(buffer);
+  }).then(function(workbook){
+    if (!workbook.worksheets.length){ throw new Error("NO_WORKSHEETS"); }
+    const controls = document.createElement("div");
+    controls.id = "excelImportControls";
+    controls.innerHTML = '<label>Worksheet <select id="excelWorksheetSelect"></select></label> <label>Medication Name column <select id="excelColumnSelect"></select></label> <button type="button" class="secondary-btn" id="excelExtractBtn" title="Extract medication names" aria-label="Extract medication names">↧</button>';
+    preview.innerHTML = "";
+    preview.appendChild(controls);
+    const worksheetSelect = document.getElementById("excelWorksheetSelect");
+    workbook.worksheets.forEach(function(sheet, index){
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = sheet.name;
+      worksheetSelect.appendChild(option);
+    });
+    function populateColumns(){
+      const sheet = workbook.worksheets[Number(worksheetSelect.value)];
+      const columnSelect = document.getElementById("excelColumnSelect");
+      columnSelect.innerHTML = "";
+      const max = Math.max(1, Math.min(sheet.columnCount || 1, 100));
+      for (let i = 1; i <= max; i++){
+        const option = document.createElement("option");
+        option.value = String(i);
+        option.textContent = String.fromCharCode(64 + i) + " (Column " + i + ")";
+        columnSelect.appendChild(option);
+      }
+    }
+    populateColumns();
+    worksheetSelect.addEventListener("change", populateColumns);
+    document.getElementById("excelExtractBtn").addEventListener("click", function(){
+      const sheet = workbook.worksheets[Number(worksheetSelect.value)];
+      const column = Number(document.getElementById("excelColumnSelect").value);
+      const names = [];
+      sheet.eachRow(function(row){
+        const value = row.getCell(column).value;
+        const name = String(value == null ? "" : (typeof value === "object" && value.text ? value.text : value)).replace(/\s+/g, " ").trim();
+        if (name) names.push(name);
+      });
+      document.getElementById("bulkMedicationInput").value = names.join("\n");
+      previewBulkMedications();
+    });
+  }).catch(function(){
+    preview.innerText = "The workbook could not be read. Use an .xlsx file or paste medication names manually.";
+  });
+}
+
+async function confirmBulkMedications(){
+  const names = window.pendingBulkMedications || [];
+  if (!names.length) return;
+  const preview = document.getElementById("bulkMedicationPreview");
+  const button = document.getElementById("bulkConfirmBtn");
+  button.disabled = true;
+  const idempotencyKey = window.bulkMedicationIdempotencyKey || (window.bulkMedicationIdempotencyKey = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-bulk");
+  try {
+    const result = await medicationsApi({
+      action: "bulkAddMedications",
+      entries: names,
+      idempotencyKey: idempotencyKey
+    });
+    if (!result.success){
+      const details = (result.possibleMatches || []).map(function(match){
+        return match.name + " — Existing: " + ((match.existing && (match.existing.id || "")) + " " + (match.existing && (match.existing.name || ""))).trim();
+      });
+      preview.innerText = "Import failed (" + (result.code || "UNKNOWN_ERROR") + "). No records were changed." + (details.length ? "\n" + details.join("\n") : "");
+      button.disabled = false;
+      return;
+    }
+    preview.innerText = "Imported " + result.count + " medications successfully.";
+    window.pendingBulkMedications = [];
+    window.bulkMedicationIdempotencyKey = "";
+    document.getElementById("bulkMedicationInput").value = "";
+    await loadMedications();
+  } catch (error) {
+    preview.innerText = "Import could not be completed. Your list was preserved; verify the result before retrying.";
+    button.disabled = false;
+  }
 }
 
 function cancelBulkMedications(){
@@ -2112,6 +2222,7 @@ function cancelBulkMedications(){
   document.getElementById("bulkMedicationInput").value = "";
   document.getElementById("bulkMedicationPreview").innerText = "";
   document.getElementById("bulkConfirmBtn").disabled = true;
+  window.bulkMedicationIdempotencyKey = "";
 }
 
 function clearForm(){
@@ -2129,7 +2240,7 @@ function clearForm(){
   document.getElementById(
     "serviceInput"
   ).value =
-    "kidney";
+    "all";
 
 
   document.getElementById(
