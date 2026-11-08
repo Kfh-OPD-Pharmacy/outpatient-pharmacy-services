@@ -2099,8 +2099,9 @@ function previewApprovedOrder(order){
 
 function printApprovedOrder(order){
   if (!order) return;
-  previewApprovedOrder(order);
-  window.print();
+  const printPages = document.getElementById("printPages");
+  printPages.innerHTML = "<section class=\"print-page\"><h1>Outpatient Pharmacy Services</h1><h2>Approved Order</h2><p><strong>Reference:</strong> " + escapeHtml(order.reference) + "</p><p><strong>Pharmacy:</strong> " + escapeHtml(order.pharmacy + " Pharmacy") + "</p><p><strong>Date:</strong> " + escapeHtml(order.date) + "</p><table><thead><tr><th>Medication</th><th>Requested Quantity</th><th>Notes</th></tr></thead><tbody>" + order.items.map(function(item){ return "<tr><td>" + escapeHtml(item.medicationName || "-") + "</td><td>" + escapeHtml(item.requestedQuantity || "-") + "</td><td>" + escapeHtml(item.notes || "-") + "</td></tr>"; }).join("") + "</tbody></table></section>";
+  requestAnimationFrame(function(){ window.print(); });
 }
 
 document.getElementById("closeApprovedOrderPreview").onclick = function(){
