@@ -1529,20 +1529,6 @@ html,body{overflow-x:hidden}
     <div class="scan-dialog-card"><h2>Approved Order</h2><div id="approvedOrderPreviewBody"></div><button type="button" class="secondary-btn" id="closeApprovedOrderPreview" aria-label="Close Preview" title="Close Preview">×</button></div>
   </div>
 
-  <section class="order-summary-panel" id="orderSummaryPanel" hidden>
-    <h2 style="color:#168fb3;font-size:18px;text-align:center">Order Summary</h2>
-    <div class="order-summary-toolbar">
-      <select id="summaryScope" aria-label="Summary scope"></select>
-      <button type="button" class="secondary-btn" onclick="loadOrderSummary()">Refresh Summary</button>
-      <button type="button" class="secondary-btn" onclick="resetOrderTotals()">Reset Totals</button>
-    </div>
-    <div class="order-summary-message" id="orderSummaryPeriod"></div>
-    <div class="order-summary-message" id="orderSummaryMessage"></div>
-    <div class="table-wrap">
-      <table class="order-summary-table"><thead><tr><th>Medication</th><th>Kidney</th><th>Diabetes</th><th>Outpatient</th><th>Grand Total</th></tr></thead><tbody id="orderSummaryBody"></tbody></table>
-    </div>
-  </section>
-
   <div class="scan-dialog" id="orderScanDialog" aria-hidden="true">
     <div class="scan-dialog-card">
       <h2>Scan Medication</h2>
