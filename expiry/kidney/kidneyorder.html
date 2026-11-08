@@ -378,6 +378,38 @@ textarea:focus{
   outline:none
 }
 
+.approved-preview-btn{
+  color:#168fb3;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  width:36px;
+  height:36px;
+  min-width:36px;
+  padding:0;
+  border-radius:50%;
+  transition:color .18s ease,background-color .18s ease,transform .18s ease
+}
+
+.approved-preview-btn svg{
+  width:17px;
+  height:17px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+.approved-preview-btn:hover,
+.approved-preview-btn:focus-visible{
+  color:#117b9a;
+  background:rgba(22,143,179,.1);
+  transform:scale(1.06);
+  outline:none
+}
+
 .login-svg,
 .power-svg,
 .trash-svg,
@@ -2208,7 +2240,7 @@ async function loadApprovedOrders(){
     });
     body.innerHTML = Object.keys(grouped).map(function(ref){
       const order = grouped[ref];
-       return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(order.pharmacy + " Pharmacy") + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview Order\" title=\"Preview Order\">◉</button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
+       return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(order.pharmacy + " Pharmacy") + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview\" title=\"Preview\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"2.5\"></circle></svg></button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
     }).join("");
     body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(grouped[button.dataset.orderRef]); }; });
     body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(grouped[button.dataset.orderRef]); }; });
