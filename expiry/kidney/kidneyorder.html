@@ -1197,10 +1197,21 @@ td:nth-child(2){
 
   .medication-entry-grid{
     grid-template-columns:minmax(0,calc((100% - 12px) * .6)) minmax(0,calc((100% - 12px) * .3));
+    grid-template-areas:"medication quantity" "scan notes";
     column-gap:12px;
     row-gap:10px;
     align-items:start;
     justify-content:start;
+  }
+
+  .medication-name-field{grid-area:medication}
+  .quantity-field{grid-area:quantity}
+  .scan-actions-cell{grid-area:scan}
+  .notes-field{grid-area:notes}
+  .scan-actions-cell{
+    justify-content:center;
+    flex-wrap:nowrap;
+    margin-top:0;
   }
 
   .medication-entry-grid > .field-row{
@@ -1229,6 +1240,7 @@ td:nth-child(2){
 @media screen and (max-width:600px){
   .medication-entry-grid{
     grid-template-columns:minmax(0,13fr) minmax(0,7fr);
+    grid-template-areas:"medication quantity" "scan notes";
     column-gap:8px;
     row-gap:8px;
     align-items:start;
@@ -1591,7 +1603,7 @@ html,body{overflow-x:hidden}
       </div>
 
       <div class="field-grid medication-entry-grid">
-        <div class="field-row">
+        <div class="field-row medication-name-field">
           <label id="medicationLabel" for="medicationName">Medication Name</label>
           <div class="combo-wrap">
             <input
@@ -1602,22 +1614,23 @@ html,body{overflow-x:hidden}
 
             <div class="combo-options" id="medicationOptions"></div>
           </div>
-          <div class="order-scan-actions">
-            <button type="button" class="secondary-btn" id="scanCameraBtn" onclick="openOrderScanner()" aria-label="Scan with Camera" title="Scan with Camera"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l1.5-2h5L16 7h4v12H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
-            <button type="button" class="secondary-btn" id="scanLabelBtn" onclick="document.getElementById('shelfLabelInput').click()" aria-label="Scan Shelf Label" title="Scan Shelf Label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"></path><path d="M7 12h10M7 9h10M7 15h7"></path></svg></button>
-            <input type="file" id="shelfLabelInput" accept="image/*" capture="environment" hidden onchange="readShelfLabel(this.files[0])">
-          </div>
         </div>
 
-        <div class="field-row">
+        <div class="field-row quantity-field">
           <label id="quantityLabel" for="requestedQuantity">Requested Quantity</label>
           <input type="text" id="requestedQuantity" inputmode="numeric">
         </div>
-      </div>
 
-      <div class="field-row">
-        <label id="notesLabel" for="notes">Notes</label>
-        <textarea id="notes"></textarea>
+        <div class="order-scan-actions scan-actions-cell">
+          <button type="button" class="secondary-btn" id="scanCameraBtn" onclick="openOrderScanner()" aria-label="Scan with Camera" title="Scan with Camera"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l1.5-2h5L16 7h4v12H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
+          <button type="button" class="secondary-btn" id="scanLabelBtn" onclick="document.getElementById('shelfLabelInput').click()" aria-label="Scan Shelf Label" title="Scan Shelf Label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"></path><path d="M7 12h10M7 9h10M7 15h7"></path></svg></button>
+          <input type="file" id="shelfLabelInput" accept="image/*" capture="environment" hidden onchange="readShelfLabel(this.files[0])">
+        </div>
+
+        <div class="field-row notes-field">
+          <label id="notesLabel" for="notes">Notes</label>
+          <textarea id="notes"></textarea>
+        </div>
       </div>
 
       <div class="form-actions">
