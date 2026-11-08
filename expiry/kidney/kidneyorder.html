@@ -2199,19 +2199,24 @@ function initApprovedOrdersPanel(){
 
 function previewApprovedOrder(order){
   if (!order) return;
-  const previewWindow = window.open("", "_blank", "noopener,noreferrer");
+  const previewWindow = window.open("", "_blank");
   if (!previewWindow) {
     alert("Preview could not open. Please allow pop-ups for this site.");
     return;
   }
+  try { previewWindow.opener = null; } catch (error) {}
   const rows = (order.items || []).map(function(item){
     return "<tr><td>" + escapeHtml(item.medicationName || "-") + "</td><td>" + escapeHtml(item.requestedQuantity || "-") + "</td><td>" + escapeHtml(item.notes || "-") + "</td></tr>";
   }).join("");
-  const previewDocument = previewWindow.document;
-  previewDocument.title = "Order " + String(order.reference || "");
-  previewDocument.head.innerHTML = "<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>body{margin:0;padding:24px;background:#f5f9fb;color:#18324b;font-family:Arial,sans-serif;direction:ltr}.card{max-width:900px;margin:0 auto;padding:24px;background:#fff;border:1px solid #cbdfe6;border-radius:10px;box-shadow:0 6px 18px rgba(15,35,50,.08)}h1{margin:0 0 18px;color:#168fb3;font-size:21px}p{margin:7px 0;font-size:14px}.order-summary-table{width:100%;border-collapse:collapse;margin-top:18px}.order-summary-table th,.order-summary-table td{border:1px solid #d7e3e8;padding:9px;text-align:left;font-size:13px}.order-summary-table th{background:#168fb3;color:#fff}@media(max-width:600px){body{padding:12px}.card{padding:16px}}</style>";
-  previewDocument.body.innerHTML = "<main class=\"card\"><h1>Approved Order</h1><p><strong>Reference:</strong> " + escapeHtml(order.reference || "-") + "</p><p><strong>Pharmacy:</strong> " + escapeHtml((order.pharmacy || "-") + " Pharmacy") + "</p><p><strong>Date:</strong> " + escapeHtml(order.date || "-") + "</p><table class=\"order-summary-table\"><thead><tr><th>Medication</th><th>Requested Quantity</th><th>Notes</th></tr></thead><tbody>" + rows + "</tbody></table></main>";
-  previewWindow.focus();
+  try {
+    const previewDocument = previewWindow.document;
+    previewDocument.title = "Order " + String(order.reference || "");
+    previewDocument.head.innerHTML = "<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>body{margin:0;padding:24px;background:#f5f9fb;color:#18324b;font-family:Arial,sans-serif;direction:ltr}.card{max-width:900px;margin:0 auto;padding:24px;background:#fff;border:1px solid #cbdfe6;border-radius:10px;box-shadow:0 6px 18px rgba(15,35,50,.08)}h1{margin:0 0 18px;color:#168fb3;font-size:21px}p{margin:7px 0;font-size:14px}.order-summary-table{width:100%;border-collapse:collapse;margin-top:18px}.order-summary-table th,.order-summary-table td{border:1px solid #d7e3e8;padding:9px;text-align:left;font-size:13px}.order-summary-table th{background:#168fb3;color:#fff}@media(max-width:600px){body{padding:12px}.card{padding:16px}}</style>";
+    previewDocument.body.innerHTML = "<main class=\"card\"><h1>Approved Order</h1><p><strong>Reference:</strong> " + escapeHtml(order.reference || "-") + "</p><p><strong>Pharmacy:</strong> " + escapeHtml((order.pharmacy || "-") + " Pharmacy") + "</p><p><strong>Date:</strong> " + escapeHtml(order.date || "-") + "</p><table class=\"order-summary-table\"><thead><tr><th>Medication</th><th>Requested Quantity</th><th>Notes</th></tr></thead><tbody>" + rows + "</tbody></table></main>";
+    previewWindow.focus();
+  } catch (error) {
+    alert("Preview tab opened, but its content could not be loaded.");
+  }
 }
 
 function printApprovedOrder(order){
