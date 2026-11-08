@@ -1516,11 +1516,14 @@ html,body{overflow-x:hidden}
     <h2 style="color:#168fb3;font-size:18px;text-align:center">Approved Orders</h2>
     <div class="order-summary-toolbar">
       <button type="button" class="secondary-btn" id="refreshApprovedOrdersBtn" aria-label="Refresh Approved Orders" title="Refresh Approved Orders">↻</button>
-      <button type="button" class="secondary-btn" id="printApprovedOrdersBtn" aria-label="Print Approved Orders" title="Print Approved Orders">⎙</button>
     </div>
     <div class="order-summary-message" id="approvedOrdersMessage"></div>
-    <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Reference</th><th>Pharmacy</th><th>Date</th><th>Medication</th><th>Quantity</th><th>Notes</th></tr></thead><tbody id="approvedOrdersBody"></tbody></table></div>
+    <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Reference</th><th>Pharmacy</th><th>Date</th><th>Actions</th></tr></thead><tbody id="approvedOrdersBody"></tbody></table></div>
   </section>
+
+  <div class="scan-dialog" id="approvedOrderPreview" aria-hidden="true">
+    <div class="scan-dialog-card"><h2>Approved Order</h2><div id="approvedOrderPreviewBody"></div><button type="button" class="secondary-btn" id="closeApprovedOrderPreview" aria-label="Close Preview" title="Close Preview">×</button></div>
+  </div>
 
   <section class="order-summary-panel" id="orderSummaryPanel" hidden>
     <h2 style="color:#168fb3;font-size:18px;text-align:center">Order Summary</h2>
@@ -2081,11 +2084,30 @@ function initApprovedOrdersPanel(){
   if (!panel) return;
   panel.hidden = !selectedPharmacyId;
   const refresh = document.getElementById("refreshApprovedOrdersBtn");
-  const print = document.getElementById("printApprovedOrdersBtn");
   refresh.onclick = loadApprovedOrders;
-  print.onclick = function(){ window.print(); };
   if (selectedPharmacyId) loadApprovedOrders();
 }
+
+function previewApprovedOrder(order){
+  if (!order) return;
+  const body = document.getElementById("approvedOrderPreviewBody");
+  body.innerHTML = "<p><strong>Reference:</strong> " + escapeHtml(order.reference) + "</p><p><strong>Pharmacy:</strong> " + escapeHtml(order.pharmacy + " Pharmacy") + "</p><p><strong>Date:</strong> " + escapeHtml(order.date) + "</p><table class=\"order-summary-table\"><thead><tr><th>Medication</th><th>Requested Quantity</th><th>Notes</th></tr></thead><tbody>" + order.items.map(function(item){ return "<tr><td>" + escapeHtml(item.medicationName || "-") + "</td><td>" + escapeHtml(item.requestedQuantity || "-") + "</td><td>" + escapeHtml(item.notes || "-") + "</td></tr>"; }).join("") + "</tbody></table>";
+  const dialog = document.getElementById("approvedOrderPreview");
+  dialog.classList.add("visible");
+  dialog.setAttribute("aria-hidden", "false");
+}
+
+function printApprovedOrder(order){
+  if (!order) return;
+  previewApprovedOrder(order);
+  window.print();
+}
+
+document.getElementById("closeApprovedOrderPreview").onclick = function(){
+  const dialog = document.getElementById("approvedOrderPreview");
+  dialog.classList.remove("visible");
+  dialog.setAttribute("aria-hidden", "true");
+};
 
 async function loadApprovedOrders(){
   const panel = document.getElementById("approvedOrdersPanel");
@@ -2097,9 +2119,18 @@ async function loadApprovedOrders(){
   try{
     const result = await postApi("orders", {service:selectedPharmacyId, pharmacy:selectedPharmacyId});
     if (!result.success) throw new Error(result.code || "APPROVED_ORDERS_FAILED");
-    body.innerHTML = (result.orders || []).map(function(order){
-      return "<tr><td>" + escapeHtml(order.orderNo || "-") + "</td><td>" + escapeHtml((order.pharmacy || selectedPharmacyId) + " Pharmacy") + "</td><td>" + escapeHtml(order.orderDate || "-") + "</td><td>" + escapeHtml(order.medicationName || "-") + "</td><td>" + escapeHtml(order.requestedQuantity || "-") + "</td><td>" + escapeHtml(order.notes || "-") + "</td></tr>";
+    const grouped = {};
+    (result.orders || []).forEach(function(order){
+      const ref = order.orderNo || "-";
+      if (!grouped[ref]) grouped[ref] = {reference:ref, pharmacy:order.pharmacy || selectedPharmacyId, date:order.orderDate || "-", items:[]};
+      grouped[ref].items.push(order);
+    });
+    body.innerHTML = Object.keys(grouped).map(function(ref){
+      const order = grouped[ref];
+      return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(order.pharmacy + " Pharmacy") + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview Order\" title=\"Preview Order\">◉</button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print Order\" title=\"Print Order\">⎙</button></td></tr>";
     }).join("");
+    body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(grouped[button.dataset.orderRef]); }; });
+    body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(grouped[button.dataset.orderRef]); }; });
     message.innerText = result.orders && result.orders.length ? "" : "No approved orders found.";
   }catch(error){ message.innerText = "Could not load approved orders (" + (error.message || "ERROR") + ")."; }
 }
