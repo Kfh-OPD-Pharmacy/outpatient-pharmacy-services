@@ -503,11 +503,15 @@ td:nth-child(2){
 .print-header{
   display:flex;
   align-items:center;
-  justify-content:flex-end;
+  justify-content:flex-start;
   direction:ltr;
-  gap:12px;
+  gap:8px;
+  width:max-content;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:0;
   min-height:23mm;
-  margin:0 0 4mm
+  margin-bottom:4mm
 }
 
 .print-logo{
@@ -520,9 +524,8 @@ td:nth-child(2){
 .print-official{
   text-align:right;
   direction:rtl;
-  padding:2mm 0 2mm 6px;
-  border-left:3px solid #168fb3;
-  min-width:58mm
+  padding:2mm 6px 2mm 0;
+  border-right:3px solid #168fb3;
 }
 
 .print-official h2{
