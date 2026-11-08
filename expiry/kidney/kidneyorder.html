@@ -2107,7 +2107,7 @@ function printApprovedOrder(order){
   printPages.innerHTML = "";
   const items = order.items.map(function(item){ return {medicationName:item.medicationName || "-", requestedQuantity:item.requestedQuantity || "", notes:item.notes || "", dispensedQuantity:item.dispensedQuantity || ""}; });
   const meta = {orderNo:order.reference, orderDate:order.date, requestedBy:order.items[0] && order.items[0].requestedBy || "-", status:order.items[0] && order.items[0].status || "Requested", pharmacy:order.pharmacy};
-  printPages.appendChild(createPrintPage(items, 0, 1, 1, meta));
+  buildPrintPagesForItems(items, meta);
   requestAnimationFrame(function(){ window.print(); });
 }
 
@@ -3040,6 +3040,10 @@ function printOrder(){
 }
 
 function buildPrintPages(){
+  buildPrintPagesForItems(orderItems, savedOrder);
+}
+
+function buildPrintPagesForItems(items, orderMeta){
   const printPages =
     document.getElementById("printPages");
 
@@ -3047,12 +3051,12 @@ function buildPrintPages(){
     "";
 
   const ROWS_PER_PAGE =
-    24;
+    23;
 
   const pageCount =
     Math.max(
       1,
-      Math.ceil(orderItems.length / ROWS_PER_PAGE)
+       Math.ceil(items.length / ROWS_PER_PAGE)
     );
 
   for (
@@ -3064,7 +3068,7 @@ function buildPrintPages(){
       pageIndex * ROWS_PER_PAGE;
 
     const pageItems =
-      orderItems.slice(
+      items.slice(
         start,
         start + ROWS_PER_PAGE
       );
@@ -3075,7 +3079,7 @@ function buildPrintPages(){
         start,
         pageIndex + 1,
         pageCount,
-        savedOrder
+        orderMeta
       )
     );
   }
