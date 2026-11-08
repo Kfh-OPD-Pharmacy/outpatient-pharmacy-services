@@ -1513,6 +1513,16 @@ html,body{overflow-x:hidden}
     </div>
   </div>
 
+  <section class="order-summary-panel" id="approvedOrdersPanel" hidden>
+    <h2 style="color:#168fb3;font-size:18px;text-align:center">Approved Orders</h2>
+    <div class="order-summary-toolbar">
+      <button type="button" class="secondary-btn" id="refreshApprovedOrdersBtn" aria-label="Refresh Approved Orders" title="Refresh Approved Orders">↻</button>
+      <button type="button" class="secondary-btn" id="printApprovedOrdersBtn" aria-label="Print Approved Orders" title="Print Approved Orders">⎙</button>
+    </div>
+    <div class="order-summary-message" id="approvedOrdersMessage"></div>
+    <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Reference</th><th>Pharmacy</th><th>Date</th><th>Medication</th><th>Quantity</th><th>Notes</th></tr></thead><tbody id="approvedOrdersBody"></tbody></table></div>
+  </section>
+
   <section class="order-summary-panel" id="orderSummaryPanel" hidden>
     <h2 style="color:#168fb3;font-size:18px;text-align:center">Order Summary</h2>
     <div class="order-summary-toolbar">
@@ -2059,10 +2069,40 @@ function initOrderPharmacySelector(){
     renderOrderTable();
     updateSummary();
     setOrderActionsEnabled(Boolean(selectedPharmacyId));
+    initApprovedOrdersPanel();
     if (selectedPharmacyId) loadMedicationDatabase();
   });
   initOrderSummaryScope(allowed, user && user.isAdmin === true);
+  initApprovedOrdersPanel();
   showDraftRecoveryIfAvailable(allowed);
+}
+
+function initApprovedOrdersPanel(){
+  const panel = document.getElementById("approvedOrdersPanel");
+  if (!panel) return;
+  panel.hidden = !selectedPharmacyId;
+  const refresh = document.getElementById("refreshApprovedOrdersBtn");
+  const print = document.getElementById("printApprovedOrdersBtn");
+  refresh.onclick = loadApprovedOrders;
+  print.onclick = function(){ window.print(); };
+  if (selectedPharmacyId) loadApprovedOrders();
+}
+
+async function loadApprovedOrders(){
+  const panel = document.getElementById("approvedOrdersPanel");
+  const body = document.getElementById("approvedOrdersBody");
+  const message = document.getElementById("approvedOrdersMessage");
+  if (!panel || !selectedPharmacyId) return;
+  panel.hidden = false;
+  message.innerText = "Loading approved orders…";
+  try{
+    const result = await postApi("orders", {service:selectedPharmacyId, pharmacy:selectedPharmacyId});
+    if (!result.success) throw new Error(result.code || "APPROVED_ORDERS_FAILED");
+    body.innerHTML = (result.orders || []).map(function(order){
+      return "<tr><td>" + escapeHtml(order.orderNo || "-") + "</td><td>" + escapeHtml((order.pharmacy || selectedPharmacyId) + " Pharmacy") + "</td><td>" + escapeHtml(order.orderDate || "-") + "</td><td>" + escapeHtml(order.medicationName || "-") + "</td><td>" + escapeHtml(order.requestedQuantity || "-") + "</td><td>" + escapeHtml(order.notes || "-") + "</td></tr>";
+    }).join("");
+    message.innerText = result.orders && result.orders.length ? "" : "No approved orders found.";
+  }catch(error){ message.innerText = "Could not load approved orders (" + (error.message || "ERROR") + ")."; }
 }
 
 let orderResetInProgress = false;
@@ -2907,12 +2947,16 @@ async function saveOrder(){
     clearPersistedOrderDraft();
     sessionStorage.removeItem("activeOrderIdempotencyKey");
 
+    orderItems = [];
+    renderOrderTable();
     updateSummary();
     setOrderActionsEnabled(false);
     document.getElementById("printBtn").disabled = false;
     document.getElementById("newOrderBtn").hidden = false;
     const summaryPanel = document.getElementById("orderSummaryPanel");
     if (summaryPanel && !summaryPanel.hidden) loadOrderSummary();
+    const approvedPanel = document.getElementById("approvedOrdersPanel");
+    if (approvedPanel && !approvedPanel.hidden) loadApprovedOrders();
 
     showResult(
       "orderResult",
