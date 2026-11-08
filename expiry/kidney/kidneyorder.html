@@ -2070,9 +2070,20 @@ async function loadOrderSummary(scopeOverride){
     const result = await postApi("orderReport", {pharmacy:requestedScope === "all" ? "" : requestedScope});
     if (!result.success) throw new Error(result.code || "REPORT_FAILED");
     body.innerHTML = (result.items || []).map(function(item){ return "<tr><td>" + escapeHtml(item.medicationName || item.medicationId || "-") + "</td><td>" + Number(item.kidney || 0) + "</td><td>" + Number(item.diabetes || 0) + "</td><td>" + Number(item.outpatient || 0) + "</td><td>" + Number(item.grandTotal || 0) + "</td></tr>"; }).join("");
+    const labels = {kidney:"Kidney", diabetes:"Diabetes", outpatient:"Outpatient"};
+    const formatDate = function(value){
+      if (!value) return "-";
+      const date = new Date(value);
+      return isNaN(date.getTime()) ? "-" : date.toLocaleString(undefined, {year:"numeric", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
+    };
     const keys = Object.keys(result.periodStart || {});
-    period.innerText = keys.map(function(k){ const reset=result.lastReset && result.lastReset[k]; return k + " period: " + result.periodStart[k] + (reset ? " | Last reset: " + reset.resetAt + " by " + reset.resetBy : ""); }).join(" • ");
-    message.innerText = result.items && result.items.length ? "Summary loaded." : "No submitted orders in the active period.";
+    period.innerText = keys.map(function(k){
+      const reset = result.lastReset && result.lastReset[k];
+      let line = (labels[k] || k) + " · Since " + formatDate(result.periodStart[k]);
+      if (reset) line += " · Reset " + formatDate(reset.resetAt) + (reset.resetBy ? " by " + reset.resetBy : "");
+      return line;
+    }).join("\n");
+    message.innerText = result.items && result.items.length ? "" : "No submitted orders in the active period.";
   }catch(error){
     const code = error && error.message ? error.message : "REPORT_FAILED";
     message.innerText = "Could not load summary (" + code + ").";
