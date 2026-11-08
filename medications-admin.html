@@ -525,7 +525,7 @@ td:first-child{
 .page-title{
   font-size:23px;
   font-weight:bold;
-  margin:18px 0 12px
+  margin:28px 0 30px
 }
 #loginCard.login-card{
   width:100%;
@@ -615,12 +615,12 @@ td:first-child{
     font-size:23px;
     font-weight:bold;
     line-height:1.25;
-    margin:18px 0 12px;
+     margin:28px 0 30px;
     text-align:center;
   }
 
   .title-row{
-    margin:18px 0 12px;
+     margin:28px 0 30px;
   }
 
   .panel,
@@ -798,10 +798,11 @@ html,body{overflow-x:hidden}
 
 <style>
 .actions button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.bulk-medication-section{margin:18px auto 0;padding:16px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;max-width:760px}
+.bulk-medication-section{margin:18px 0 0;padding:16px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;width:calc((100% - 20px) * .666667);max-width:none;box-sizing:border-box}
 .bulk-medication-section h2{margin:0 0 10px;color:#168fb3;font-size:18px;text-align:center}
 .bulk-medication-section textarea{width:100%;box-sizing:border-box;resize:vertical;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;direction:ltr}
 #bulkMedicationPreview{margin-top:12px;line-height:1.6}
+@media (max-width:700px){.bulk-medication-section{width:100%;margin-top:14px}}
 </style>
 <body>
 
