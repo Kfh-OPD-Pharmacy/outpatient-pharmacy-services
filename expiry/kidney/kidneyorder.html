@@ -436,14 +436,14 @@ td:nth-child(2){
 .print-page{
   width:100%;
   min-height:281mm;
-  height:281mm;
+  height:auto;
   margin:0 auto;
   padding:10mm 12mm;
   background:#fff;
   color:#111827;
   border:1.3px solid #cbdfe6;
   border-radius:3mm;
-  overflow:hidden;
+  overflow:visible;
   display:flex;
   flex-direction:column;
   page-break-after:always;
@@ -564,6 +564,9 @@ td:nth-child(2){
   break-inside:avoid;
   page-break-inside:avoid
 }
+
+.print-table thead{display:table-header-group}
+.print-table tbody tr{break-inside:avoid;page-break-inside:avoid}
 
 .print-table th{
   height:8mm;
@@ -732,9 +735,10 @@ td:nth-child(2){
     box-shadow:none !important;
     width:100% !important;
     min-height:274mm !important;
-    height:274mm !important;
+    height:auto !important;
     margin:0 auto !important;
-    padding:10mm 12mm !important
+    padding:10mm 12mm !important;
+    overflow:visible !important;
   }
 }
 /* PHASE B: unified login UI only */
