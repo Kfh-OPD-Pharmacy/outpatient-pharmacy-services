@@ -7,15 +7,15 @@
   .container{max-width:980px;min-height:calc(100vh - 32px);padding:22px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,.1)}
   .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;direction:ltr}
   .logo{width:120px;height:120px;object-fit:contain;margin:0}
-  .official-header{width:fit-content;max-width:100%;display:flex;align-items:stretch;direction:ltr;text-align:left;transform:translateY(14px);padding-left:8px;border-left:4px solid #168fb3}
-  .official-header h2,.official-header h3{margin:2px 0;font-size:13px;line-height:1.4;color:#168fb3;text-align:left}
+  .official-header{width:fit-content;max-width:100%;display:flex;flex-direction:column;align-items:flex-start;direction:ltr;text-align:left;transform:translateY(14px);padding-left:8px;border-left:4px solid #168fb3}
+  .official-header h2,.official-header h3{display:block;white-space:nowrap;margin:2px 0;font-size:13px;line-height:1.4;color:#168fb3;text-align:left}
   .meta{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin:14px 0 14px;direction:ltr}
   .date{grid-column:1;justify-self:start;color:#168fb3;font-weight:bold}
   .user{grid-column:2;justify-self:center;width:220px;height:32px;min-height:32px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:4px;padding:2px 4px;color:#168fb3;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
   .user button,.user a{width:27px;height:27px;min-width:27px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:#168fb3;cursor:pointer;flex:0 0 27px}
   .user span{flex:1;min-width:0;text-align:center;white-space:nowrap}
   .lang{grid-column:3;justify-self:end;border:0;background:transparent;color:#168fb3;cursor:pointer}
-  @media(max-width:700px){body{padding:10px}.container{padding:14px;border-radius:0;box-shadow:none;min-height:100vh}.logo{width:84px;height:84px}.official-header{transform:translateY(10px)}.official-header h2,.official-header h3{font-size:12px}.meta{gap:4px;margin:12px 0 12px}.user{width:calc(100vw - 56px);max-width:calc(100vw - 56px)}}
+  @media(max-width:700px){body{padding:10px}.container{padding:14px;border-radius:0;box-shadow:none;min-height:100vh}.logo{width:84px;height:84px}.official-header{transform:translateY(10px)}.official-header h2,.official-header h3{font-size:12px;white-space:normal}.meta{gap:4px;margin:12px 0 12px}.user{width:calc(100vw - 56px);max-width:calc(100vw - 56px)}}
 </style>
 <script>
 const API="https://script.google.com/macros/s/AKfycbwna5ifaRT46qMasogcUbjs6u15PtP7p6vwTNCtNqtQi0Kn8FR6JLtjeborWXNPb4Hz/exec";
