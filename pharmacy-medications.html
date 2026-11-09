@@ -43,6 +43,10 @@ html[dir="rtl"] .official-header h2,html[dir="rtl"] .official-header h3{text-ali
 .grid.layout-count-2 .portal-slot-2,.grid.layout-count-3 .portal-slot-2{grid-column:2!important;grid-row:1!important;width:100%;-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
 .grid.layout-count-2::before{top:116px}
 .grid.layout-count-3 .portal-slot-3{grid-column:1 / span 2!important;grid-row:2!important;width:calc(50% - (var(--portal-gap) / 2));justify-self:center;-webkit-mask:radial-gradient(circle var(--portal-cutout) at 50% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 50% 0,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+ /* Expiry Dates alone: keep the main-portal card size on the right, with the notch/icon at its lower-left corner. */
+ .grid:has(.card:nth-child(2)[style*="display: flex"]):not(:has(.card:nth-child(1)[style*="display: flex"])):not(:has(.card:nth-child(3)[style*="display: flex"])):not(:has(.card:nth-child(4)[style*="display: flex"])) {grid-template-columns:60px 240px;width:min(100%,300px)}
+ .grid:has(.card:nth-child(2)[style*="display: flex"]):not(:has(.card:nth-child(1)[style*="display: flex"])):not(:has(.card:nth-child(3)[style*="display: flex"])):not(:has(.card:nth-child(4)[style*="display: flex"])) .portal-slot-1 {grid-column:2!important;grid-row:1!important;width:240px;justify-self:stretch;-webkit-mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);-webkit-mask-composite:source-in;mask:radial-gradient(circle var(--portal-cutout) at 0 100%,transparent 0 calc(var(--portal-cutout) - 2px),#000 var(--portal-cutout)),linear-gradient(#000 0 0);mask-composite:intersect}
+ .grid:has(.card:nth-child(2)[style*="display: flex"]):not(:has(.card:nth-child(1)[style*="display: flex"])):not(:has(.card:nth-child(3)[style*="display: flex"])):not(:has(.card:nth-child(4)[style*="display: flex"]))::before {left:60px;top:116px}
 @media(max-width:700px){
  body{padding:10px;background:#fff}
  .container{padding:14px;border-radius:0;box-shadow:none;min-height:100vh}
@@ -61,6 +65,9 @@ html[dir="rtl"] .official-header h2,html[dir="rtl"] .official-header h3{text-ali
   .grid.layout-count-1::before{left:calc(100% - 54px);top:52px}
   .grid.layout-count-2,.grid.layout-count-3{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,360px);grid-auto-rows:104px}
   .grid.layout-count-3 .portal-slot-3{width:calc(50% - (var(--portal-gap) / 2))}
+  .grid:has(.card:nth-child(2)[style*="display: flex"]):not(:has(.card:nth-child(1)[style*="display: flex"])):not(:has(.card:nth-child(3)[style*="display: flex"])):not(:has(.card:nth-child(4)[style*="display: flex"])) {grid-template-columns:54px minmax(0,240px);width:min(100%,294px)}
+  .grid:has(.card:nth-child(2)[style*="display: flex"]):not(:has(.card:nth-child(1)[style*="display: flex"])):not(:has(.card:nth-child(3)[style*="display: flex"])):not(:has(.card:nth-child(4)[style*="display: flex"])) .portal-slot-1 {grid-column:2!important;width:100%}
+  .grid:has(.card:nth-child(2)[style*="display: flex"]):not(:has(.card:nth-child(1)[style*="display: flex"])):not(:has(.card:nth-child(3)[style*="display: flex"])):not(:has(.card:nth-child(4)[style*="display: flex"]))::before {left:54px;top:104px}
  .grid .card{height:104px;font-size:15px;padding:12px}
  .grid:before{top:104px;width:44px;height:44px}
 }
