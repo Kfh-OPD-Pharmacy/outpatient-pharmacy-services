@@ -1758,7 +1758,7 @@ html[dir="ltr"] .official-header{direction:ltr;text-align:left;padding-left:8px;
 
 <body>
 
-<div class="container" id="dashboardContainer">
+<div class="container" id="dashboardContainer" style="visibility:hidden">
 
   <div class="top-bar">
 
@@ -4744,6 +4744,8 @@ async function authorizeDashboardAccess(){
       window.location.replace("../../expiry-dates.html");
       return false;
     }
+    const dashboardContainer = document.getElementById("dashboardContainer");
+    if (dashboardContainer) dashboardContainer.style.visibility = "visible";
     return true;
   }catch(error){
     window.location.replace("../../index.html");
