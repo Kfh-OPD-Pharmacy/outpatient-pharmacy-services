@@ -2279,6 +2279,16 @@ function previewApprovedOrder(order){
   }
 }
 
+function pharmacyPrintTitle(pharmacy){
+  const name = String(pharmacy || "").toLowerCase();
+  const date = new Date();
+  const day = String(date.getDate()).padStart(2,"0");
+  const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][date.getMonth()];
+  if (name.indexOf("diabetes") !== -1) return "Diabetic-" + day + month;
+  if (name.indexOf("outpatient") !== -1) return "OUT-" + day + month;
+  return "";
+}
+
 function printApprovedOrder(order){
   if (!order) return;
   const printPages = document.getElementById("printPages");
@@ -2286,7 +2296,10 @@ function printApprovedOrder(order){
   const items = order.items.map(function(item){ return {medicationName:item.medicationName || "-", requestedQuantity:item.requestedQuantity || "", notes:item.notes || "", dispensedQuantity:item.dispensedQuantity || ""}; });
   const meta = {orderNo:order.reference, orderDate:order.date, requestedBy:order.items[0] && order.items[0].requestedBy || "-", status:order.items[0] && order.items[0].status || "Requested", pharmacy:order.pharmacy};
   buildPrintPagesForItems(items, meta);
-  requestAnimationFrame(function(){ window.print(); });
+  const previousTitle = document.title;
+  const printTitle = pharmacyPrintTitle(order.pharmacy);
+  if (printTitle) document.title = printTitle;
+  requestAnimationFrame(function(){ window.print(); setTimeout(function(){ document.title = previousTitle; },1000); });
 }
 
 document.getElementById("closeApprovedOrderPreview").onclick = function(){
@@ -3214,7 +3227,11 @@ function printOrder(){
   }
 
   buildPrintPages();
+  const previousTitle = document.title;
+  const printTitle = pharmacyPrintTitle(savedOrder && savedOrder.pharmacy || selectedPharmacyId);
+  if (printTitle) document.title = printTitle;
   window.print();
+  if (printTitle) setTimeout(function(){ document.title = previousTitle; },1000);
 }
 
 function buildPrintPages(){
