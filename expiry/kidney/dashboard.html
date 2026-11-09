@@ -4362,6 +4362,8 @@ async function loadData(){
       !data.success
     ){
 
+      document.getElementById("tableBody").innerHTML = "";
+
       document.getElementById(
         "emptyNote"
       ).style.display =
@@ -4384,6 +4386,8 @@ async function loadData(){
     );
 
   }catch(error){
+
+    document.getElementById("tableBody").innerHTML = "";
 
     document.getElementById(
       "emptyNote"
@@ -4461,22 +4465,11 @@ async function loadDashboardData(){
     }catch(error){}
   }
 
-  if (sessionToken === (sessionStorage.getItem("unifiedPortalSessionToken") || "")){
-    updateSessionControls("");
-  }
-
-  const publicResponse =
-    await fetch(
-      API_URL +
-      "?action=dashboard&pharmacyId=" + encodeURIComponent(selectedPharmacyId) + "&t=" +
-      Date.now(),
-      {
-        method:"GET",
-        cache:"no-store"
-      }
-    );
-
-  return await publicResponse.json();
+  updateSessionControls("");
+  return {
+    success:false,
+    code:sessionToken ? "SESSION_EXPIRED" : "MISSING_SESSION"
+  };
 }
 
 
