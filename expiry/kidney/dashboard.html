@@ -4719,7 +4719,41 @@ document.addEventListener(
    START
 ========================================================= */
 
-function init(){
+async function authorizeDashboardAccess(){
+  const tableBody = document.getElementById("tableBody");
+  if (tableBody) tableBody.innerHTML = "";
+  const token = sessionStorage.getItem("unifiedPortalSessionToken") || "";
+  if (!token){
+    window.location.replace("../../index.html");
+    return false;
+  }
+  try{
+    const response = await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"validateSession",sessionToken:token,service:""})});
+    const result = await response.json();
+    if (!result || !result.success || !result.user){
+      window.location.replace("../../index.html");
+      return false;
+    }
+    sessionStorage.setItem("unifiedPortalUser",JSON.stringify(result.user));
+    const hasDashboardPermission = result.user.isAdmin === true || [
+      "kidneyExpiryDashboardAccess",
+      "diabetesExpiryDashboardAccess",
+      "outpatientExpiryDashboardAccess"
+    ].some(function(key){ return result.user[key] === true; });
+    if (!hasDashboardPermission){
+      window.location.replace("../../expiry-dates.html");
+      return false;
+    }
+    return true;
+  }catch(error){
+    window.location.replace("../../index.html");
+    return false;
+  }
+}
+
+async function init(){
+
+  if (!await authorizeDashboardAccess()) return;
 
   if (new URLSearchParams(location.search).get("from") === "expiry-dates") {
     const back = document.querySelector(".portal-back-button");
