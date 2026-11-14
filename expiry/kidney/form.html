@@ -1520,7 +1520,13 @@ function navigateFresh(target, replaceHistory = false){
 
 
 
-var selectedPharmacyId = (function(){try{var u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null"),stored=sessionStorage.getItem("selectedPharmacyId")||"",allowed=[];if(u&&u.isAdmin)return stored||"";if(u&&u.kidneyExpiryRegisterAccess)allowed.push("kidney");if(u&&u.diabetesExpiryRegisterAccess)allowed.push("diabetes");if(u&&u.outpatientExpiryRegisterAccess)allowed.push("outpatient");return allowed.indexOf(stored)>=0?stored:"";}catch(e){return "";}})();
+var selectedPharmacyId = (function(){
+  try {
+    if (sessionStorage.getItem("formSelectionReload") !== "1") return "";
+    sessionStorage.removeItem("formSelectionReload");
+    return sessionStorage.getItem("selectedPharmacyId") || "";
+  } catch (error) { return ""; }
+})();
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
 
@@ -2371,6 +2377,15 @@ function allowUnifiedKidneyExpiryUser(
   unifiedSessionToken
 ){
 
+  if (user && !selectedPharmacyId && (user.isAdmin === true || user.kidneyExpiryRegisterAccess || user.diabetesExpiryRegisterAccess || user.outpatientExpiryRegisterAccess)) {
+    currentEmployeeUsername = user.username || "";
+    currentEmployeeName = user.name || user.username || "";
+    currentSessionToken = unifiedSessionToken;
+    saveStoredSession();
+    showEmployeeView();
+    return true;
+  }
+
   if (
     !user ||
     !(user.isAdmin === true || user[(selectedPharmacyId === "diabetes" ? "diabetesExpiryRegisterAccess" : selectedPharmacyId === "outpatient" ? "outpatientExpiryRegisterAccess" : "kidneyExpiryRegisterAccess")])
@@ -2468,10 +2483,6 @@ async function restoreSession(){
       selectedPharmacyId = "";
       sessionStorage.removeItem("selectedPharmacyId");
     }
-    if (!selectedPharmacyId && allowedPharmacies.length) {
-      selectedPharmacyId = allowedPharmacies[0];
-      sessionStorage.setItem("selectedPharmacyId", selectedPharmacyId);
-    }
     const permissionKey = selectedPharmacyId === "diabetes" ? "diabetesExpiryRegisterAccess" : selectedPharmacyId === "outpatient" ? "outpatientExpiryRegisterAccess" : "kidneyExpiryRegisterAccess";
 
 
@@ -2479,8 +2490,8 @@ async function restoreSession(){
       !result.success ||
       !user ||
       user.active === false ||
-      !selectedPharmacyId ||
-      !(user.isAdmin === true || user[permissionKey])
+      !allowedPharmacies.length ||
+      (selectedPharmacyId && !(user.isAdmin === true || user[permissionKey]))
     ){
 
       clearUnifiedPortalSession();
@@ -2795,6 +2806,13 @@ window.addEventListener(
 
   }
 );
+
+window.addEventListener("pageshow", function(event){
+  if (!event.persisted) return;
+  selectedPharmacyId = "";
+  const selector = document.getElementById("pharmacySelector");
+  if (selector) selector.value = "";
+});
 
 
 function showLoginView(){
@@ -4303,4 +4321,4 @@ document.addEventListener(
 <script id="mobile-date-compact-fix">(function(){function compactDate(){var el=document.getElementById('dateBox');if(!el)return;var raw=el.dataset.fullDate||el.textContent.trim();if(raw)el.dataset.fullDate=raw;var m=raw.match(/^(.*?)\s*-\s*(\d{4})-(\d{2})-(\d{2})$/);if(!m)return;var mobile=window.innerWidth<=600;var next=mobile?'<span class="mobile-day">'+m[1]+'</span><span class="mobile-date">'+m[2]+'-'+m[3]+'-'+m[4]+'</span>':m[1]+' - '+m[2]+'-'+m[3]+'-'+m[4];if(el.innerHTML!==next)el.innerHTML=next;}function run(){compactDate();var el=document.getElementById('dateBox');if(el&&!el.dataset.mobileObserver){el.dataset.mobileObserver='1';new MutationObserver(compactDate).observe(el,{childList:true,characterData:true,subtree:true});}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();window.addEventListener('resize',compactDate,{passive:true});})();</script>
 <script>document.addEventListener("DOMContentLoaded",function(){var s=document.getElementById("pharmacySelector"),u;try{u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null")}catch(e){}if(!s)return;var p=[u&&u.isAdmin!==true&&u.kidneyExpiryRegisterAccess?"kidney":"",u&&u.isAdmin!==true&&u.diabetesExpiryRegisterAccess?"diabetes":"",u&&u.isAdmin!==true&&u.outpatientExpiryRegisterAccess?"outpatient":""];if(u&&u.isAdmin===true)p=["kidney","diabetes","outpatient"];p=p.filter(Boolean);s.innerHTML='<option value="">Select pharmacy</option>'+p.map(function(x){return '<option value="'+x+'">'+x.charAt(0).toUpperCase()+x.slice(1)+' Pharmacy</option>';}).join("");s.disabled=!p.length;s.value=selectedPharmacyId&&p.indexOf(selectedPharmacyId)>=0?selectedPharmacyId:"";s.addEventListener("change",function(){selectedPharmacyId=s.value;sessionStorage.setItem("selectedPharmacyId",selectedPharmacyId);location.reload()});});</script></body>
 </html>
-<script>(function(){var u;try{u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null")}catch(e){}var owner=(u&&String(u.username||"").toLowerCase())||"";if(sessionStorage.getItem("selectedPharmacyOwner")!==owner){sessionStorage.removeItem("selectedPharmacyId");sessionStorage.setItem("selectedPharmacyOwner",owner);window.selectedPharmacyId="";}document.addEventListener("change",function(e){if(e.target&&e.target.id==="pharmacySelector")sessionStorage.setItem("selectedPharmacyOwner",owner);});})();</script>
+<script>(function(){var u;try{u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null")}catch(e){}var owner=(u&&String(u.username||"").toLowerCase())||"";if(sessionStorage.getItem("selectedPharmacyOwner")!==owner){sessionStorage.removeItem("selectedPharmacyId");sessionStorage.setItem("selectedPharmacyOwner",owner);window.selectedPharmacyId="";}document.addEventListener("change",function(e){if(e.target&&e.target.id==="pharmacySelector"){sessionStorage.setItem("selectedPharmacyOwner",owner);sessionStorage.setItem("formSelectionReload","1");}});})();</script>
