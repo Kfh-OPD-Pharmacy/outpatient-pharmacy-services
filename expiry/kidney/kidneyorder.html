@@ -1475,7 +1475,7 @@ html,body{overflow-x:hidden}
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
 <style>.pharmacy-selector-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px auto;max-width:320px;color:#168fb3;font-weight:700}.pharmacy-selector-wrap select{padding:7px 10px;border:1px solid #168fb3;border-radius:6px;background:#fff;color:#18324b}.order-scan-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.order-scan-actions button{flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#168fb3;display:inline-flex;align-items:center;justify-content:center}.order-scan-actions button:hover,.order-scan-actions button:focus-visible{border-color:#168fb3;box-shadow:0 0 0 3px rgba(22,143,179,.14);outline:none}.order-scan-actions button svg{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.scan-dialog{position:fixed;inset:0;background:rgba(15,35,50,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}.scan-dialog.visible{display:flex}.scan-dialog-card{background:#fff;border-radius:12px;padding:16px;max-width:480px;width:100%;text-align:center}.scan-dialog video{width:100%;max-height:320px;background:#111;border-radius:8px}.scan-dialog canvas{display:none}</style></head>
-<style>.order-summary-panel{margin-top:16px;padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}.order-summary-toolbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}.order-summary-toolbar select,.order-summary-toolbar button{min-height:36px}.order-summary-table{width:100%;border-collapse:collapse;margin-top:12px}.order-summary-table th,.order-summary-table td{border:1px solid #e5e7eb;padding:7px;text-align:center;font-size:13px}.order-summary-message{margin-top:8px;color:#168fb3;font-weight:700;text-align:center}</style></head>
+<style>.order-summary-panel{margin-top:16px;padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}.order-summary-toolbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}.order-summary-toolbar select,.order-summary-toolbar button{min-height:36px}.order-summary-table{width:100%;border-collapse:collapse;margin-top:12px}.order-summary-table th,.order-summary-table td{border:1px solid #e5e7eb;padding:7px;text-align:center;font-size:13px}.order-summary-message{margin-top:8px;color:#168fb3;font-weight:700;text-align:center}.approved-orders-pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:12px}.approved-orders-pagination .secondary-btn{min-height:28px;padding:3px 9px;font-size:12px;line-height:1.1}</style></head>
 
 <body>
 <div class="container">
@@ -2273,6 +2273,14 @@ function initApprovedOrdersPanel(){
 let approvedOrdersPage = 1;
 let approvedOrdersData = [];
 
+function formatApprovedPharmacyName(value){
+  const key = String(value || "").trim().toLowerCase();
+  if (key === "outpatient") return "Outpatient Pharmacy";
+  if (key === "diabetes") return "Diabetes Pharmacy";
+  if (key === "kidney") return "Kidney Pharmacy";
+  return String(value || "") + " Pharmacy";
+}
+
 function renderApprovedOrdersPage(){
   const body = document.getElementById("approvedOrdersBody");
   const pagination = document.getElementById("approvedOrdersPagination");
@@ -2284,7 +2292,7 @@ function renderApprovedOrdersPage(){
   approvedOrdersPage = Math.min(Math.max(approvedOrdersPage, 1), pageCount);
   const start = (approvedOrdersPage - 1) * 10;
   body.innerHTML = approvedOrdersData.slice(start, start + 10).map(function(order){
-    return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(order.pharmacy + " Pharmacy") + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview\" title=\"Preview\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"2.5\"></circle></svg></button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
+    return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(formatApprovedPharmacyName(order.pharmacy)) + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview\" title=\"Preview\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"2.5\"></circle></svg></button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
   }).join("");
   body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
   body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
