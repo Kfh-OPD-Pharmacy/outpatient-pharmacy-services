@@ -1624,8 +1624,7 @@ html,body{overflow-x:hidden}
         </div>
 
         <div class="order-scan-actions scan-actions-cell">
-          <button type="button" class="secondary-btn" id="scanCameraBtn" onclick="openOrderScanner()" aria-label="Scan with Camera" title="Scan with Camera"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l1.5-2h5L16 7h4v12H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
-          <button type="button" class="secondary-btn" id="scanLabelBtn" onclick="document.getElementById('shelfLabelInput').click()" aria-label="Scan Shelf Label" title="Scan Shelf Label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"></path><path d="M7 12h10M7 9h10M7 15h7"></path></svg></button>
+          <button type="button" class="secondary-btn" id="scanCameraBtn" onclick="openOrderScanner()" aria-label="Scan QR or barcode" title="Scan QR or barcode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"></path><path d="M7 12h10M7 9h10M7 15h7"></path></svg></button>
           <input type="file" id="shelfLabelInput" accept="image/*" capture="environment" hidden onchange="readShelfLabel(this.files[0])">
         </div>
 
@@ -1770,6 +1769,7 @@ let inactivityTimer =
 let medications =
   [];
 let medicationRecordsById = {};
+let medicationIdsByName = {};
 let scannedMedicationId = "";
 
 let orderItems =
@@ -2213,7 +2213,7 @@ function orderServiceName(){
 }
 
 function setOrderActionsEnabled(enabled){
-  ["scanCameraBtn","scanLabelBtn","addItemBtn","saveOrderBtn","printBtn"].forEach(function(id){
+  ["scanCameraBtn","addItemBtn","saveOrderBtn","printBtn"].forEach(function(id){
     const button = document.getElementById(id);
     if (button) button.disabled = !enabled;
   });
@@ -2868,10 +2868,16 @@ async function loadMedicationDatabase(){
 
     if (requestVersion !== orderRequestVersion || !selectedPharmacyId) return;
     medicationRecordsById = {};
+    medicationIdsByName = {};
     medicationRows.forEach(function(item){
       const id = item && String(item.id || item.medicationId || "").trim();
       const name = item && String(item.name || item.medicationName || "").trim();
-      if (id && name && item.active !== false) medicationRecordsById[id] = {id:id, name:name, active:item.active !== false};
+      if (id && name && item.active !== false) {
+        medicationRecordsById[id] = {id:id, name:name, active:item.active !== false};
+        const key = normalizeMedicationKey(name);
+        medicationIdsByName[key] = medicationIdsByName[key] || [];
+        medicationIdsByName[key].push(id);
+      }
     });
     medications =
       medicationRows
@@ -3013,38 +3019,43 @@ function addItemToOrder(){
   }
 
   const requestedQuantityValue = document.getElementById("requestedQuantity").value.trim();
-  if (scannedMedicationId && (!Number.isFinite(Number(requestedQuantityValue)) || Number(requestedQuantityValue) <= 0)) {
-    showResult("orderResult", "error", "Enter a positive requested quantity.");
-    return;
-  }
-  if (scannedMedicationId) {
-    const existing = orderItems.find(function(item){ return item.medicationId === scannedMedicationId; });
-    if (existing) {
-      const existingNotes = String(existing.notes || "").trim();
-      const newNotes = document.getElementById("notes").value.trim();
-      if (existingNotes && newNotes && existingNotes !== newNotes) {
-        showResult("orderResult", "error", "The scanned medication has conflicting notes; add it separately after review.");
-        return;
-      }
-      existing.requestedQuantity = Number(existing.requestedQuantity || 0) + Number(requestedQuantityValue);
-      if (!existingNotes && newNotes) existing.notes = newNotes;
-      scannedMedicationId = "";
-      document.getElementById("medicationName").value = "";
-      document.getElementById("requestedQuantity").value = "";
-      document.getElementById("notes").value = "";
-      renderOrderTable();
-      updateSummary();
-      document.getElementById("medicationName").focus();
+  const notes = document.getElementById("notes").value.trim();
+  const canonicalIds = medicationIdsByName[normalizeMedicationKey(name)] || [];
+  const medicationId = scannedMedicationId || (canonicalIds.length === 1 ? canonicalIds[0] : "");
+  const existing = orderItems.find(function(item){
+    return medicationId ? item.medicationId === medicationId : (!item.medicationId && normalizeMedicationKey(item.medicationName) === normalizeMedicationKey(name));
+  });
+  if (existing) {
+    const existingNotes = String(existing.notes || "").trim();
+    if (existingNotes && notes && existingNotes !== notes) {
+      showResult("orderResult", "error", "The medication has conflicting notes; review before adding.");
       return;
     }
+    if (existing.requestedQuantity === "" || existing.requestedQuantity == null) existing.requestedQuantity = requestedQuantityValue;
+    else if (requestedQuantityValue !== "") {
+      if (!Number.isFinite(Number(existing.requestedQuantity)) || !Number.isFinite(Number(requestedQuantityValue))) {
+        showResult("orderResult", "error", "Enter a valid requested quantity.");
+        return;
+      }
+      existing.requestedQuantity = Number(existing.requestedQuantity) + Number(requestedQuantityValue);
+    }
+    if (!existingNotes && notes) existing.notes = notes;
+    scannedMedicationId = "";
+    document.getElementById("medicationName").value = "";
+    document.getElementById("requestedQuantity").value = "";
+    document.getElementById("notes").value = "";
+    renderOrderTable();
+    updateSummary();
+    document.getElementById("medicationName").focus();
+    return;
   }
 
   orderItems.push({
     medicationName:name,
-    medicationId:scannedMedicationId || "",
+    medicationId:medicationId,
      currentStock:"",
     requestedQuantity:requestedQuantityValue,
-    notes:document.getElementById("notes").value.trim()
+    notes:notes
   });
 
   savedOrder =
