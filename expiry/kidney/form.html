@@ -1520,7 +1520,7 @@ function navigateFresh(target, replaceHistory = false){
 
 
 
-var selectedPharmacyId = (function(){try{var u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null"),stored=sessionStorage.getItem("selectedPharmacyId")||"",allowed=[];if(u&&u.isAdmin)return stored||"kidney";if(u&&u.kidneyExpiryRegisterAccess)allowed.push("kidney");if(u&&u.diabetesExpiryRegisterAccess)allowed.push("diabetes");if(u&&u.outpatientExpiryRegisterAccess)allowed.push("outpatient");return allowed.indexOf(stored)>=0?stored:(allowed[0]||"");}catch(e){return "";}})();
+var selectedPharmacyId = (function(){try{var u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null"),stored=sessionStorage.getItem("selectedPharmacyId")||"",allowed=[];if(u&&u.isAdmin)return stored||"";if(u&&u.kidneyExpiryRegisterAccess)allowed.push("kidney");if(u&&u.diabetesExpiryRegisterAccess)allowed.push("diabetes");if(u&&u.outpatientExpiryRegisterAccess)allowed.push("outpatient");return allowed.indexOf(stored)>=0?stored:"";}catch(e){return "";}})();
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
 
@@ -2425,9 +2425,6 @@ async function restoreSession(){
 
   }
 
-  let cachedUserAllowed =
-    false;
-
   const cachedUserText =
     sessionStorage.getItem(
       "unifiedPortalUser"
@@ -2444,16 +2441,9 @@ async function restoreSession(){
           cachedUserText
         );
 
-      cachedUserAllowed =
-        allowUnifiedKidneyExpiryUser(
-          cachedUser,
-          unifiedSessionToken
-        );
-
     }catch(error){
 
-      cachedUserAllowed =
-        false;
+      /* Ignore malformed cached identity; Central Auth remains authoritative. */
 
     }
 
@@ -2465,15 +2455,32 @@ async function restoreSession(){
       await unifiedApi({
         action:"validateSession",
         sessionToken:unifiedSessionToken,
-        service:(selectedPharmacyId === "diabetes" ? "diabetesExpiryRegister" : selectedPharmacyId === "outpatient" ? "outpatientExpiryRegister" : "kidneyExpiryRegister")
+        service:""
       });
+
+    const user = result && result.user;
+    const allowedPharmacies = user && user.isAdmin === true ? ["kidney","diabetes","outpatient"] : [
+      user && user.kidneyExpiryRegisterAccess ? "kidney" : "",
+      user && user.diabetesExpiryRegisterAccess ? "diabetes" : "",
+      user && user.outpatientExpiryRegisterAccess ? "outpatient" : ""
+    ].filter(Boolean);
+    if (selectedPharmacyId && allowedPharmacies.indexOf(selectedPharmacyId) < 0) {
+      selectedPharmacyId = "";
+      sessionStorage.removeItem("selectedPharmacyId");
+    }
+    if (!selectedPharmacyId && allowedPharmacies.length) {
+      selectedPharmacyId = allowedPharmacies[0];
+      sessionStorage.setItem("selectedPharmacyId", selectedPharmacyId);
+    }
+    const permissionKey = selectedPharmacyId === "diabetes" ? "diabetesExpiryRegisterAccess" : selectedPharmacyId === "outpatient" ? "outpatientExpiryRegisterAccess" : "kidneyExpiryRegisterAccess";
 
 
     if (
       !result.success ||
-      !result.user ||
-      result.user.active === false ||
-      !(result.user.isAdmin === true || result.user[(selectedPharmacyId === "diabetes" ? "diabetesExpiryRegisterAccess" : selectedPharmacyId === "outpatient" ? "outpatientExpiryRegisterAccess" : "kidneyExpiryRegisterAccess")])
+      !user ||
+      user.active === false ||
+      !selectedPharmacyId ||
+      !(user.isAdmin === true || user[permissionKey])
     ){
 
       clearUnifiedPortalSession();
@@ -2503,14 +2510,6 @@ async function restoreSession(){
     return true;
 
   }catch(error){
-
-    if (
-      cachedUserAllowed
-    ){
-
-      return true;
-
-    }
 
     /*
       Network failure only:
