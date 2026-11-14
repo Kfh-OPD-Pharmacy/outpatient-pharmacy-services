@@ -1595,13 +1595,13 @@ html,body{overflow-x:hidden}
         </div>
 
         <div class="summary-item">
-          <span class="summary-label" id="requestedByLabel">Requested By</span>
+          <span class="summary-label" id="requestedByLabel">Requester</span>
           <span class="summary-value" id="requestedByValue">-</span>
         </div>
 
         <div class="summary-item">
-          <span class="summary-label" id="statusLabel">Status</span>
-          <span class="summary-value" id="statusValue">Requested</span>
+          <span class="summary-label" id="statusLabel">Store</span>
+          <span class="summary-value" id="statusValue">Out main store</span>
         </div>
       </div>
 
@@ -1800,7 +1800,7 @@ const text = {
     sessionExpired:"انتهت الجلسة. سجّل الدخول مرة أخرى.",
     orderNo:"رقم الطلب",
     orderDate:"تاريخ الطلب",
-    requestedBy:"Requested By",
+    requestedBy:"Requester",
     status:"الحالة",
     requested:"Requested",
     medicationName:"اسم الدواء",
@@ -1838,7 +1838,7 @@ const text = {
     orderNo:"Order No.",
     orderDate:"Order Date",
     requestedBy:"Requested By",
-    status:"Status",
+    status:"Store",
     requested:"Requested",
     medicationName:"Medication Name",
     currentStock:"Current Stock",
@@ -1910,7 +1910,7 @@ function setLanguage(lang){
     text[lang].status;
 
   document.getElementById("statusValue").innerText =
-    text[lang].requested;
+    "Out main store";
 
   document.getElementById("medicationLabel").innerText =
     text[lang].medicationName;
@@ -3177,15 +3177,11 @@ function updateSummary(){
       ? savedOrder.orderDate
       : "-";
 
+  const displayPharmacy = String(selectedPharmacyId || (savedOrder && savedOrder.pharmacy) || "").toLowerCase();
   document.getElementById("requestedByValue").innerText =
-    currentEmployeeName ||
-    currentEmployeeUsername ||
-    "-";
+    displayPharmacy === "diabetes" ? "DM" : displayPharmacy === "outpatient" ? "OP" : "-";
 
-  document.getElementById("statusValue").innerText =
-    savedOrder && savedOrder.status === "SUBMITTED"
-      ? "SUBMITTED"
-      : text[currentLang].requested;
+  document.getElementById("statusValue").innerText = "Out main store";
 }
 
 function startNewOrder(){
