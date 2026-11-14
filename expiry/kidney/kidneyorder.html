@@ -746,11 +746,12 @@ td:nth-child(2){
   width:100%;
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:space-between;
   border-top:1px solid #e2e8f0;
   padding-top:2mm;
   min-height:8mm
 }
+.print-footer-text{color:#64748b;font-size:8px;line-height:1;font-weight:600;white-space:nowrap}
 
 .print-page-number{
   color:#64748b;
@@ -3533,6 +3534,11 @@ function createPrintPage(
   footer.className =
     "print-footer";
 
+  const footerLeft = document.createElement("span");
+  footerLeft.className = "print-footer-text";
+  footerLeft.innerText = "Pharmacy Services - Outpatient Pharmacy";
+  footer.appendChild(footerLeft);
+
   const pageNumberBox =
     document.createElement("div");
 
@@ -3543,6 +3549,11 @@ function createPrintPage(
     "Page " + pageNumber + " of " + totalPages;
 
   footer.appendChild(pageNumberBox);
+
+  const footerRight = document.createElement("span");
+  footerRight.className = "print-footer-text";
+  footerRight.innerText = "Developed by Abdullah Alattas";
+  footer.appendChild(footerRight);
   page.appendChild(footer);
 
   return page;
