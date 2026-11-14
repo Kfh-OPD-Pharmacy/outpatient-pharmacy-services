@@ -3349,7 +3349,8 @@ function printOrder(){
 }
 
 function buildPrintPages(){
-  buildPrintPagesForItems(orderItems, savedOrder);
+  const printMeta = Object.assign({}, savedOrder || {}, {pharmacy:(savedOrder && savedOrder.pharmacy) || selectedPharmacyId});
+  buildPrintPagesForItems(orderItems, printMeta);
 }
 
 function buildPrintPagesForItems(items, orderMeta){
@@ -3437,8 +3438,7 @@ function createPrintPage(
   title.className =
     "print-title";
 
-  const pharmacyTitle = orderMeta && orderMeta.pharmacy ? String(orderMeta.pharmacy).charAt(0).toUpperCase() + String(orderMeta.pharmacy).slice(1) : "Kidney";
-  title.innerText = pharmacyTitle + " Order";
+  title.innerText = "OPD Supply";
 
   page.appendChild(title);
 
@@ -3458,21 +3458,18 @@ function createPrintPage(
       ? orderMeta.orderDate
       : "-";
 
-  const requestedBy =
-    orderMeta && orderMeta.requestedBy
-      ? orderMeta.requestedBy
-      : currentEmployeeName || currentEmployeeUsername || "-";
-
-  const status =
-    orderMeta && orderMeta.status
-      ? orderMeta.status
-      : "Requested";
+  const reportPharmacy = String(orderMeta && orderMeta.pharmacy || "").toLowerCase();
+  const requester = reportPharmacy === "diabetes"
+    ? "DM"
+    : reportPharmacy === "outpatient"
+      ? "Outpatient"
+      : (orderMeta && orderMeta.requestedBy ? orderMeta.requestedBy : currentEmployeeName || currentEmployeeUsername || "-");
 
   info.innerHTML =
     printInfoItem("Order No.", orderNo) +
     printInfoItem("Order Date", orderDate) +
-    printInfoItem("Requested By", requestedBy) +
-    printInfoItem("Status", status);
+    printInfoItem("Requester", requester) +
+    printInfoItem("Store", "Out main store");
 
   page.appendChild(info);
 
