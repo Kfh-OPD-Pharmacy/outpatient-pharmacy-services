@@ -1772,6 +1772,13 @@ let medicationRecordsById = {};
 let medicationIdsByName = {};
 let scannedMedicationId = "";
 
+function normalizeMedicationKey(value){
+  return String(value == null ? "" : value)
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 let orderItems =
   [];
 
