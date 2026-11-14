@@ -1694,6 +1694,7 @@ html,body{overflow-x:hidden}
     </div>
     <div class="order-summary-message" id="approvedOrdersMessage"></div>
     <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Reference</th><th>Pharmacy</th><th>Date</th><th>Actions</th></tr></thead><tbody id="approvedOrdersBody"></tbody></table></div>
+    <div class="approved-orders-pagination" id="approvedOrdersPagination" hidden><button type="button" class="secondary-btn" id="approvedOrdersPrevious" aria-label="Previous page" title="Previous page">Previous</button><span id="approvedOrdersPageInfo" aria-live="polite">Page 1 of 1</span><button type="button" class="secondary-btn" id="approvedOrdersNext" aria-label="Next page" title="Next page">Next</button></div>
   </section>
 
   <div class="scan-dialog" id="approvedOrderPreview" aria-hidden="true">
@@ -2254,7 +2255,33 @@ function initApprovedOrdersPanel(){
   panel.hidden = !selectedPharmacyId;
   const refresh = document.getElementById("refreshApprovedOrdersBtn");
   refresh.onclick = loadApprovedOrders;
+  document.getElementById("approvedOrdersPrevious").onclick = function(){ approvedOrdersPage -= 1; renderApprovedOrdersPage(); };
+  document.getElementById("approvedOrdersNext").onclick = function(){ approvedOrdersPage += 1; renderApprovedOrdersPage(); };
   if (selectedPharmacyId) loadApprovedOrders();
+}
+
+let approvedOrdersPage = 1;
+let approvedOrdersData = [];
+
+function renderApprovedOrdersPage(){
+  const body = document.getElementById("approvedOrdersBody");
+  const pagination = document.getElementById("approvedOrdersPagination");
+  const pageInfo = document.getElementById("approvedOrdersPageInfo");
+  const previous = document.getElementById("approvedOrdersPrevious");
+  const next = document.getElementById("approvedOrdersNext");
+  if (!body) return;
+  const pageCount = Math.max(1, Math.ceil(approvedOrdersData.length / 10));
+  approvedOrdersPage = Math.min(Math.max(approvedOrdersPage, 1), pageCount);
+  const start = (approvedOrdersPage - 1) * 10;
+  body.innerHTML = approvedOrdersData.slice(start, start + 10).map(function(order){
+    return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(order.pharmacy + " Pharmacy") + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview\" title=\"Preview\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"2.5\"></circle></svg></button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
+  }).join("");
+  body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
+  body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
+  if (pagination) pagination.hidden = approvedOrdersData.length <= 10;
+  if (pageInfo) pageInfo.innerText = "Page " + approvedOrdersPage + " of " + pageCount;
+  if (previous) previous.disabled = approvedOrdersPage <= 1;
+  if (next) next.disabled = approvedOrdersPage >= pageCount;
 }
 
 function previewApprovedOrder(order){
@@ -2324,12 +2351,19 @@ async function loadApprovedOrders(){
       if (!grouped[ref]) grouped[ref] = {reference:ref, pharmacy:order.pharmacy || selectedPharmacyId, date:order.orderDate || "-", items:[]};
       grouped[ref].items.push(order);
     });
-    body.innerHTML = Object.keys(grouped).map(function(ref){
+     approvedOrdersData = Object.keys(grouped).map(function(ref){ return grouped[ref]; }).sort(function(a,b){ return String(b.date).localeCompare(String(a.date)) || String(b.reference).localeCompare(String(a.reference)); });
+     approvedOrdersPage = 1;
+     renderApprovedOrdersPage();
+     /* Keep the grouped map for compatibility with the existing action handlers. */
+     body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
+     body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
+     /*
+     body.innerHTML = Object.keys(grouped).map(function(ref){
       const order = grouped[ref];
        return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(order.pharmacy + " Pharmacy") + "</td><td>" + escapeHtml(order.date) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview\" title=\"Preview\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"2.5\"></circle></svg></button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
     }).join("");
     body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(grouped[button.dataset.orderRef]); }; });
-    body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(grouped[button.dataset.orderRef]); }; });
+     body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(grouped[button.dataset.orderRef]); }; }); */
     message.innerText = result.orders && result.orders.length ? "" : "No approved orders found.";
   }catch(error){ message.innerText = "Could not load approved orders (" + (error.message || "ERROR") + ")."; }
 }
