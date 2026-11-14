@@ -1520,7 +1520,7 @@ function navigateFresh(target, replaceHistory = false){
 
 
 
-var selectedPharmacyId = sessionStorage.getItem("selectedPharmacyId") || (function(){try{var u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null");if(u&&u.isAdmin)return "kidney";if(u&&u.kidneyExpiryRegisterAccess)return "kidney";if(u&&u.diabetesExpiryRegisterAccess)return "diabetes";if(u&&u.outpatientExpiryRegisterAccess)return "outpatient";}catch(e){}return "";})();
+var selectedPharmacyId = (function(){try{var u=JSON.parse(sessionStorage.getItem("unifiedPortalUser")||"null"),stored=sessionStorage.getItem("selectedPharmacyId")||"",allowed=[];if(u&&u.isAdmin)return stored||"kidney";if(u&&u.kidneyExpiryRegisterAccess)allowed.push("kidney");if(u&&u.diabetesExpiryRegisterAccess)allowed.push("diabetes");if(u&&u.outpatientExpiryRegisterAccess)allowed.push("outpatient");return allowed.indexOf(stored)>=0?stored:(allowed[0]||"");}catch(e){return "";}})();
 const KIDNEY_API_URL =
   "https://script.google.com/macros/s/AKfycbxtrOZPua0dmMEtXCHJQ7wCZnp6OPiKVurOOL8YG_Ma1mPMhgmzWFadYGxWV4CDejgcIw/exec";
 
