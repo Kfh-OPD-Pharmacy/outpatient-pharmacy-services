@@ -2320,7 +2320,7 @@ function printApprovedOrder(order){
   if (!order) return;
   const printPages = document.getElementById("printPages");
   printPages.innerHTML = "";
-  const items = order.items.map(function(item){ return {medicationName:item.medicationName || "-", requestedQuantity:item.requestedQuantity || "", notes:item.notes || "", dispensedQuantity:item.dispensedQuantity || ""}; });
+  const items = order.items.map(function(item, index){ return {medicationName:item.medicationName || "-", requestedQuantity:item.requestedQuantity || "", notes:item.notes || "", dispensedQuantity:item.dispensedQuantity || "", sourceIndex:index}; }).sort(function(a,b){ return String(a.medicationName).toLocaleLowerCase().localeCompare(String(b.medicationName).toLocaleLowerCase()) || a.sourceIndex - b.sourceIndex; });
   const meta = {orderNo:order.reference, orderDate:order.date, requestedBy:order.items[0] && order.items[0].requestedBy || "-", status:order.items[0] && order.items[0].status || "Requested", pharmacy:order.pharmacy};
   buildPrintPagesForItems(items, meta);
   const previousTitle = document.title;
