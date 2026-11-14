@@ -1769,6 +1769,8 @@ let inactivityTimer =
 
 let medications =
   [];
+let medicationRecordsById = {};
+let scannedMedicationId = "";
 
 let orderItems =
   [];
@@ -2204,6 +2206,7 @@ let orderRequestVersion = 0;
 let orderScanStream = null;
 let orderScanTimer = null;
 let orderScannerReader = null;
+let orderScanBusy = false;
 
 function orderServiceName(){
   return selectedPharmacyId || "kidney";
@@ -2439,11 +2442,12 @@ async function openOrderScanner(){
     if ("BarcodeDetector" in window){
       const detector = new BarcodeDetector({formats:["qr_code","code_128","code_39","ean_13","ean_8","upc_a","upc_e"]});
       orderScanTimer = window.setInterval(async function(){
+        if (orderScanBusy) return;
         try{
           const codes = await detector.detect(video);
           if (!codes.length) return;
           const value = String(codes[0].rawValue || "").trim();
-          if (value){ document.getElementById("medicationName").value = value; status.innerText = "Scanned value: " + value + ". Confirm or search the medication name."; closeOrderScanner(); }
+          if (value){ orderScanBusy = true; resolveScannedMedication(value); closeOrderScanner(); orderScanBusy = false; }
         }catch(error){}
       }, 600);
     }else{
@@ -2453,12 +2457,34 @@ async function openOrderScanner(){
       if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) throw new Error("SCANNER_LIBRARY_UNAVAILABLE");
       orderScannerReader = new window.ZXing.BrowserMultiFormatReader();
       orderScannerReader.decodeFromVideoElement(video, function(result){
+        if (orderScanBusy) return;
         if (!result) return;
         const value = String(result.getText ? result.getText() : "").trim();
-        if (value){ document.getElementById("medicationName").value = value; status.innerText = "Scanned value: " + value + ". Confirm or search the medication name."; closeOrderScanner(); }
+        if (value){ orderScanBusy = true; resolveScannedMedication(value); closeOrderScanner(); orderScanBusy = false; }
       });
     }
   }catch(error){ status.innerText = error && error.name === "NotAllowedError" ? "Camera permission was denied. Use manual entry." : "Camera unavailable. Use manual entry."; }
+}
+
+function resolveScannedMedication(rawValue){
+  const status = document.getElementById("orderScanStatus");
+  let parsed;
+  try { parsed = new URL(String(rawValue || "").trim(), window.location.href); } catch (error) { parsed = null; }
+  const expectedPath = new URL("medication-qr.html", window.location.href).pathname;
+  const medId = parsed && parsed.origin === window.location.origin && parsed.pathname === expectedPath
+    ? String(parsed.searchParams.get("medId") || "").trim()
+    : "";
+  const record = medId ? medicationRecordsById[medId] : null;
+  if (!record || record.active === false){
+    scannedMedicationId = "";
+    if (status) status.innerText = "Unrecognized medication QR. Please use manual search.";
+    return false;
+  }
+  scannedMedicationId = record.id;
+  document.getElementById("medicationName").value = record.name;
+  document.getElementById("requestedQuantity").focus();
+  if (status) status.innerText = "Medication identified. Enter quantity and add it to the order.";
+  return true;
 }
 
 function closeOrderScanner(){
@@ -2841,6 +2867,12 @@ async function loadMedicationDatabase(){
         : [];
 
     if (requestVersion !== orderRequestVersion || !selectedPharmacyId) return;
+    medicationRecordsById = {};
+    medicationRows.forEach(function(item){
+      const id = item && String(item.id || item.medicationId || "").trim();
+      const name = item && String(item.name || item.medicationName || "").trim();
+      if (id && name && item.active !== false) medicationRecordsById[id] = {id:id, name:name, active:item.active !== false};
+    });
     medications =
       medicationRows
         .map(
@@ -2980,10 +3012,38 @@ function addItemToOrder(){
     return;
   }
 
+  const requestedQuantityValue = document.getElementById("requestedQuantity").value.trim();
+  if (scannedMedicationId && (!Number.isFinite(Number(requestedQuantityValue)) || Number(requestedQuantityValue) <= 0)) {
+    showResult("orderResult", "error", "Enter a positive requested quantity.");
+    return;
+  }
+  if (scannedMedicationId) {
+    const existing = orderItems.find(function(item){ return item.medicationId === scannedMedicationId; });
+    if (existing) {
+      const existingNotes = String(existing.notes || "").trim();
+      const newNotes = document.getElementById("notes").value.trim();
+      if (existingNotes && newNotes && existingNotes !== newNotes) {
+        showResult("orderResult", "error", "The scanned medication has conflicting notes; add it separately after review.");
+        return;
+      }
+      existing.requestedQuantity = Number(existing.requestedQuantity || 0) + Number(requestedQuantityValue);
+      if (!existingNotes && newNotes) existing.notes = newNotes;
+      scannedMedicationId = "";
+      document.getElementById("medicationName").value = "";
+      document.getElementById("requestedQuantity").value = "";
+      document.getElementById("notes").value = "";
+      renderOrderTable();
+      updateSummary();
+      document.getElementById("medicationName").focus();
+      return;
+    }
+  }
+
   orderItems.push({
     medicationName:name,
+    medicationId:scannedMedicationId || "",
      currentStock:"",
-    requestedQuantity:document.getElementById("requestedQuantity").value.trim(),
+    requestedQuantity:requestedQuantityValue,
     notes:document.getElementById("notes").value.trim()
   });
 
@@ -2998,6 +3058,8 @@ function addItemToOrder(){
 
   document.getElementById("notes").value =
     "";
+
+  scannedMedicationId = "";
 
   renderOrderTable();
   updateSummary();
@@ -3596,7 +3658,7 @@ document.getElementById("medicationName").addEventListener(
 
 document.getElementById("medicationName").addEventListener(
   "input",
-  showMedicationOptions
+  function(){ scannedMedicationId = ""; showMedicationOptions(); }
 );
 
 document.addEventListener(
