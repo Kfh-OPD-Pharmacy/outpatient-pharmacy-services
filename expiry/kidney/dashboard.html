@@ -4310,7 +4310,7 @@ function restorePortalIdentity(){
 }
 
 
-let selectedPharmacyId = sessionStorage.getItem("selectedPharmacyId") || "";
+let selectedPharmacyId = "";
 let pharmacyRequestVersion = 0;
 
 function initPharmacySelector(){
@@ -4824,6 +4824,20 @@ document.addEventListener(
   "DOMContentLoaded",
   init
 );
+
+window.addEventListener("pageshow", function(event){
+  if (!event.persisted) return;
+  selectedPharmacyId = "";
+  const selector = document.getElementById("pharmacySelector");
+  if (selector) selector.value = "";
+  const tableBody = document.getElementById("tableBody");
+  if (tableBody) tableBody.innerHTML = "";
+  const emptyNote = document.getElementById("emptyNote");
+  if (emptyNote) {
+    emptyNote.style.display = "block";
+    emptyNote.innerText = "Select a pharmacy to load data.";
+  }
+});
 
 </script>
 
