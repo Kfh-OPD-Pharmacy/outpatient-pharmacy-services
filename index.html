@@ -1452,6 +1452,8 @@ function renderPortalCards(user) {
 
   const pharmacyMedicationsAllowed = hasAny(user, [
     "kidneyExpiryRegisterAccess", "kidneyExpiryDashboardAccess",
+    "diabetesExpiryRegisterAccess", "diabetesExpiryDashboardAccess",
+    "outpatientExpiryRegisterAccess", "outpatientExpiryDashboardAccess",
     "kidneyOrderAccess", "diabetesOrderAccess", "outpatientOrderAccess",
     "kidneyLabelsAccess"
   ]);
