@@ -3179,7 +3179,7 @@ function updateSummary(){
 
   const displayPharmacy = String(selectedPharmacyId || (savedOrder && savedOrder.pharmacy) || "").toLowerCase();
   document.getElementById("requestedByValue").innerText =
-    displayPharmacy === "diabetes" ? "DM" : displayPharmacy === "outpatient" ? "OP" : "-";
+    displayPharmacy === "diabetes" ? "DM" : displayPharmacy === "outpatient" ? "OP" : "KC";
 
   document.getElementById("statusValue").innerText = "Out main store";
 }
@@ -3468,7 +3468,7 @@ function createPrintPage(
     ? "DM"
     : reportPharmacy === "outpatient"
       ? "OP"
-      : (orderMeta && orderMeta.requestedBy ? orderMeta.requestedBy : currentEmployeeName || currentEmployeeUsername || "-");
+      : "KC";
 
   info.innerHTML =
     printInfoItem("Order No.", orderNo) +
