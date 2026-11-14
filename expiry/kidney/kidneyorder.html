@@ -3462,7 +3462,7 @@ function createPrintPage(
   const requester = reportPharmacy === "diabetes"
     ? "DM"
     : reportPharmacy === "outpatient"
-      ? "Outpatient"
+      ? "OP"
       : (orderMeta && orderMeta.requestedBy ? orderMeta.requestedBy : currentEmployeeName || currentEmployeeUsername || "-");
 
   info.innerHTML =
