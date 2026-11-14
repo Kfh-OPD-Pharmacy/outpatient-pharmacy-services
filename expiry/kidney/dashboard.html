@@ -4722,8 +4722,20 @@ document.addEventListener(
 async function authorizeDashboardAccess(){
   const tableBody = document.getElementById("tableBody");
   if (tableBody) tableBody.innerHTML = "";
+  const authDiagnostic = function(reason, target, details){
+    try {
+      console.log("EXPIRY_DASHBOARD_AUTH_DIAGNOSTIC", Object.assign({
+        source: "pages/expiry/kidney/dashboard.html",
+        reason: reason,
+        target: target,
+        serviceUrl: API_URL,
+        pagePath: window.location.pathname
+      }, details || {}));
+    } catch (diagnosticError) {}
+  };
   const token = sessionStorage.getItem("unifiedPortalSessionToken") || "";
   if (!token){
+    authDiagnostic("MISSING_SESSION", "../../index.html", { sessionPresent: false });
     window.location.replace("../../index.html");
     return false;
   }
@@ -4731,6 +4743,12 @@ async function authorizeDashboardAccess(){
     const response = await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"validateSession",sessionToken:token,service:""})});
     const result = await response.json();
     if (!result || !result.success || !result.user){
+      authDiagnostic("SESSION_VALIDATION_FAILED", "../../index.html", {
+        sessionPresent: true,
+        responseSuccess: Boolean(result && result.success),
+        responseCode: result && result.code ? String(result.code) : "NO_CODE",
+        userPresent: Boolean(result && result.user)
+      });
       window.location.replace("../../index.html");
       return false;
     }
@@ -4741,13 +4759,33 @@ async function authorizeDashboardAccess(){
       "outpatientExpiryDashboardAccess"
     ].some(function(key){ return result.user[key] === true; });
     if (!hasDashboardPermission){
+      authDiagnostic("DASHBOARD_PERMISSION_DENIED", "../../expiry-dates.html", {
+        sessionPresent: true,
+        responseSuccess: true,
+        permissionResult: false,
+        permissionKeysChecked: [
+          "kidneyExpiryDashboardAccess",
+          "diabetesExpiryDashboardAccess",
+          "outpatientExpiryDashboardAccess"
+        ]
+      });
       window.location.replace("../../expiry-dates.html");
       return false;
     }
+    authDiagnostic("AUTHORIZED", "dashboard", {
+      sessionPresent: true,
+      responseSuccess: true,
+      permissionResult: true
+    });
     const dashboardContainer = document.getElementById("dashboardContainer");
     if (dashboardContainer) dashboardContainer.style.visibility = "visible";
     return true;
   }catch(error){
+    authDiagnostic("SESSION_VALIDATION_EXCEPTION", "../../index.html", {
+      sessionPresent: true,
+      responseSuccess: false,
+      errorType: error && error.name ? String(error.name) : "Error"
+    });
     window.location.replace("../../index.html");
     return false;
   }
