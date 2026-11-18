@@ -683,12 +683,16 @@ td:nth-child(2){
 .print-table tbody tr{break-inside:avoid;page-break-inside:avoid}
 
 .print-table th{
-  height:8mm;
+  height:10mm;
   background:#168fb3 !important;
   color:#fff !important;
   font-size:9.5px;
   font-weight:700;
   padding:3px 5px;
+  white-space:normal;
+  overflow-wrap:normal;
+  word-break:normal;
+  line-height:1.15;
   border-right:1px solid rgba(255,255,255,.45);
   vertical-align:middle;
   -webkit-print-color-adjust:exact;
@@ -726,27 +730,27 @@ td:nth-child(2){
 
 .print-table th:nth-child(2),
 .print-table td:nth-child(2){
-  width:30%
+  width:28%
 }
 
 .print-table th:nth-child(3),
 .print-table td:nth-child(3){
-  width:14%
+  width:16%
 }
 
 .print-table th:nth-child(4),
 .print-table td:nth-child(4){
-  width:14%
+  width:16%
 }
 
 .print-table th:nth-child(5),
 .print-table td:nth-child(5){
-  width:14%
+  width:16%
 }
 
 .print-table th:nth-child(6),
 .print-table td:nth-child(6){
-  width:22%
+  width:18%
 }
 
 .print-footer{
@@ -3651,9 +3655,9 @@ function createPrintPage(
       "<tr>" +
         "<th>No.</th>" +
         "<th>Medication Name</th>" +
-        "<th>Requested Quantity</th>" +
-        "<th>Dispensed Quantity</th>" +
-        "<th>Approved Quantity</th>" +
+        "<th>Requested<br>Quantity</th>" +
+        "<th>Dispensed<br>Quantity</th>" +
+        "<th>Approved<br>Quantity</th>" +
         "<th>Notes</th>" +
       "</tr>" +
     "</thead>" +
