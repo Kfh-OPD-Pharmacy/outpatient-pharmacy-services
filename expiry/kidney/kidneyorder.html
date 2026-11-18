@@ -1691,10 +1691,6 @@ html,body{overflow-x:hidden}
 
   <section class="order-summary-panel" id="approvedOrdersPanel" hidden>
     <h2 style="color:#168fb3;font-size:18px;text-align:center">Orders</h2>
-    <div class="order-summary-toolbar">
-      <button type="button" class="secondary-btn" id="refreshApprovedOrdersBtn" aria-label="Refresh Approved Orders" title="Refresh Approved Orders">↻</button>
-    </div>
-    <div class="order-summary-message" id="approvedOrdersMessage"></div>
     <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Reference</th><th>Pharmacy</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="approvedOrdersBody"></tbody></table></div>
     <div class="approved-orders-pagination" id="approvedOrdersPagination" hidden><button type="button" class="secondary-btn" id="approvedOrdersPrevious" aria-label="Previous page" title="Previous page">Previous</button><span id="approvedOrdersPageInfo" aria-live="polite">Page 1 of 1</span><button type="button" class="secondary-btn" id="approvedOrdersNext" aria-label="Next page" title="Next page">Next</button></div>
   </section>
@@ -2289,8 +2285,6 @@ function initApprovedOrdersPanel(){
   const panel = document.getElementById("approvedOrdersPanel");
   if (!panel) return;
   panel.hidden = !selectedPharmacyId;
-  const refresh = document.getElementById("refreshApprovedOrdersBtn");
-  refresh.onclick = loadApprovedOrders;
   document.getElementById("approvedOrdersPrevious").onclick = function(){ approvedOrdersPage -= 1; renderApprovedOrdersPage(); };
   document.getElementById("approvedOrdersNext").onclick = function(){ approvedOrdersPage += 1; renderApprovedOrdersPage(); };
   if (selectedPharmacyId) loadApprovedOrders();
@@ -2410,10 +2404,8 @@ document.getElementById("closeApprovedOrderPreview").onclick = function(){
 async function loadApprovedOrders(){
   const panel = document.getElementById("approvedOrdersPanel");
   const body = document.getElementById("approvedOrdersBody");
-  const message = document.getElementById("approvedOrdersMessage");
   if (!panel || !selectedPharmacyId) return;
   panel.hidden = false;
-  message.innerText = "Loading approved orders…";
   try{
     const result = await postApi("orders", {service:selectedPharmacyId, pharmacy:selectedPharmacyId});
     if (!result.success) throw new Error(result.code || "APPROVED_ORDERS_FAILED");
@@ -2437,8 +2429,7 @@ async function loadApprovedOrders(){
     }).join("");
     body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(grouped[button.dataset.orderRef]); }; });
      body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(grouped[button.dataset.orderRef]); }; }); */
-    message.innerText = result.orders && result.orders.length ? "" : "No approved orders found.";
-  }catch(error){ message.innerText = "Could not load approved orders (" + (error.message || "ERROR") + ")."; }
+   }catch(error){ approvedOrdersData = []; renderApprovedOrdersPage(); }
 }
 
 async function loadPendingReviewOrders(){
