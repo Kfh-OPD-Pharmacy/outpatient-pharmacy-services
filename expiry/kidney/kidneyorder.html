@@ -1808,6 +1808,23 @@ let medications =
 let medicationRecordsById = {};
 let medicationIdsByName = {};
 let scannedMedicationId = "";
+let medicationDatabaseFingerprint = "";
+let medicationSyncTimer = null;
+let medicationSyncInFlight = false;
+
+function startMedicationDatabaseSynchronization(){
+  if(medicationSyncTimer)clearInterval(medicationSyncTimer);
+  if(!selectedPharmacyId)return;
+  medicationSyncTimer=setInterval(function(){
+    if(document.hidden||!selectedPharmacyId||medicationSyncInFlight)return;
+    medicationSyncInFlight=true;
+    loadMedicationDatabase(true).finally(function(){medicationSyncInFlight=false;});
+  },1000);
+}
+
+function stopMedicationDatabaseSynchronization(){
+  if(medicationSyncTimer){clearInterval(medicationSyncTimer);medicationSyncTimer=null;}
+}
 
 function normalizeMedicationKey(value){
   return String(value == null ? "" : value)
@@ -2181,7 +2198,7 @@ async function loginUser(){
 
     showOrderView();
     initOrderPharmacySelector();
-    if (selectedPharmacyId) loadMedicationDatabase();
+    if (selectedPharmacyId) { loadMedicationDatabase(); startMedicationDatabaseSynchronization(); }
 
   }catch(error){
     showResult(
@@ -2290,11 +2307,13 @@ function initOrderPharmacySelector(){
     setOrderActionsEnabled(Boolean(selectedPharmacyId));
     initApprovedOrdersPanel();
     startOrderSynchronization();
+    startMedicationDatabaseSynchronization();
     if (selectedPharmacyId) loadMedicationDatabase();
   });
   initOrderSummaryScope(allowed, user && user.isAdmin === true);
   initApprovedOrdersPanel();
   startOrderSynchronization();
+  startMedicationDatabaseSynchronization();
   showDraftRecoveryIfAvailable(allowed);
 }
 
@@ -2325,6 +2344,11 @@ function startOrderSynchronization(){
 document.addEventListener("visibilitychange",function(){
   if(document.hidden){if(orderSyncTimer){clearInterval(orderSyncTimer);orderSyncTimer=null;}}
   else if(selectedPharmacyId)startOrderSynchronization();
+});
+
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden)stopMedicationDatabaseSynchronization();
+  else if(selectedPharmacyId)startMedicationDatabaseSynchronization();
 });
 
 function formatApprovedPharmacyName(value){
@@ -2967,7 +2991,7 @@ function stopInactivityTimer(){
   }
 }
 
-async function loadMedicationDatabase(){
+async function loadMedicationDatabase(isSynchronization){
   if (!selectedPharmacyId) return;
   const requestVersion = orderRequestVersion;
   try{
@@ -2987,6 +3011,12 @@ async function loadMedicationDatabase(){
         : [];
 
     if (requestVersion !== orderRequestVersion || !selectedPharmacyId) return;
+    const activeRows = medicationRows.filter(function(item){return item && item.active !== false && String(item.name || item.medicationName || "").trim();});
+    const fingerprint = activeRows.map(function(item){return String(item.id || item.medicationId || "").trim() + "|" + String(item.name || item.medicationName || "").trim();}).sort().join("\u0001");
+    if (isSynchronization && fingerprint === medicationDatabaseFingerprint) return;
+    const medicationInput = document.getElementById("medicationName");
+    const medicationOptions = document.getElementById("medicationOptions");
+    const refreshOptions = medicationInput && medicationOptions && (document.activeElement === medicationInput || medicationOptions.style.display === "block");
     medicationRecordsById = {};
     medicationIdsByName = {};
     medicationRows.forEach(function(item){
@@ -3000,7 +3030,7 @@ async function loadMedicationDatabase(){
       }
     });
     medications =
-      medicationRows
+      activeRows
         .map(
           function(item){
             return item.name || item.medicationName || "";
@@ -3012,13 +3042,11 @@ async function loadMedicationDatabase(){
             return a.localeCompare(b);
           }
         );
+    medicationDatabaseFingerprint = fingerprint;
+    if (refreshOptions) showMedicationOptions();
 
   }catch(error){
-    showResult(
-      "orderResult",
-      "error",
-      text[currentLang].loadMedicationsFailed
-    );
+    if (!isSynchronization) showResult("orderResult","error",text[currentLang].loadMedicationsFailed);
   }
 }
 
