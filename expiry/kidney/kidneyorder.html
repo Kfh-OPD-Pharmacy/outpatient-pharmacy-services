@@ -553,6 +553,7 @@ td:nth-child(2){
   border:1.3px solid #cbdfe6;
   border-radius:3mm;
   overflow:visible;
+  box-sizing:border-box;
   display:flex;
   flex-direction:column;
   page-break-after:always;
@@ -699,7 +700,7 @@ td:nth-child(2){
 }
 
 .print-table tbody tr{
-  height:8mm
+  height:7mm
 }
 
 .print-table td{
@@ -720,27 +721,32 @@ td:nth-child(2){
 
 .print-table th:nth-child(1),
 .print-table td:nth-child(1){
-  width:8%
+  width:6%
 }
 
 .print-table th:nth-child(2),
 .print-table td:nth-child(2){
-  width:38%
+  width:30%
 }
 
 .print-table th:nth-child(3),
 .print-table td:nth-child(3){
-  width:16%
+  width:14%
 }
 
 .print-table th:nth-child(4),
 .print-table td:nth-child(4){
-  width:18%
+  width:14%
 }
 
 .print-table th:nth-child(5),
 .print-table td:nth-child(5){
-  width:20%
+  width:14%
+}
+
+.print-table th:nth-child(6),
+.print-table td:nth-child(6){
+  width:22%
 }
 
 .print-footer{
@@ -1738,7 +1744,7 @@ html,body{overflow-x:hidden}
 <div id="printPages"></div>
 
 <style>.order-reference-btn{border:0;background:none;color:#168fb3;text-decoration:underline;cursor:pointer;font:inherit;padding:2px 4px}.order-reference-btn:hover,.order-reference-btn:focus-visible{color:#0d6078;outline:2px solid #168fb3;outline-offset:2px}</style>
-<style>.print-order-qr{justify-content:center}</style>
+<style>.print-order-qr{justify-content:center}.print-order-qr img{width:18mm;height:18mm;background:#fff;padding:2mm;box-sizing:content-box}</style>
 <script>
 /* Approval success notice is emitted only after the existing success path closes the dialog. */
 (function(){var dialog=document.getElementById("pendingReviewDialog"),approve=document.getElementById("approvePendingReviewBtn"),cancel=document.getElementById("cancelPendingReviewBtn"),attempt=false;if(!dialog||!approve)return;approve.addEventListener("click",function(){attempt=true;});if(cancel)cancel.addEventListener("click",function(){attempt=false;});new MutationObserver(function(){if(attempt&&dialog.getAttribute("aria-hidden")==="true"){attempt=false;alert("Review Approved Successfully");}}).observe(dialog,{attributes:true,attributeFilter:["aria-hidden"]});})();
@@ -2309,7 +2315,7 @@ function startOrderSynchronization(){
     if(document.hidden||!selectedPharmacyId||orderSyncInFlight)return;
     orderSyncInFlight=true;
     loadApprovedOrders().finally(function(){orderSyncInFlight=false;});
-  },5000);
+  },1000);
 }
 
 document.addEventListener("visibilitychange",function(){
@@ -3487,7 +3493,7 @@ function buildPrintPagesForItems(items, orderMeta){
     "";
 
   const ROWS_PER_PAGE =
-    23;
+    20;
 
   const pageCount =
     Math.max(
@@ -3605,7 +3611,26 @@ function createPrintPage(
     const qr = qrcode(0, "M");
     qr.addData(String(orderMeta.fulfillmentUrl));
     qr.make();
-    qrBox.innerHTML = qr.createImgTag(3, 4, "Warehouse QR");
+    const modules = qr.getModuleCount();
+    const cellSize = 3;
+    const quiet = 4;
+    const canvas = document.createElement("canvas");
+    canvas.width = modules * cellSize + quiet * 2;
+    canvas.height = canvas.width;
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.save();
+    context.translate(quiet, quiet);
+    qr.renderTo2dContext(context, cellSize);
+    context.restore();
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    for(let p=0;p<pixels.data.length;p+=4){if(pixels.data[p]<80&&pixels.data[p+1]<80&&pixels.data[p+2]<80){pixels.data[p]=22;pixels.data[p+1]=143;pixels.data[p+2]=179;}}
+    context.putImageData(pixels, 0, 0);
+    const qrImage = document.createElement("img");
+    qrImage.alt = "Warehouse QR";
+    qrImage.src = canvas.toDataURL("image/png");
+    qrBox.appendChild(qrImage);
     page.appendChild(qrBox);
   }
 
