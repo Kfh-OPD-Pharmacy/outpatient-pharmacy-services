@@ -1690,7 +1690,7 @@ html,body{overflow-x:hidden}
   </div>
 
   <section class="order-summary-panel" id="approvedOrdersPanel" hidden>
-    <h2 style="color:#168fb3;font-size:18px;text-align:center">Approved Orders</h2>
+    <h2 style="color:#168fb3;font-size:18px;text-align:center">Orders</h2>
     <div class="order-summary-toolbar">
       <button type="button" class="secondary-btn" id="refreshApprovedOrdersBtn" aria-label="Refresh Approved Orders" title="Refresh Approved Orders">↻</button>
     </div>
@@ -1709,7 +1709,7 @@ html,body{overflow-x:hidden}
     <div class="scan-dialog-card pending-review-card">
       <h2>Review Warehouse Order</h2>
       <p id="pendingReviewReference"></p>
-      <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Medication</th><th>Requested</th><th>Dispensed</th><th>Final Quantity</th></tr></thead><tbody id="pendingReviewItems"></tbody></table></div>
+      <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Medication</th><th>Requested</th><th>Dispensed</th><th>Notes</th><th>Final Quantity</th></tr></thead><tbody id="pendingReviewItems"></tbody></table></div>
       <div class="review-dialog-actions"><button type="button" class="primary-btn" id="approvePendingReviewBtn">Approve &amp; Done</button><button type="button" class="secondary-btn" id="cancelPendingReviewBtn">Cancel</button></div>
     </div>
   </div>
@@ -1732,6 +1732,7 @@ html,body{overflow-x:hidden}
 
 <div id="printPages"></div>
 
+<style>.order-reference-btn{border:0;background:none;color:#168fb3;text-decoration:underline;cursor:pointer;font:inherit;padding:2px 4px}.order-reference-btn:hover,.order-reference-btn:focus-visible{color:#0d6078;outline:2px solid #168fb3;outline-offset:2px}</style>
 <script>
 
 function navigateFresh(target, replaceHistory = false){
@@ -2291,6 +2292,7 @@ function initApprovedOrdersPanel(){
 
 let approvedOrdersPage = 1;
 let approvedOrdersData = [];
+let pendingReviewOrdersData = [];
 
 function formatApprovedPharmacyName(value){
   const key = String(value || "").trim().toLowerCase();
@@ -2310,9 +2312,11 @@ function renderApprovedOrdersPage(){
   const pageCount = Math.max(1, Math.ceil(approvedOrdersData.length / 10));
   approvedOrdersPage = Math.min(Math.max(approvedOrdersPage, 1), pageCount);
   const start = (approvedOrdersPage - 1) * 10;
-  body.innerHTML = approvedOrdersData.slice(start, start + 10).map(function(order){
-     return "<tr><td>" + escapeHtml(order.reference) + "</td><td>" + escapeHtml(formatApprovedPharmacyName(order.pharmacy)) + "</td><td>" + escapeHtml(order.date) + "</td><td>" + escapeHtml(order.status || "Sent") + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Preview\" title=\"Preview\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"2.5\"></circle></svg></button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + escapeHtml(order.reference) + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
+   body.innerHTML = approvedOrdersData.slice(start, start + 10).map(function(order){
+      const ref=escapeHtml(order.reference), status=String(order.status||"Sent");
+      return "<tr><td><button type=\"button\" class=\"order-reference-btn\" data-order-ref=\"" + ref + "\" data-order-status=\"" + escapeHtml(status) + "\" title=\"Open order\">" + ref + "</button></td><td>" + escapeHtml(formatApprovedPharmacyName(order.pharmacy)) + "</td><td>" + escapeHtml(order.date) + "</td><td>" + escapeHtml(status) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + ref + "\" aria-label=\"Preview\" title=\"Preview\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"2.5\"></circle></svg></button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + ref + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2 2v5h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
   }).join("");
+   body.querySelectorAll(".order-reference-btn").forEach(function(button){button.onclick=function(){const order=approvedOrdersData.find(function(item){return item.reference===button.dataset.orderRef;});if(!order)return;if(button.dataset.orderStatus==="Review"){const pending=pendingReviewOrdersData.find(function(item){return item.orderNo===order.reference;});if(pending)openPendingReview(pending);else alert("Review details are not available.");}else previewApprovedOrder(order);};});
   body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
   body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
   if (pagination) pagination.hidden = approvedOrdersData.length <= 10;
@@ -2422,6 +2426,7 @@ async function loadPendingReviewOrders(){
     const result=await postApi("listPendingReviewOrders",{service:selectedPharmacyId,pharmacy:selectedPharmacyId});
     if(!result.success)throw new Error(result.code||"PENDING_REVIEW_FAILED");
     const orders=(result.orders||[]).filter(function(order){return order.items&&order.items.length;});
+     pendingReviewOrdersData=orders;
     panel.hidden=!orders.length; count.textContent=String(orders.length); message.textContent=orders.length?"Review warehouse quantities before approval.":"";
     body.innerHTML=orders.map(function(order){return "<tr><td>"+escapeHtml(order.orderNo)+"</td><td>"+order.items.length+"</td><td><button type=\"button\" class=\"secondary-btn pending-review-btn\" data-order-ref=\""+escapeHtml(order.orderNo)+"\">Review</button></td></tr>";}).join("");
     body.querySelectorAll(".pending-review-btn").forEach(function(button){button.onclick=function(){openPendingReview(orders.find(function(order){return order.orderNo===button.dataset.orderRef;}));};});
@@ -2433,7 +2438,7 @@ function openPendingReview(order){
   if(order.items.some(function(item){return !String(item.medicationName||"").trim();})){alert("Review cannot open because one or more medication names are missing from the order data.");return;}
   const dialog=document.getElementById("pendingReviewDialog"), body=document.getElementById("pendingReviewItems"), reference=document.getElementById("pendingReviewReference"), approve=document.getElementById("approvePendingReviewBtn");
   reference.textContent="Reference: "+order.orderNo;
-  body.innerHTML=order.items.map(function(item){return "<tr><td>"+escapeHtml(item.medicationName||"-")+"</td><td>"+escapeHtml(item.requestedQuantity==null||item.requestedQuantity===""?"-":item.requestedQuantity)+"</td><td>"+escapeHtml(item.dispensedQuantity==null||item.dispensedQuantity===""?"Not entered":item.dispensedQuantity)+"</td><td><input class=\"review-quantity\" data-item=\""+escapeHtml(item.itemNo)+"\" value=\""+escapeHtml(item.dispensedQuantity==null?"":item.dispensedQuantity)+"\" inputmode=\"decimal\" required></td></tr>";}).join("");
+  body.innerHTML=order.items.map(function(item){return "<tr><td>"+escapeHtml(item.medicationName||"-")+"</td><td>"+escapeHtml(item.requestedQuantity==null||item.requestedQuantity===""?"-":item.requestedQuantity)+"</td><td>"+escapeHtml(item.dispensedQuantity==null||item.dispensedQuantity===""?"Not entered":item.dispensedQuantity)+"</td><td>"+escapeHtml(item.notes||"-")+"</td><td><input class=\"review-quantity\" data-item=\""+escapeHtml(item.itemNo)+"\" value=\""+escapeHtml(item.dispensedQuantity==null?"":item.dispensedQuantity)+"\" inputmode=\"decimal\" required></td></tr>";}).join("");
   dialog.classList.add("visible"); dialog.setAttribute("aria-hidden","false");
   approve.onclick=function(){const inputs=[...body.querySelectorAll(".review-quantity")], values=inputs.map(function(input){return input.value.trim();}); if(values.some(function(value){return value===""||isNaN(Number(value))||Number(value)<0;})){alert("Enter a non-negative final quantity for every item.");return;} const items=order.items.map(function(item,index){return {itemNo:item.itemNo,medicationId:item.medicationId,medicationName:item.medicationName,dispensedQuantity:values[index]};}); approve.disabled=true; postApi("approveOrder",{orderNo:order.orderNo,items:items,idempotencyKey:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))}).then(function(result){if(!result.success)throw new Error(result.code||"APPROVAL_FAILED"); closePendingReview(); loadPendingReviewOrders(); loadApprovedOrders();}).catch(function(error){alert("Approval failed ("+error.message+").");}).finally(function(){approve.disabled=false;});};
 }
