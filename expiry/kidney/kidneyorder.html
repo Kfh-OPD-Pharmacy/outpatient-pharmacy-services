@@ -1710,12 +1710,6 @@ html,body{overflow-x:hidden}
     <div class="approved-orders-pagination" id="approvedOrdersPagination" hidden><button type="button" class="secondary-btn" id="approvedOrdersPrevious" aria-label="Previous page" title="Previous page">Previous</button><span id="approvedOrdersPageInfo" aria-live="polite">Page 1 of 1</span><button type="button" class="secondary-btn" id="approvedOrdersNext" aria-label="Next page" title="Next page">Next</button></div>
   </section>
 
-  <section class="order-summary-panel" id="pendingReviewPanel" hidden>
-    <h2 style="color:#168fb3;font-size:18px;text-align:center">Pending Review <span id="pendingReviewCount">0</span></h2>
-    <div class="order-summary-message" id="pendingReviewMessage"></div>
-    <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Reference</th><th>Items</th><th>Action</th></tr></thead><tbody id="pendingReviewBody"></tbody></table></div>
-  </section>
-
   <div class="scan-dialog" id="pendingReviewDialog" aria-hidden="true">
     <div class="scan-dialog-card pending-review-card">
       <h2>Review Warehouse Order</h2>
@@ -2285,13 +2279,11 @@ function initOrderPharmacySelector(){
     updateSummary();
     setOrderActionsEnabled(Boolean(selectedPharmacyId));
     initApprovedOrdersPanel();
-    loadPendingReviewOrders();
     startOrderSynchronization();
     if (selectedPharmacyId) loadMedicationDatabase();
   });
   initOrderSummaryScope(allowed, user && user.isAdmin === true);
   initApprovedOrdersPanel();
-  loadPendingReviewOrders();
   startOrderSynchronization();
   showDraftRecoveryIfAvailable(allowed);
 }
@@ -2316,7 +2308,7 @@ function startOrderSynchronization(){
   orderSyncTimer=setInterval(function(){
     if(document.hidden||!selectedPharmacyId||orderSyncInFlight)return;
     orderSyncInFlight=true;
-    Promise.all([loadApprovedOrders(),loadPendingReviewOrders()]).finally(function(){orderSyncInFlight=false;});
+    loadApprovedOrders().finally(function(){orderSyncInFlight=false;});
   },5000);
 }
 
@@ -2483,7 +2475,7 @@ function openPendingReview(order){
   reference.textContent="Reference: "+order.orderNo;
   body.innerHTML=order.items.map(function(item){return "<tr><td>"+escapeHtml(item.medicationName||"-")+"</td><td>"+escapeHtml(item.requestedQuantity==null||item.requestedQuantity===""?"-":item.requestedQuantity)+"</td><td>"+escapeHtml(item.dispensedQuantity==null||item.dispensedQuantity===""?"Not entered":item.dispensedQuantity)+"</td><td>"+escapeHtml(item.notes||"-")+"</td><td><input class=\"review-quantity\" data-item=\""+escapeHtml(item.itemNo)+"\" value=\""+escapeHtml(item.dispensedQuantity==null?"":item.dispensedQuantity)+"\" inputmode=\"decimal\" required></td></tr>";}).join("");
   dialog.classList.add("visible"); dialog.setAttribute("aria-hidden","false");
-  approve.onclick=function(){const inputs=[...body.querySelectorAll(".review-quantity")], values=inputs.map(function(input){return input.value.trim();}); if(values.some(function(value){return value===""||isNaN(Number(value))||Number(value)<0;})){alert("Enter a non-negative final quantity for every item.");return;} const items=order.items.map(function(item,index){return {itemNo:item.itemNo,medicationId:item.medicationId,medicationName:item.medicationName,dispensedQuantity:values[index]};}); approve.disabled=true; postApi("approveOrder",{orderNo:order.orderNo,items:items,idempotencyKey:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))}).then(function(result){if(!result.success)throw new Error(result.code||"APPROVAL_FAILED"); closePendingReview(); loadPendingReviewOrders(); loadApprovedOrders();}).catch(function(error){alert("Approval failed ("+error.message+").");}).finally(function(){approve.disabled=false;});};
+  approve.onclick=function(){const inputs=[...body.querySelectorAll(".review-quantity")], values=inputs.map(function(input){return input.value.trim();}); if(values.some(function(value){return value===""||isNaN(Number(value))||Number(value)<0;})){alert("Enter a non-negative final quantity for every item.");return;} const items=order.items.map(function(item,index){return {itemNo:item.itemNo,medicationId:item.medicationId,medicationName:item.medicationName,dispensedQuantity:values[index]};}); approve.disabled=true; postApi("approveOrder",{orderNo:order.orderNo,items:items,idempotencyKey:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))}).then(function(result){if(!result.success)throw new Error(result.code||"APPROVAL_FAILED"); closePendingReview(); loadApprovedOrders();}).catch(function(error){alert("Approval failed ("+error.message+").");}).finally(function(){approve.disabled=false;});};
 }
 
 function closePendingReview(){const dialog=document.getElementById("pendingReviewDialog");if(dialog){dialog.classList.remove("visible");dialog.setAttribute("aria-hidden","true");}}
