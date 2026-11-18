@@ -1733,7 +1733,10 @@ html,body{overflow-x:hidden}
 <div id="printPages"></div>
 
 <style>.order-reference-btn{border:0;background:none;color:#168fb3;text-decoration:underline;cursor:pointer;font:inherit;padding:2px 4px}.order-reference-btn:hover,.order-reference-btn:focus-visible{color:#0d6078;outline:2px solid #168fb3;outline-offset:2px}</style>
+<style>.print-order-qr{justify-content:center}</style>
 <script>
+/* Approval success notice is emitted only after the existing success path closes the dialog. */
+(function(){var dialog=document.getElementById("pendingReviewDialog"),approve=document.getElementById("approvePendingReviewBtn"),cancel=document.getElementById("cancelPendingReviewBtn"),attempt=false;if(!dialog||!approve)return;approve.addEventListener("click",function(){attempt=true;});if(cancel)cancel.addEventListener("click",function(){attempt=false;});new MutationObserver(function(){if(attempt&&dialog.getAttribute("aria-hidden")==="true"){attempt=false;alert("Review Approved Successfully");}}).observe(dialog,{attributes:true,attributeFilter:["aria-hidden"]});})();
 
 function navigateFresh(target, replaceHistory = false){
   const url = new URL(target, window.location.href);
@@ -2271,11 +2274,14 @@ function initOrderPharmacySelector(){
     updateSummary();
     setOrderActionsEnabled(Boolean(selectedPharmacyId));
     initApprovedOrdersPanel();
+    loadPendingReviewOrders();
+    startOrderSynchronization();
     if (selectedPharmacyId) loadMedicationDatabase();
   });
   initOrderSummaryScope(allowed, user && user.isAdmin === true);
   initApprovedOrdersPanel();
   loadPendingReviewOrders();
+  startOrderSynchronization();
   showDraftRecoveryIfAvailable(allowed);
 }
 
@@ -2293,6 +2299,22 @@ function initApprovedOrdersPanel(){
 let approvedOrdersPage = 1;
 let approvedOrdersData = [];
 let pendingReviewOrdersData = [];
+let orderSyncTimer = null;
+let orderSyncInFlight = false;
+
+function startOrderSynchronization(){
+  if(orderSyncTimer)clearInterval(orderSyncTimer);
+  orderSyncTimer=setInterval(function(){
+    if(document.hidden||!selectedPharmacyId||orderSyncInFlight)return;
+    orderSyncInFlight=true;
+    Promise.all([loadApprovedOrders(),loadPendingReviewOrders()]).finally(function(){orderSyncInFlight=false;});
+  },5000);
+}
+
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden){if(orderSyncTimer){clearInterval(orderSyncTimer);orderSyncTimer=null;}}
+  else if(selectedPharmacyId)startOrderSynchronization();
+});
 
 function formatApprovedPharmacyName(value){
   const key = String(value || "").trim().toLowerCase();
@@ -2359,9 +2381,9 @@ function pharmacyPrintTitle(pharmacy){
 
 async function printApprovedOrder(order){
   if (!order) return;
-  let fulfillmentUrl = "";
+  let fulfillmentUrl = String(order.fulfillmentUrl || "");
   try {
-    const access = await postApi("createWarehouseAccess", {orderNo: order.reference}, true);
+    const access = fulfillmentUrl ? null : await postApi("createWarehouseAccess", {orderNo: order.reference}, true);
     if (access && access.success && access.token) {
       const link = new URL("../../order-fulfillment.html", window.location.href);
       link.searchParams.set("token", access.token);
