@@ -2398,7 +2398,9 @@ function previewApprovedOrder(order){
     return;
   }
   try { previewWindow.opener = null; } catch (error) {}
-  const rows = (order.items || []).map(function(item){
+  const previewItems = (order.items || []).map(function(item, index){ return {item:item, index:index}; }).sort(function(a,b){ return String(a.item.medicationName || "").trim().toLocaleLowerCase().localeCompare(String(b.item.medicationName || "").trim().toLocaleLowerCase()) || a.index - b.index; });
+  const rows = previewItems.map(function(entry){
+    const item = entry.item;
     return "<tr><td>" + escapeHtml(item.medicationName || "-") + "</td><td>" + escapeHtml(item.requestedQuantity || "-") + "</td><td>" + escapeHtml(item.dispensedQuantity || "-") + "</td><td>" + escapeHtml(item.approvedQuantity || "-") + "</td><td>" + escapeHtml(item.warehouseNotes || item.notes || "-") + "</td></tr>";
   }).join("");
   try {
