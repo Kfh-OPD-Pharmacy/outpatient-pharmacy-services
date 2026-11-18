@@ -3198,7 +3198,7 @@ function addItemToOrder(){
     return;
   }
 
-  orderItems.push({
+  orderItems.unshift({
     medicationName:name,
     medicationId:medicationId,
      currentStock:"",
