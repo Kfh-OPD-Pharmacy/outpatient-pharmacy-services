@@ -1199,8 +1199,8 @@ td:nth-child(2){
   }
 
   .medication-entry-grid{
-    grid-template-columns:minmax(0,calc((100% - 12px) * .6)) minmax(0,calc((100% - 12px) * .3));
-    grid-template-areas:"medication quantity" "scan notes";
+    grid-template-columns:minmax(0,calc((100% - 24px) * .5)) minmax(72px,calc((100% - 24px) * .2)) minmax(0,calc((100% - 24px) * .3));
+    grid-template-areas:"medication quantity notes" "scan . .";
     column-gap:12px;
     row-gap:10px;
     align-items:start;
@@ -1215,7 +1215,7 @@ td:nth-child(2){
     justify-content:center;
     flex-wrap:nowrap;
     margin-top:0;
-    padding-top:25px;
+    padding-top:8px;
     box-sizing:border-box;
   }
 
@@ -1227,6 +1227,15 @@ td:nth-child(2){
     min-width:0;
     box-sizing:border-box;
     height:44px;
+  }
+
+  .medication-entry-grid textarea{
+    min-width:0;
+    width:100%;
+    min-height:44px;
+    height:44px;
+    box-sizing:border-box;
+    resize:vertical;
   }
 
   .medication-entry-grid .combo-wrap,
@@ -1244,8 +1253,8 @@ td:nth-child(2){
 
 @media screen and (max-width:600px){
   .medication-entry-grid{
-    grid-template-columns:minmax(0,13fr) minmax(0,7fr);
-    grid-template-areas:"medication quantity" "scan notes";
+    grid-template-columns:minmax(0,1.6fr) minmax(72px,.7fr) minmax(0,1fr);
+    grid-template-areas:"medication quantity notes" "scan . .";
     column-gap:8px;
     row-gap:8px;
     align-items:start;
@@ -1254,6 +1263,12 @@ td:nth-child(2){
   .medication-entry-grid input{
     height:44px;
     min-height:44px;
+    font-size:16px;
+  }
+
+  .medication-entry-grid textarea{
+    min-height:44px;
+    height:44px;
     font-size:16px;
   }
 }
