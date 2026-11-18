@@ -2359,6 +2359,13 @@ function formatApprovedPharmacyName(value){
   return String(value || "") + " Pharmacy";
 }
 
+function compareOrdersByCreationTimestamp(a,b){
+  const aTimestamp=String(a && a.date || "").trim();
+  const bTimestamp=String(b && b.date || "").trim();
+  const timestampOrder=bTimestamp.localeCompare(aTimestamp);
+  return timestampOrder || String(b && b.reference || "").localeCompare(String(a && a.reference || ""));
+}
+
 function renderApprovedOrdersPage(){
   const body = document.getElementById("approvedOrdersBody");
   const pagination = document.getElementById("approvedOrdersPagination");
@@ -2458,7 +2465,7 @@ async function loadApprovedOrders(){
        if (order.workflowStatus === "Approved" || (order.workflowStatus === "Review" && grouped[ref].status === "Sent")) grouped[ref].status = order.workflowStatus;
       grouped[ref].items.push(order);
     });
-     approvedOrdersData = Object.keys(grouped).map(function(ref){ return grouped[ref]; }).sort(function(a,b){ return String(b.date).localeCompare(String(a.date)) || String(b.reference).localeCompare(String(a.reference)); });
+     approvedOrdersData = Object.keys(grouped).map(function(ref){ return grouped[ref]; }).sort(compareOrdersByCreationTimestamp);
      approvedOrdersPage = 1;
      renderApprovedOrdersPage();
      /* Keep the grouped map for compatibility with the existing action handlers. */
