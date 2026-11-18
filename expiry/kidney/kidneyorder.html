@@ -1478,7 +1478,7 @@ html,body{overflow-x:hidden}
 </style>
 <style id="mobile-date-stack-style">@media(max-width:600px){.meta-row>.date-box,.employee-meta>.date-box,.meta-row.unified-meta>.date-box,.employee-meta>.dashboard-date-stack{white-space:normal!important;text-align:center!important;line-height:1.1!important}.mobile-day,.mobile-date{display:block!important;white-space:nowrap!important}.mobile-day{font-size:10px!important}.mobile-date{font-size:10px!important}}</style>
 <style>.pharmacy-selector-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px auto;max-width:320px;color:#168fb3;font-weight:700}.pharmacy-selector-wrap select{padding:7px 10px;border:1px solid #168fb3;border-radius:6px;background:#fff;color:#18324b}.order-scan-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.order-scan-actions button{flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#168fb3;display:inline-flex;align-items:center;justify-content:center}.order-scan-actions button:hover,.order-scan-actions button:focus-visible{border-color:#168fb3;box-shadow:0 0 0 3px rgba(22,143,179,.14);outline:none}.order-scan-actions button svg{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.scan-dialog{position:fixed;inset:0;background:rgba(15,35,50,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}.scan-dialog.visible{display:flex}.scan-dialog-card{background:#fff;border-radius:12px;padding:16px;max-width:480px;width:100%;text-align:center}.scan-dialog video{width:100%;max-height:320px;background:#111;border-radius:8px}.scan-dialog canvas{display:none}</style></head>
-<style>.order-summary-panel{margin-top:16px;padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}.order-summary-toolbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}.order-summary-toolbar select,.order-summary-toolbar button{min-height:36px}.order-summary-table{width:100%;border-collapse:collapse;margin-top:12px}.order-summary-table th,.order-summary-table td{border:1px solid #e5e7eb;padding:7px;text-align:center;font-size:13px}.order-summary-message{margin-top:8px;color:#168fb3;font-weight:700;text-align:center}.approved-orders-pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:12px}.approved-orders-pagination .secondary-btn{min-height:28px;padding:3px 9px;font-size:12px;line-height:1.1}.warehouse-link-box{margin-top:10px;padding:10px;border:1px solid #cbdfe6;border-radius:8px;color:#18324b}.warehouse-link-box a{overflow-wrap:anywhere}.order-qr{display:block;width:140px;height:140px;margin:10px auto}</style><script src="../../qrcode.js"></script></head>
+<style>.order-summary-panel{margin-top:16px;padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}.order-summary-toolbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}.order-summary-toolbar select,.order-summary-toolbar button{min-height:36px}.order-summary-table{width:100%;border-collapse:collapse;margin-top:12px}.order-summary-table th,.order-summary-table td{border:1px solid #e5e7eb;padding:7px;text-align:center;font-size:13px}.order-summary-message{margin-top:8px;color:#168fb3;font-weight:700;text-align:center}.approved-orders-pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:12px}.approved-orders-pagination .secondary-btn{min-height:28px;padding:3px 9px;font-size:12px;line-height:1.1}.warehouse-link-box{margin-top:10px;padding:10px;border:1px solid #cbdfe6;border-radius:8px;color:#18324b}.warehouse-link-box a{overflow-wrap:anywhere}.order-qr{display:block;width:140px;height:140px;margin:10px auto}.pending-review-card{max-width:900px;text-align:left}.pending-review-card h2,.pending-review-card p{text-align:center;color:#168fb3}.review-dialog-actions{display:flex;justify-content:center;gap:8px;margin-top:16px}.review-quantity{width:100%;box-sizing:border-box;min-height:36px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:16px}</style><script src="../../qrcode.js"></script></head>
 
 <body>
 <div class="container">
@@ -1704,6 +1704,15 @@ html,body{overflow-x:hidden}
     <div class="order-summary-message" id="pendingReviewMessage"></div>
     <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Reference</th><th>Items</th><th>Action</th></tr></thead><tbody id="pendingReviewBody"></tbody></table></div>
   </section>
+
+  <div class="scan-dialog" id="pendingReviewDialog" aria-hidden="true">
+    <div class="scan-dialog-card pending-review-card">
+      <h2>Review Warehouse Order</h2>
+      <p id="pendingReviewReference"></p>
+      <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Medication</th><th>Requested</th><th>Dispensed</th><th>Final Quantity</th></tr></thead><tbody id="pendingReviewItems"></tbody></table></div>
+      <div class="review-dialog-actions"><button type="button" class="primary-btn" id="approvePendingReviewBtn">Approve &amp; Done</button><button type="button" class="secondary-btn" id="cancelPendingReviewBtn">Cancel</button></div>
+    </div>
+  </div>
 
   <div class="scan-dialog" id="approvedOrderPreview" aria-hidden="true">
     <div class="scan-dialog-card"><h2>Approved Order</h2><div id="approvedOrderPreviewBody"></div><button type="button" class="secondary-btn" id="closeApprovedOrderPreview" aria-label="Close Preview" title="Close Preview">×</button></div>
@@ -2420,14 +2429,15 @@ async function loadPendingReviewOrders(){
 
 function openPendingReview(order){
   if(!order)return;
-  const rows=order.items.map(function(item){return "<tr><td>"+escapeHtml(item.medicationName||"-")+"</td><td><input class=\"review-quantity\" data-item=\""+escapeHtml(item.itemNo)+"\" value=\""+escapeHtml(item.dispensedQuantity==null?"":item.dispensedQuantity)+"\" inputmode=\"decimal\"></td></tr>";}).join("");
-  const approved=window.prompt("Enter approved quantities as comma-separated values in item order for "+order.orderNo,order.items.map(function(i){return i.dispensedQuantity==null?"":i.dispensedQuantity;}).join(","));
-  if(approved===null)return;
-  const values=approved.split(",").map(function(v){return v.trim();});
-  if(values.length!==order.items.length||values.some(function(v){return v===""||isNaN(Number(v))||Number(v)<0;})){alert("Enter one non-negative quantity for every item.");return;}
-  const items=order.items.map(function(item,index){return {itemNo:item.itemNo,medicationId:item.medicationId,medicationName:item.medicationName,dispensedQuantity:values[index]};});
-  postApi("approveOrder",{orderNo:order.orderNo,items:items,idempotencyKey:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))}).then(function(result){if(!result.success)throw new Error(result.code||"APPROVAL_FAILED");loadPendingReviewOrders();loadApprovedOrders();}).catch(function(error){alert("Approval failed ("+error.message+").");});
+  const dialog=document.getElementById("pendingReviewDialog"), body=document.getElementById("pendingReviewItems"), reference=document.getElementById("pendingReviewReference"), approve=document.getElementById("approvePendingReviewBtn");
+  reference.textContent="Reference: "+order.orderNo;
+  body.innerHTML=order.items.map(function(item){return "<tr><td>"+escapeHtml(item.medicationName||"-")+"</td><td>"+escapeHtml(item.requestedQuantity==null||item.requestedQuantity===""?"-":item.requestedQuantity)+"</td><td>"+escapeHtml(item.dispensedQuantity==null||item.dispensedQuantity===""?"Not entered":item.dispensedQuantity)+"</td><td><input class=\"review-quantity\" data-item=\""+escapeHtml(item.itemNo)+"\" value=\""+escapeHtml(item.dispensedQuantity==null?"":item.dispensedQuantity)+"\" inputmode=\"decimal\" required></td></tr>";}).join("");
+  dialog.classList.add("visible"); dialog.setAttribute("aria-hidden","false");
+  approve.onclick=function(){const inputs=[...body.querySelectorAll(".review-quantity")], values=inputs.map(function(input){return input.value.trim();}); if(values.some(function(value){return value===""||isNaN(Number(value))||Number(value)<0;})){alert("Enter a non-negative final quantity for every item.");return;} const items=order.items.map(function(item,index){return {itemNo:item.itemNo,medicationId:item.medicationId,medicationName:item.medicationName,dispensedQuantity:values[index]};}); approve.disabled=true; postApi("approveOrder",{orderNo:order.orderNo,items:items,idempotencyKey:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))}).then(function(result){if(!result.success)throw new Error(result.code||"APPROVAL_FAILED"); closePendingReview(); loadPendingReviewOrders(); loadApprovedOrders();}).catch(function(error){alert("Approval failed ("+error.message+").");}).finally(function(){approve.disabled=false;});};
 }
+
+function closePendingReview(){const dialog=document.getElementById("pendingReviewDialog");if(dialog){dialog.classList.remove("visible");dialog.setAttribute("aria-hidden","true");}}
+document.getElementById("cancelPendingReviewBtn").onclick=closePendingReview;
 
 let orderResetInProgress = false;
 
