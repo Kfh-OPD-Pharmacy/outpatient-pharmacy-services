@@ -1723,7 +1723,7 @@ html,body{overflow-x:hidden}
 
   <div class="scan-dialog" id="pendingReviewDialog" aria-hidden="true">
     <div class="scan-dialog-card pending-review-card">
-      <h2>Review Warehouse Order</h2>
+      <h2>Review Store Order</h2>
       <p id="pendingReviewReference"></p>
       <div class="table-wrap"><table class="order-summary-table"><thead><tr><th>Medication</th><th>Requested</th><th>Dispensed</th><th>Notes</th><th>Final Quantity</th></tr></thead><tbody id="pendingReviewItems"></tbody></table></div>
       <div class="review-dialog-actions"><button type="button" class="primary-btn" id="approvePendingReviewBtn">Approve &amp; Done</button><button type="button" class="secondary-btn" id="cancelPendingReviewBtn">Cancel</button></div>
@@ -2330,6 +2330,7 @@ function initApprovedOrdersPanel(){
 let approvedOrdersPage = 1;
 let approvedOrdersData = [];
 let pendingReviewOrdersData = [];
+let pendingReviewLoadInFlight = false;
 let orderSyncTimer = null;
 let orderSyncInFlight = false;
 
@@ -2515,6 +2516,11 @@ async function loadPendingReviewOrders(){
 async function loadPendingReviewDetails(orderReference){
   const reference=String(orderReference||"").trim();
   if(!reference){alert("Review details could not be loaded.");return;}
+  if(pendingReviewLoadInFlight)return;
+  pendingReviewLoadInFlight=true;
+  const dialog=document.getElementById("pendingReviewDialog");
+  const body=document.getElementById("pendingReviewItems");
+  if(dialog&&body){body.innerHTML='<tr><td colspan="5">Loading review details…</td></tr>';dialog.classList.add("visible");dialog.setAttribute("aria-hidden","false");}
   try{
     const result=await postApi("listPendingReviewOrders",{service:selectedPharmacyId,pharmacy:selectedPharmacyId});
     if(!result.success)throw new Error(result.code||"PENDING_REVIEW_FAILED");
@@ -2524,6 +2530,7 @@ async function loadPendingReviewDetails(orderReference){
     if(!pending)throw new Error("REVIEW_ORDER_NOT_FOUND");
     openPendingReview(pending);
   }catch(error){alert("Review details could not be loaded ("+(error.message||"ERROR")+").");}
+  finally{pendingReviewLoadInFlight=false;}
 }
 
 function openPendingReview(order){
