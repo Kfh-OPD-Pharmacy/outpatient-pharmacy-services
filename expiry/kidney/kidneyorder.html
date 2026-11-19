@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script>setTimeout(function(){var removePreview=function(){document.querySelectorAll(".approved-preview-btn").forEach(function(button){button.remove();});};new MutationObserver(removePreview).observe(document.body,{childList:true,subtree:true});removePreview();},0);</script>
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
@@ -2381,7 +2382,7 @@ function renderApprovedOrdersPage(){
       return "<tr><td><button type=\"button\" class=\"order-reference-btn\" data-order-ref=\"" + ref + "\" data-order-status=\"" + escapeHtml(status) + "\" title=\"Open order\">" + ref + "</button></td><td>" + escapeHtml(formatApprovedPharmacyName(order.pharmacy)) + "</td><td>" + escapeHtml(order.date) + "</td><td>" + escapeHtml(status) + "</td><td><button type=\"button\" class=\"icon-btn approved-preview-btn\" data-order-ref=\"" + ref + "\" aria-label=\"Preview\" title=\"Preview\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"2.5\"></circle></svg></button> <button type=\"button\" class=\"icon-btn approved-print-btn\" data-order-ref=\"" + ref + "\" aria-label=\"Print\" title=\"Print\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 9V2h12v7\"></path><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2 2v5h-2\"></path><path d=\"M6 14h12v8H6z\"></path></svg></button></td></tr>";
    }).join("");
    body.querySelectorAll(".approved-print-btn svg path:nth-child(2)").forEach(function(path){path.setAttribute("d","M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2");});
-   body.querySelectorAll(".order-reference-btn").forEach(function(button){button.onclick=function(){const order=approvedOrdersData.find(function(item){return String(item.reference).trim()===String(button.dataset.orderRef).trim();});if(!order)return;if(button.dataset.orderStatus==="Review"){loadPendingReviewDetails(order.reference);}else previewApprovedOrder(order);};});
+   body.querySelectorAll(".order-reference-btn").forEach(function(button){button.onclick=function(){const order=approvedOrdersData.find(function(item){return String(item.reference).trim()===String(button.dataset.orderRef).trim();});if(!order)return;previewApprovedOrder(order);};});
   body.querySelectorAll(".approved-preview-btn").forEach(function(button){ button.onclick = function(){ previewApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
   body.querySelectorAll(".approved-print-btn").forEach(function(button){ button.onclick = function(){ printApprovedOrder(approvedOrdersData.find(function(order){ return order.reference === button.dataset.orderRef; })); }; });
   if (pagination) pagination.hidden = approvedOrdersData.length <= 10;
@@ -2405,7 +2406,7 @@ function previewApprovedOrder(order){
   }).join("");
   try {
     const previewDocument = previewWindow.document;
-    previewDocument.title = String(order.status || order.workflowStatus || "Approved");
+    previewDocument.title = previewStatusTitle(order);
     previewDocument.head.innerHTML = "<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>body{margin:0;padding:24px;background:#f5f9fb;color:#18324b;font-family:Arial,sans-serif;direction:ltr}.card{max-width:900px;margin:0 auto;padding:24px;background:#fff;border:1px solid #cbdfe6;border-radius:10px;box-shadow:0 6px 18px rgba(15,35,50,.08)}h1{margin:0 0 18px;color:#168fb3;font-size:21px}p{margin:7px 0;font-size:14px}.order-summary-table{width:100%;border-collapse:collapse;margin-top:18px}.order-summary-table th,.order-summary-table td{border:1px solid #d7e3e8;padding:9px;text-align:left;font-size:13px}.order-summary-table th{background:#168fb3;color:#fff}@media(max-width:600px){body{padding:12px}.card{padding:16px}}</style>";
     previewDocument.body.innerHTML = "<main class=\"card\"><h1>Approved Order</h1><p><strong>Reference:</strong> " + escapeHtml(order.reference || "-") + "</p><p><strong>Pharmacy:</strong> " + escapeHtml((order.pharmacy || "-") + " Pharmacy") + "</p><p><strong>Date:</strong> " + escapeHtml(order.date || "-") + "</p><table class=\"order-summary-table\"><thead><tr><th>Medication</th><th>Requested Quantity</th><th>Dispensed Quantity</th><th>Approved Quantity</th><th>Notes</th></tr></thead><tbody>" + rows + "</tbody></table></main>";
     previewWindow.focus();
@@ -2417,6 +2418,12 @@ function previewApprovedOrder(order){
 function pharmacyPrintTitle(reference){
   const title = String(reference || "").trim();
   return title || "Order";
+}
+function previewStatusTitle(order){
+  const status = String(order && (order.status || order.workflowStatus) || "").toLowerCase();
+  if (status === "approved" || status === "done" || status === "approved_order") return "REQUEST APPROVED";
+  if (status === "review" || status === "pending_review" || status === "submitted") return "REQUEST REVIEWED";
+  return "REQUEST SENT";
 }
 function restorePrintTitleAfterDialog(previousTitle){
   let restored = false;
