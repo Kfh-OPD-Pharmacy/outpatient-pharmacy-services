@@ -2414,14 +2414,9 @@ function previewApprovedOrder(order){
   }
 }
 
-function pharmacyPrintTitle(pharmacy){
-  const name = String(pharmacy || "").toLowerCase();
-  const date = new Date();
-  const day = String(date.getDate()).padStart(2,"0");
-  const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][date.getMonth()];
-  if (name.indexOf("diabetes") !== -1) return "Diabetic-" + day + month;
-  if (name.indexOf("outpatient") !== -1) return "OUT-" + day + month;
-  return "";
+function pharmacyPrintTitle(reference){
+  const title = String(reference || "").trim();
+  return title || "Order";
 }
 
 async function printApprovedOrder(order){
@@ -2441,7 +2436,7 @@ async function printApprovedOrder(order){
   const meta = {orderNo:order.reference, orderDate:order.date, requestedBy:order.items[0] && order.items[0].requestedBy || "-", status:order.items[0] && order.items[0].status || "Requested", pharmacy:order.pharmacy, fulfillmentUrl:fulfillmentUrl};
   buildPrintPagesForItems(items, meta);
   const previousTitle = document.title;
-  const printTitle = pharmacyPrintTitle(order.pharmacy);
+  const printTitle = pharmacyPrintTitle(order.reference);
   if (printTitle) document.title = printTitle;
   requestAnimationFrame(function(){ window.print(); setTimeout(function(){ document.title = previousTitle; },1000); });
 }
@@ -3515,7 +3510,7 @@ function printOrder(){
 
   buildPrintPagesForItems(printableItems, Object.assign({}, savedOrder || {}, {pharmacy:(savedOrder && savedOrder.pharmacy) || selectedPharmacyId}));
   const previousTitle = document.title;
-  const printTitle = pharmacyPrintTitle(savedOrder && savedOrder.pharmacy || selectedPharmacyId);
+  const printTitle = pharmacyPrintTitle(savedOrder && savedOrder.reference);
   if (printTitle) document.title = printTitle;
   window.print();
   if (printTitle) setTimeout(function(){ document.title = previousTitle; },1000);
