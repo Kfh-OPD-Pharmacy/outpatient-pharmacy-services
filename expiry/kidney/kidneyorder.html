@@ -2418,6 +2418,17 @@ function pharmacyPrintTitle(reference){
   const title = String(reference || "").trim();
   return title || "Order";
 }
+function restorePrintTitleAfterDialog(previousTitle){
+  let restored = false;
+  const restore = function(){
+    if (restored) return;
+    restored = true;
+    document.title = previousTitle;
+    window.removeEventListener("afterprint", restore);
+  };
+  window.addEventListener("afterprint", restore, {once:true});
+  setTimeout(restore, 60000);
+}
 
 async function printApprovedOrder(order){
   if (!order) return;
@@ -2438,7 +2449,7 @@ async function printApprovedOrder(order){
   const previousTitle = document.title;
   const printTitle = pharmacyPrintTitle(order.reference);
   if (printTitle) document.title = printTitle;
-  requestAnimationFrame(function(){ window.print(); setTimeout(function(){ document.title = previousTitle; },1000); });
+  requestAnimationFrame(function(){ restorePrintTitleAfterDialog(previousTitle); window.print(); });
 }
 
 document.getElementById("closeApprovedOrderPreview").onclick = function(){
@@ -3512,8 +3523,8 @@ function printOrder(){
   const previousTitle = document.title;
   const printTitle = pharmacyPrintTitle(savedOrder && savedOrder.reference);
   if (printTitle) document.title = printTitle;
+  if (printTitle) restorePrintTitleAfterDialog(previousTitle);
   window.print();
-  if (printTitle) setTimeout(function(){ document.title = previousTitle; },1000);
 }
 
 function buildPrintPages(){
