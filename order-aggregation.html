@@ -1,4 +1,6 @@
 <!doctype html>
+<style id="content-based-card-layout">body{min-height:100vh;display:flex;flex-direction:column}.container{min-height:0!important;display:block!important}.developer-signature{margin-top:auto!important}</style>
+<script>window.addEventListener("load",function(){var footer=document.querySelector(".container > .developer-signature");if(footer)document.body.appendChild(footer);});</script>
 <style>#refresh{display:none!important}</style>
 <script>(function(){window.addEventListener("load",function(){var refreshButton=document.getElementById("refresh");if(refreshButton)refreshButton.remove();var original=window.loadSummary, inFlight=false, timer=null;function refresh(){if(document.hidden||inFlight||typeof original!=="function")return;inFlight=true;Promise.resolve(original()).finally(function(){inFlight=false;});}function start(){if(timer===null)timer=setInterval(refresh,1000);}function stop(){if(timer!==null){clearInterval(timer);timer=null;}}document.addEventListener("visibilitychange",function(){if(document.hidden)stop();else{refresh();start();}});start();});})();</script>
 <style id="official-signature-layout">.container{display:flex;flex-direction:column}.developer-signature{margin-top:auto!important}</style>
