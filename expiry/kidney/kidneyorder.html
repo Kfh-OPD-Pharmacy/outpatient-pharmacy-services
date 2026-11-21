@@ -2520,7 +2520,7 @@ async function loadPendingReviewDetails(orderReference){
   pendingReviewLoadInFlight=true;
   const dialog=document.getElementById("pendingReviewDialog");
   const body=document.getElementById("pendingReviewItems");
-  if(dialog&&body){body.innerHTML='<tr><td colspan="5">Loading review details…</td></tr>';dialog.classList.add("visible");dialog.setAttribute("aria-hidden","false");}
+   if(dialog&&body){body.innerHTML="";}
   try{
     const result=await postApi("listPendingReviewOrders",{service:selectedPharmacyId,pharmacy:selectedPharmacyId});
     if(!result.success)throw new Error(result.code||"PENDING_REVIEW_FAILED");
