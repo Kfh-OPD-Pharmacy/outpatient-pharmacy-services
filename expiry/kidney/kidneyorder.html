@@ -3344,7 +3344,7 @@ function updateSummary(){
 
   const displayPharmacy = String(selectedPharmacyId || (savedOrder && savedOrder.pharmacy) || "").toLowerCase();
   document.getElementById("requestedByValue").innerText =
-    displayPharmacy === "diabetes" ? "DM" : displayPharmacy === "outpatient" ? "OP" : "KC";
+    !displayPharmacy ? "" : displayPharmacy === "diabetes" ? "DM" : displayPharmacy === "outpatient" ? "OP" : "KC";
 
   document.getElementById("statusValue").innerText = "Out main store";
 }
