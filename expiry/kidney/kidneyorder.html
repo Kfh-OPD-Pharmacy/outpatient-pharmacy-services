@@ -2292,7 +2292,7 @@ function initOrderPharmacySelector(){
     user && user.outpatientOrderAccess ? "outpatient" : ""
   ].filter(Boolean);
   if (allowed.indexOf(selectedPharmacyId) === -1) selectedPharmacyId = "";
-  selector.innerHTML = '<option value="">Select Pharmacy</option>' + allowed.map(function(id){ return '<option value="' + id + '">' + id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy</option>'; }).join("");
+  selector.innerHTML = '<option value="">Select Pharmacy</option>' + allowed.map(function(id){ const label = id === "diabetes" ? "DM" : id === "outpatient" ? "OP" : "KC"; return '<option value="' + id + '">' + label + '</option>'; }).join("");
   selector.value = selectedPharmacyId;
   selector.disabled = !allowed.length;
   setOrderActionsEnabled(Boolean(selectedPharmacyId));
