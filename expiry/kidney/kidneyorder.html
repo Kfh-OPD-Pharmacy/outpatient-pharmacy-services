@@ -2080,10 +2080,8 @@ function showOrderView(){
     currentEmployeeName ||
     currentEmployeeUsername;
 
-  document.getElementById("requestedByValue").innerText =
-    currentEmployeeName ||
-    currentEmployeeUsername ||
-    "-";
+  const requesterSelector = document.getElementById("pharmacySelector");
+  if (requesterSelector) requesterSelector.value = "";
 
   startInactivityTimer();
 }
