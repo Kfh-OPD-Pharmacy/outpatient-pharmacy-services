@@ -2362,9 +2362,14 @@ function formatApprovedPharmacyName(value){
 }
 
 function compareOrdersByCreationTimestamp(a,b){
-  const aTimestamp=String(a && a.date || "").trim();
-  const bTimestamp=String(b && b.date || "").trim();
-  const timestampOrder=bTimestamp.localeCompare(aTimestamp);
+  function timestampValue(order){
+    const raw=String(order && order.date || "").trim();
+    if(!raw)return Number.NEGATIVE_INFINITY;
+    const normalized=raw.replace(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})$/, "$1T$2");
+    const parsed=Date.parse(normalized);
+    return Number.isNaN(parsed)?Number.NEGATIVE_INFINITY:parsed;
+  }
+  const timestampOrder=timestampValue(b)-timestampValue(a);
   return timestampOrder || String(b && b.reference || "").localeCompare(String(a && a.reference || ""));
 }
 
