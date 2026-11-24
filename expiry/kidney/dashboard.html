@@ -4319,15 +4319,16 @@ function initPharmacySelector(){
   let user = null;
   try { user = JSON.parse(sessionStorage.getItem("unifiedPortalUser") || "null"); } catch (error) {}
   const allowed = user && user.isAdmin === true
-    ? ["kidney", "diabetes", "outpatient"]
+    ? ["kidney", "diabetes", "outpatient", "mail"]
     : [
         user && user.kidneyExpiryDashboardAccess ? "kidney" : "",
         user && user.diabetesExpiryDashboardAccess ? "diabetes" : "",
-        user && user.outpatientExpiryDashboardAccess ? "outpatient" : ""
+        user && user.outpatientExpiryDashboardAccess ? "outpatient" : "",
+        user && user.mailExpiryDashboardAccess ? "mail" : ""
       ].filter(Boolean);
   if (allowed.indexOf(selectedPharmacyId) === -1) selectedPharmacyId = "";
   selector.innerHTML = '<option value="">Select pharmacy</option>' + allowed.map(function(id){
-    return '<option value="' + id + '">' + id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy</option>';
+    return '<option value="' + id + '">' + (id === "mail" ? "Mail Pharmacy (MP)" : id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy') + '</option>';
   }).join("");
   selector.value = selectedPharmacyId;
   selector.disabled = !allowed.length;
@@ -4756,7 +4757,8 @@ async function authorizeDashboardAccess(){
     const hasDashboardPermission = result.user.isAdmin === true || [
       "kidneyExpiryDashboardAccess",
       "diabetesExpiryDashboardAccess",
-      "outpatientExpiryDashboardAccess"
+      "outpatientExpiryDashboardAccess",
+      "mailExpiryDashboardAccess"
     ].some(function(key){ return result.user[key] === true; });
     if (!hasDashboardPermission){
       authDiagnostic("DASHBOARD_PERMISSION_DENIED", "../../expiry-dates.html", {
@@ -4766,7 +4768,8 @@ async function authorizeDashboardAccess(){
         permissionKeysChecked: [
           "kidneyExpiryDashboardAccess",
           "diabetesExpiryDashboardAccess",
-          "outpatientExpiryDashboardAccess"
+          "outpatientExpiryDashboardAccess",
+          "mailExpiryDashboardAccess"
         ]
       });
       window.location.replace("../../expiry-dates.html");
