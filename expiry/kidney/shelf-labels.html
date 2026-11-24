@@ -1950,7 +1950,7 @@ let selectedPharmacyId = sessionStorage.getItem("selectedPharmacyId") || "";
 let pharmacyRequestVersion = 0;
 
 function selectedPharmacyService(){
-  return selectedPharmacyId === "diabetes" ? "diabetesLabels" : selectedPharmacyId === "outpatient" ? "outpatientLabels" : "kidneyLabels";
+  return selectedPharmacyId === "diabetes" ? "diabetesLabels" : selectedPharmacyId === "outpatient" ? "outpatientLabels" : selectedPharmacyId === "mail" ? "mailLabels" : "kidneyLabels";
 }
 
 function initPharmacySelector(){
@@ -1958,13 +1958,14 @@ function initPharmacySelector(){
   if (!selector) return;
   let user = null;
   try { user = JSON.parse(sessionStorage.getItem("unifiedPortalUser") || "null"); } catch (error) {}
-  const allowed = user && user.isAdmin === true ? ["kidney", "diabetes", "outpatient"] : [
+  const allowed = user && user.isAdmin === true ? ["kidney", "diabetes", "outpatient", "mail"] : [
     user && user.kidneyLabelsAccess ? "kidney" : "",
     user && user.diabetesLabelsAccess ? "diabetes" : "",
-    user && user.outpatientLabelsAccess ? "outpatient" : ""
+    user && user.outpatientLabelsAccess ? "outpatient" : "",
+    user && user.mailLabelsAccess ? "mail" : ""
   ].filter(Boolean);
   if (allowed.indexOf(selectedPharmacyId) === -1) selectedPharmacyId = "";
-  selector.innerHTML = '<option value="">Select pharmacy</option>' + allowed.map(function(id){ return '<option value="' + id + '">' + id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy</option>'; }).join("");
+  selector.innerHTML = '<option value="">Select pharmacy</option>' + allowed.map(function(id){ return '<option value="' + id + '">' + (id === "mail" ? "Mail Pharmacy (MP)" : id.charAt(0).toUpperCase() + id.slice(1) + ' Pharmacy') + '</option>'; }).join("");
   selector.value = selectedPharmacyId;
   selector.disabled = !allowed.length;
   selector.addEventListener("change", function(){
@@ -2140,7 +2141,7 @@ function getCachedPortalUser(){
 function hasKidneyLabelsPermission(user){
   return Boolean(
     user &&
-    (user.isAdmin === true || user.kidneyLabelsAccess === true || user.diabetesLabelsAccess === true || user.outpatientLabelsAccess === true)
+    (user.isAdmin === true || user.kidneyLabelsAccess === true || user.diabetesLabelsAccess === true || user.outpatientLabelsAccess === true || user.mailLabelsAccess === true)
   );
 }
 
