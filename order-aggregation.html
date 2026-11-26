@@ -42,7 +42,11 @@ const api=(action,data)=>fetch(API,{method:"POST",headers:{"Content-Type":"text/
 const esc=v=>String(v==null?"":v).replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const $=id=>document.getElementById(id);
 const scope=$('summaryScope'), tbody=$('body'), start=$('startEntry'), reset=$('reset');
-let state=null, view='next', fingerprint=null, generation=0, detailVersion=0, pending=null, ready=false, busy=false, timer=null, error='', notice='';
+const enteredHeader=document.createElement('th'), pendingLabel=document.createElement('label'), pendingOnly=document.createElement('input'), progress=document.createElement('div');
+enteredHeader.id='enteredHeader';enteredHeader.hidden=true;document.querySelector('.summary-table thead tr').appendChild(enteredHeader);
+pendingOnly.type='checkbox';pendingOnly.id='pendingOnly';pendingLabel.id='pendingOnlyLabel';pendingLabel.hidden=true;pendingLabel.append(pendingOnly,document.createTextNode(' Pending Only'));$('periodNav').appendChild(pendingLabel);
+progress.id='entryProgress';progress.className='message';progress.hidden=true;$('message').after(progress);
+let state=null, view='next', fingerprint=null, generation=0, detailVersion=0, pending=null, ready=false, busy=false, timer=null, error='', notice='', savingProgress={};
 const tr=(en,ar)=>lang==='ar'?ar:en;
 const pharmacyArg=()=>scope.value==='all'?'':scope.value;
 const pharmacyName=p=>({kidney:'KC',diabetes:'DM',outpatient:'OP',mail:'MP'}[p]||p||'-');
@@ -59,7 +63,7 @@ function controls(){
 }
 function filter(){
   const q=$('aggregationSearch').value.trim().toLowerCase();let n=0;
-  tbody.querySelectorAll('tr[data-medication]').forEach(row=>{row.hidden=!!q&&!row.dataset.medication.toLowerCase().includes(q);if(!row.hidden)n++;});
+  tbody.querySelectorAll('tr[data-medication]').forEach(row=>{row.hidden=(!!q&&!row.dataset.medication.toLowerCase().includes(q))||(pendingOnly.checked&&row.dataset.entered==='true');if(!row.hidden)n++;});
   $('searchCount').textContent=q?n+tr(' matching items',' أصناف مطابقة'):'';
 }
 function renderState(){
@@ -68,19 +72,21 @@ function renderState(){
   if(!state)return;
   const active=state.hasActive&&view==='current', items=active?state.activeItems:state.nextItems;
   const source=active?'active':'next';
-  const signature=JSON.stringify([scope.value,source,items,items.length?null:lang]);
+  const signature=JSON.stringify([scope.value,source,items,pendingOnly.checked,items.length?null:lang]);
   if(signature!==fingerprint){
     const scrollX=window.scrollX,scrollY=window.scrollY, panel=document.querySelector('.panel'), left=panel.scrollLeft;
-    tbody.innerHTML=items.map(i=>`<tr data-medication="${esc(i.medicationName||'-')}"><td><button type="button" class="medication-detail-button" data-entry-source="${source}" data-aggregation-key="${esc(i.aggregationKey||'')}">${esc(i.medicationName||'-')}</button></td>${['kidney','diabetes','outpatient','mail','grandTotal'].map(k=>`<td>${Number(i[k]||0)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="6">${tr('No approved quantities.','لا توجد كميات معتمدة.')}</td></tr>`;
+    tbody.innerHTML=items.map(i=>{const ep=i.entryProgress||{}, editable=active&&scope.value!=='all', target=(ep.targets||[])[0]||'', parts=target.split('|');return `<tr data-medication="${esc(i.medicationName||'-')}" data-entered="${ep.entered===true}"><td><button type="button" class="medication-detail-button" data-entry-source="${source}" data-aggregation-key="${esc(i.aggregationKey||'')}">${esc(i.medicationName||'-')}</button></td>${['kidney','diabetes','outpatient','mail','grandTotal'].map(k=>`<td>${Number(i[k]||0)}</td>`).join('')}${active?`<td><input class="entry-checkbox" type="checkbox" data-period-id="${esc(parts[0]||'')}" data-aggregation-key="${esc(i.aggregationKey||'')}" ${ep.entered?'checked':''} ${editable?'':'disabled'}></td>`:''}</tr>`;}).join('')||`<tr><td colspan="${active?7:6}">${tr('No approved quantities.','لا توجد كميات معتمدة.')}</td></tr>`;
     fingerprint=signature;filter();panel.scrollLeft=left;window.scrollTo(scrollX,scrollY);
   }
   document.querySelectorAll('[data-entry-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.entryView===view)));
+  enteredHeader.hidden=!active;pendingLabel.hidden=!active;progress.hidden=!active;
+  if(active){const p=state.entryProgress||{entered:0,total:items.length,percent:0};progress.innerHTML=esc(tr('Entry Progress: ','تقدم التسجيل: ')+p.entered+'/'+p.total+' ('+p.percent+'%)')+' <span role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Number(p.percent||0)+'" style="display:inline-block;width:120px;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;vertical-align:middle"><span style="display:block;width:'+Math.max(0,Math.min(100,Number(p.percent||0)))+'%;height:100%;background:#168fb3"></span></span>';}
   const periods=(state.activePeriods||[]).map(p=>p.id+' — '+p.startedAt).join(', ');
   const issues=[...new Set((state.issues||[]).map(x=>x.code).filter(Boolean))];
   $('message').textContent=error||notice||(state.hasActive?(active?tr('Entry in Progress: ','التسجيل جارٍ: '):tr('Next Period: ','الفترة القادمة: '))+periods:'')+(issues.length?' '+tr('Records require review: ','سجلات تحتاج مراجعة: ')+issues.join(', '):'');
 }
 async function loadSummary(){
-  if(!ready||busy||!scope.value)return;
+  if(!ready||busy||Object.keys(savingProgress).length||!scope.value)return;
   if(pending)return pending;
   const g=generation, selected=scope.value;
   if(!state){tbody.innerHTML=`<tr class="summary-table-loading"><td colspan="6">${tr('Loading aggregation data…','جارٍ تحميل بيانات التجميع…')}</td></tr>`;}
@@ -96,6 +102,18 @@ async function loadSummary(){
   })();
   pending=task;
   try{await task;}finally{if(pending===task)pending=null;}
+}
+async function saveEntryProgress(box){
+  if(scope.value==='all'||!state?.hasActive||view!=='current')return;
+  const wanted=box.checked, id=box.dataset.periodId+'|'+box.dataset.aggregationKey;
+  if(savingProgress[id])return;
+  savingProgress[id]=true;box.disabled=true;
+  try{
+    const r=await api('setAggregationEntryProgress',{pharmacy:pharmacyArg(),periodId:box.dataset.periodId,aggregationKey:box.dataset.aggregationKey,entered:wanted});
+    if(!r.success)throw Error(r.code||'SAVE_FAILED');
+    fingerprint=null;await loadSummary();
+  }catch(e){box.checked=!wanted;$('message').textContent=tr('Could not save entry progress: ','تعذر حفظ تقدم التسجيل: ')+e.message;}
+  finally{delete savingProgress[id];box.disabled=scope.value==='all';if(!Object.keys(savingProgress).length)loadSummary();}
 }
 function invalidate(){generation++;pending=null;state=null;fingerprint=null;error='';notice='';view='next';tbody.innerHTML='';$('message').textContent='';$('periodNav').hidden=true;controls();}
 function closeDetails(){detailVersion++;$('aggregationDetailsModal').classList.remove('is-open');}
@@ -150,6 +168,7 @@ function labels(){
   const names={kidney:['Kidney Pharmacy','صيدلية الكلى'],diabetes:['Diabetes Pharmacy','صيدلية السكر'],outpatient:['Outpatient Pharmacy','صيدلية العيادات'],mail:['Mail Pharmacy (MP)','صيدلية البريد (MP)'],all:['All Pharmacies','جميع الصيدليات']};
   Array.from(scope.options).forEach(o=>o.textContent=tr(...names[o.value]));
   const heads=document.querySelectorAll('.summary-table th');heads[0].textContent=tr('Medication','الدواء');heads[5].textContent=tr('Grand Total','الإجمالي العام');filter();renderState();
+  enteredHeader.textContent=tr('Entered','تم التسجيل');pendingLabel.lastChild.textContent=' '+tr('Pending Only','غير المسجل فقط');
 }
 async function boot(){
   if(!token()){location.replace('index.html');return;}
@@ -159,7 +178,9 @@ async function boot(){
 scope.onchange=()=>{closeDetails();closeDialog('startModal');closeDialog('resetModal');invalidate();loadSummary();};
 $('periodNav').onclick=e=>{const b=e.target.closest('[data-entry-view]');if(!b||!state?.hasActive)return;view=b.dataset.entryView;closeDetails();renderState();};
 tbody.onclick=e=>{const b=e.target.closest('.medication-detail-button');if(b?.dataset.aggregationKey)openDetails(b);};
+tbody.onchange=e=>{const box=e.target.closest('.entry-checkbox');if(box)saveEntryProgress(box);};
 $('aggregationSearch').oninput=filter;
+pendingOnly.onchange=()=>{fingerprint=null;renderState();};
 $('aggregationDetailsClose').onclick=closeDetails;$('aggregationDetailsModal').onclick=e=>{if(e.target===e.currentTarget)closeDetails();};
 start.onclick=()=>openDialog('startModal');reset.onclick=()=>openDialog('resetModal');
 for(const [id,prefix,isStart] of [['startModal','start-entry',true],['resetModal','reset-modal',false]]){const m=$(id);m.querySelector('.'+prefix+'-cancel').onclick=()=>closeDialog(id);m.querySelector('.'+prefix+'-confirm').onclick=()=>mutate(isStart);m.onclick=e=>{if(e.target===m)closeDialog(id);};m.onkeydown=e=>{if(e.key==='Tab'){const buttons=[...m.querySelectorAll('button:not(:disabled)')];if(buttons.length&&((e.shiftKey&&document.activeElement===buttons[0])||(!e.shiftKey&&document.activeElement===buttons.at(-1)))){e.preventDefault();(e.shiftKey?buttons.at(-1):buttons[0]).focus();}}};}
