@@ -176,13 +176,13 @@ function labels(){
   $('title').textContent=tr('Order Aggregation','تجميع الطلبيات');
   $('line1').textContent=tr('Madinah Health Cluster','تجمع المدينة المنورة الصحي');$('line2').textContent=tr('King Fahad Hospital - Madinah','مستشفى الملك فهد بالمدينة المنورة');$('line3').textContent=tr('Pharmaceutical Care Administration','إدارة الرعاية الصيدلانية');
   $('date').textContent=new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-GB',{timeZone:'Asia/Riyadh',weekday:'long',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-  start.textContent=tr('Start Entry','بدء التسجيل');reset.textContent=tr('⟳ Reset','⟳ إعادة ضبط');$('aggregationSearch').placeholder=tr('Search medication','بحث عن دواء');
-  closeArchive.textContent=tr('Close & Archive','إغلاق وأرشفة');$('closeArchiveTitle').textContent=tr('CLOSE & ARCHIVE','إغلاق وأرشفة');$('closeArchiveCancel').textContent=tr('Cancel','إلغاء');$('closeArchiveConfirm').textContent=tr('Close & Archive','إغلاق وأرشفة');
+  start.textContent=tr('Medica Entry','التسجيل في ميديكا');reset.textContent=tr('⟳ Reset','⟳ إعادة ضبط');$('aggregationSearch').placeholder=tr('Search medication','بحث عن دواء');
+  closeArchive.textContent=tr('Close','إغلاق');$('closeArchiveTitle').textContent=tr('CLOSE','إغلاق');$('closeArchiveCancel').textContent=tr('Cancel','إلغاء');$('closeArchiveConfirm').textContent=tr('Close','إغلاق');
   historyButton.textContent=tr('History','السجل');$('historyTitle').textContent=tr('History','السجل');$('historyQuery').placeholder=tr('Period or pharmacy','الفترة أو الصيدلية');
   document.querySelector('[data-entry-view="current"]').textContent=tr('Current Period','الفترة الحالية');document.querySelector('[data-entry-view="next"]').textContent=tr('Next Period','الفترة القادمة');
-  $('startEntryTitle').textContent=tr('START ENTRY','بدء التسجيل');$('resetModalTitle').textContent=tr('CONFIRM RESET','تأكيد إعادة الضبط');
+  $('startEntryTitle').textContent=tr('MEDICA ENTRY','التسجيل في ميديكا');$('resetModalTitle').textContent=tr('CONFIRM RESET','تأكيد إعادة الضبط');
   document.querySelectorAll('.start-entry-cancel,.reset-modal-cancel').forEach(b=>b.textContent=tr('Cancel','إلغاء'));
-  document.querySelector('.start-entry-confirm').textContent=tr('Start Entry','بدء التسجيل');document.querySelector('.reset-modal-confirm').textContent=tr('Reset','إعادة ضبط');
+  document.querySelector('.start-entry-confirm').textContent=tr('Medica Entry','التسجيل في ميديكا');document.querySelector('.reset-modal-confirm').textContent=tr('Reset','إعادة ضبط');
   $('detailOrderHeader').textContent=tr('Order No.','رقم الطلب');$('detailPharmacyHeader').textContent=tr('Pharmacy','الصيدلية');$('detailApprovalHeader').textContent=tr('Approval Date','تاريخ الاعتماد');$('detailQuantityHeader').textContent=tr('Approved Dispensed Q','الكمية المصروفة المعتمدة');
   const names={kidney:['Kidney Pharmacy','صيدلية الكلى'],diabetes:['Diabetes Pharmacy','صيدلية السكر'],outpatient:['Outpatient Pharmacy','صيدلية العيادات'],mail:['Mail Pharmacy (MP)','صيدلية البريد (MP)'],all:['All Pharmacies','جميع الصيدليات']};
   Array.from(scope.options).forEach(o=>o.textContent=tr(...names[o.value]));
