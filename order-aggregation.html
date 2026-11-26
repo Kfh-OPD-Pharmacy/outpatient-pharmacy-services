@@ -46,6 +46,9 @@ const enteredHeader=document.createElement('th'), pendingLabel=document.createEl
 enteredHeader.id='enteredHeader';enteredHeader.hidden=true;document.querySelector('.summary-table thead tr').appendChild(enteredHeader);
 pendingOnly.type='checkbox';pendingOnly.id='pendingOnly';pendingLabel.id='pendingOnlyLabel';pendingLabel.hidden=true;pendingLabel.append(pendingOnly,document.createTextNode(' Pending Only'));$('periodNav').appendChild(pendingLabel);
 progress.id='entryProgress';progress.className='message';progress.hidden=true;$('message').after(progress);
+const closeArchive=document.createElement('button'), closeModal=document.createElement('div');
+closeArchive.id='closeArchive';closeArchive.type='button';closeArchive.disabled=true;closeArchive.textContent='Close & Archive';start.after(closeArchive);
+closeModal.id='closeArchiveModal';closeModal.className='reset-modal-backdrop';closeModal.innerHTML='<div class="reset-modal" role="dialog" aria-modal="true"><h2 id="closeArchiveTitle">CLOSE & ARCHIVE</h2><p id="closeArchiveText"></p><div class="reset-modal-actions"><button type="button" id="closeArchiveCancel" class="reset-modal-cancel">Cancel</button><button type="button" id="closeArchiveConfirm" class="reset-modal-confirm">Close & Archive</button></div></div>';document.body.appendChild(closeModal);
 let state=null, view='next', fingerprint=null, generation=0, detailVersion=0, pending=null, ready=false, busy=false, timer=null, error='', notice='', savingProgress={};
 const tr=(en,ar)=>lang==='ar'?ar:en;
 const pharmacyArg=()=>scope.value==='all'?'':scope.value;
@@ -55,6 +58,7 @@ function controls(){
   const locked=!ready||!state||busy||!!error||state.hasActive;
   start.disabled=locked||!state?.nextItems?.length;
   reset.disabled=locked||!state?.nextItems?.length;
+  closeArchive.disabled=!ready||busy||!!error||scope.value==='all'||!state?.hasActive||view!=='current'||Object.keys(savingProgress).length>0||state?.entryProgress?.percent!==100;
   scope.disabled=!ready||busy;
   document.querySelector('.start-entry-confirm').disabled=start.disabled;
   document.querySelector('.reset-modal-confirm').disabled=reset.disabled;
@@ -80,6 +84,7 @@ function renderState(){
   }
   document.querySelectorAll('[data-entry-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.entryView===view)));
   enteredHeader.hidden=!active;pendingLabel.hidden=!active;progress.hidden=!active;
+  closeArchive.hidden=!active;
   if(active){const p=state.entryProgress||{entered:0,total:items.length,percent:0};progress.innerHTML=esc(tr('Entry Progress: ','تقدم التسجيل: ')+p.entered+'/'+p.total+' ('+p.percent+'%)')+' <span role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Number(p.percent||0)+'" style="display:inline-block;width:120px;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;vertical-align:middle"><span style="display:block;width:'+Math.max(0,Math.min(100,Number(p.percent||0)))+'%;height:100%;background:#168fb3"></span></span>';}
   const periods=(state.activePeriods||[]).map(p=>p.id+' — '+p.startedAt).join(', ');
   const issues=[...new Set((state.issues||[]).map(x=>x.code).filter(Boolean))];
@@ -114,6 +119,14 @@ async function saveEntryProgress(box){
     fingerprint=null;await loadSummary();
   }catch(e){box.checked=!wanted;$('message').textContent=tr('Could not save entry progress: ','تعذر حفظ تقدم التسجيل: ')+e.message;}
   finally{delete savingProgress[id];box.disabled=scope.value==='all';if(!Object.keys(savingProgress).length)loadSummary();}
+}
+async function closeCurrentPeriod(){
+  if(closeArchive.disabled||busy)return;
+  const period=(state.activePeriods||[]).filter(p=>p.pharmacy===scope.value)[0];if(!period)return;
+  busy=true;controls();const storageKey='aggregationCloseRetry:'+period.id,requestKey=sessionStorage.getItem(storageKey)||key();sessionStorage.setItem(storageKey,requestKey);
+  try{const r=await api('closeAggregationEntryPeriod',{pharmacy:scope.value,periodId:period.id,idempotencyKey:requestKey});if(!r.success)throw Error(r.code||'CLOSE_FAILED');sessionStorage.removeItem(storageKey);closeModal.classList.remove('is-open');notice=tr('Period archived: ','تمت أرشفة الفترة: ')+r.archiveId;state=null;fingerprint=null;}
+  catch(e){$('closeArchiveText').textContent=tr('Could not close and archive: ','تعذر إغلاق وأرشفة الفترة: ')+e.message;}
+  finally{busy=false;controls();if(!state)loadSummary();}
 }
 function invalidate(){generation++;pending=null;state=null;fingerprint=null;error='';notice='';view='next';tbody.innerHTML='';$('message').textContent='';$('periodNav').hidden=true;controls();}
 function closeDetails(){detailVersion++;$('aggregationDetailsModal').classList.remove('is-open');}
@@ -160,6 +173,7 @@ function labels(){
   $('line1').textContent=tr('Madinah Health Cluster','تجمع المدينة المنورة الصحي');$('line2').textContent=tr('King Fahad Hospital - Madinah','مستشفى الملك فهد بالمدينة المنورة');$('line3').textContent=tr('Pharmaceutical Care Administration','إدارة الرعاية الصيدلانية');
   $('date').textContent=new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-GB',{timeZone:'Asia/Riyadh',weekday:'long',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   start.textContent=tr('Start Entry','بدء التسجيل');reset.textContent=tr('⟳ Reset','⟳ إعادة ضبط');$('aggregationSearch').placeholder=tr('Search medication','بحث عن دواء');
+  closeArchive.textContent=tr('Close & Archive','إغلاق وأرشفة');$('closeArchiveTitle').textContent=tr('CLOSE & ARCHIVE','إغلاق وأرشفة');$('closeArchiveCancel').textContent=tr('Cancel','إلغاء');$('closeArchiveConfirm').textContent=tr('Close & Archive','إغلاق وأرشفة');
   document.querySelector('[data-entry-view="current"]').textContent=tr('Current Period','الفترة الحالية');document.querySelector('[data-entry-view="next"]').textContent=tr('Next Period','الفترة القادمة');
   $('startEntryTitle').textContent=tr('START ENTRY','بدء التسجيل');$('resetModalTitle').textContent=tr('CONFIRM RESET','تأكيد إعادة الضبط');
   document.querySelectorAll('.start-entry-cancel,.reset-modal-cancel').forEach(b=>b.textContent=tr('Cancel','إلغاء'));
@@ -183,6 +197,8 @@ $('aggregationSearch').oninput=filter;
 pendingOnly.onchange=()=>{fingerprint=null;renderState();};
 $('aggregationDetailsClose').onclick=closeDetails;$('aggregationDetailsModal').onclick=e=>{if(e.target===e.currentTarget)closeDetails();};
 start.onclick=()=>openDialog('startModal');reset.onclick=()=>openDialog('resetModal');
+closeArchive.onclick=()=>{if(closeArchive.disabled)return;const p=(state.activePeriods||[]).filter(x=>x.pharmacy===scope.value)[0],q=state.entryProgress||{},total=(state.activeItems||[]).reduce((n,x)=>n+Number(x.grandTotal||0),0);$('closeArchiveText').textContent=tr('Close and archive ','إغلاق وأرشفة ')+(p?p.id:'')+' — '+scope.options[scope.selectedIndex].text+' — '+q.total+' '+tr('items, total quantities: ','أصناف، إجمالي الكميات: ')+total;closeModal.classList.add('is-open');$('closeArchiveCancel').focus();};
+$('closeArchiveCancel').onclick=()=>closeModal.classList.remove('is-open');$('closeArchiveConfirm').onclick=closeCurrentPeriod;closeModal.onclick=e=>{if(e.target===closeModal&&!busy)closeModal.classList.remove('is-open');};
 for(const [id,prefix,isStart] of [['startModal','start-entry',true],['resetModal','reset-modal',false]]){const m=$(id);m.querySelector('.'+prefix+'-cancel').onclick=()=>closeDialog(id);m.querySelector('.'+prefix+'-confirm').onclick=()=>mutate(isStart);m.onclick=e=>{if(e.target===m)closeDialog(id);};m.onkeydown=e=>{if(e.key==='Tab'){const buttons=[...m.querySelectorAll('button:not(:disabled)')];if(buttons.length&&((e.shiftKey&&document.activeElement===buttons[0])||(!e.shiftKey&&document.activeElement===buttons.at(-1)))){e.preventDefault();(e.shiftKey?buttons.at(-1):buttons[0]).focus();}}};}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetails();closeDialog('startModal');closeDialog('resetModal');}});
 $('lang').onclick=()=>{lang=lang==='en'?'ar':'en';labels();};
